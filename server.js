@@ -1,22 +1,37 @@
 // server.js
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
-
 const app = express();
+
+const proposalRoute = require('./routes/Proposals.js');
+const dbConnect = require('./utils/dbConnect.js');
+
+app.use(express.json());
+
+// CORS Configuration
 app.use(cors({
   origin: ["https://proposal-form-frontend.vercel.app"],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],  
   allowedHeaders: ['Content-Type'],
 }));
-app.use(express.json());
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB Connected'))
-  .catch(err => console.error('MongoDB error:', err));
+// Connect to MongoDB and Start the server
+async function startServer() {
+  try{
+    await dbConnect();
+    app.listen(process.env.PORT, () => {
+        console.log(`server is running on port ${process.env.PORT}`);
+    });
+  } catch (error) {
+    console.error(`Error Connecting To DB: ${error.message}`);
+  }
+}
 
-app.use('/api/proposals', require('./routes/Proposals'));
+startServer();
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.use('/api/proposals', proposalRoute);
+
+app.get('/', (req, res) => {
+  res.send('Welcome to the Proposal API');
+});
