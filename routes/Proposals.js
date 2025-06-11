@@ -17,13 +17,12 @@ const storage = new GridFsStorage({
         if (err) return reject(err);
 
         const filename = buf.toString('hex') + path.extname(file.originalname);
-        const fileId = new mongoose.Types.ObjectId(); // ✅ using mongoose
+        const fileId = new mongoose.Types.ObjectId(); // ✅ Valid ObjectId
 
         console.log('Preparing to upload file:', filename);
 
         resolve({
-          _id: fileId, // Optional (Multer also uses id)
-          id: fileId,  // ✅ Required for multer-gridfs-storage to avoid undefined error
+          _id: fileId, // ✅ Required by multer-gridfs-storage
           filename,
           bucketName: 'uploads',
           metadata: { originalname: file.originalname }
@@ -37,34 +36,36 @@ const storage = new GridFsStorage({
 
 const upload = multer({ storage });
 
-// Generate file URLs
+// Utility to generate file URLs (optional usage)
 const generateFileURLs = (files = []) =>
   files.map((file) => `${process.env.FRONTEND_URL || 'http://localhost:3000'}/file/${file.fileId}`);
 
-// CREATE
+// CREATE proposal route
 router.post('/createProposal', upload.array('projects'), async (req, res) => {
   try {
-    console.log("Entered Main Func");
+    console.log("Entered /createProposal route");
     const files = req.files;
+
     if (!files || files.length === 0) {
       return res.status(400).json({ error: 'At least one project file is required' });
     }
-    
-    console.log('Files received:', req.files);
 
-    const projectFiles = req.files?.map(file => ({
-      fileId: file.id || file._id, // Use _id for GridFS files
+    console.log('Files received:', files.map(f => f.filename));
+
+    const projectFiles = files.map(file => ({
+      fileId: file._id, // ✅ Always use _id from GridFS
       filename: file.filename
-    })) || [];
+    }));
 
     const newProposal = new Proposal({
       ...req.body,
       projectFiles
     });
 
-    const saved = await newProposal.save();
-    res.status(201).json(saved);
+    const savedProposal = await newProposal.save();
+    res.status(201).json(savedProposal);
   } catch (err) {
+    console.error('Error in /createProposal:', err);
     res.status(500).json({ error: err.message });
   }
 });
