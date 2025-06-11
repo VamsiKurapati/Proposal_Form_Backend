@@ -28,6 +28,8 @@ const storage = new GridFsStorage({
           bucketName: 'uploads',
           metadata: { originalname: file.originalname }
         });
+
+        console.log('Created a file: ', filename);
       });
     });
   }
