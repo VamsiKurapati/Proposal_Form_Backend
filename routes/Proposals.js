@@ -44,6 +44,7 @@ const generateFileURLs = (files = []) =>
 // CREATE
 router.post('/createProposal', upload.array('projects'), async (req, res) => {
   try {
+    console.log("Entered Main Func");
     const files = req.files;
     if (!files || files.length === 0) {
       return res.status(400).json({ error: 'At least one project file is required' });
