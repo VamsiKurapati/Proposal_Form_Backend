@@ -14,21 +14,29 @@ const storage = new GridFsStorage({
   file: (req, file) => {
     return new Promise((resolve, reject) => {
       crypto.randomBytes(16, (err, buf) => {
-        if (err) return reject(err);
+        if (err) {
+          console.error('Crypto error:', err);
+          return reject(err);
+        }
 
-        const filename = buf.toString('hex') + path.extname(file.originalname);
-        const fileId = new mongoose.Types.ObjectId(); // ✅ Valid ObjectId
+        try {
+          const filename = buf.toString('hex') + path.extname(file.originalname);
+          const fileId = new mongoose.Types.ObjectId();
 
-        console.log('Preparing to upload file:', filename);
+          console.log('Preparing to upload file:', filename);
 
-        resolve({
-          _id: fileId, // ✅ Required by multer-gridfs-storage
-          filename,
-          bucketName: 'uploads',
-          metadata: { originalname: file.originalname }
-        });
+          resolve({
+            _id: fileId,
+            filename,
+            bucketName: 'uploads',
+            metadata: { originalname: file.originalname }
+          });
 
-        console.log('Created a file: ', filename);
+          console.log('Created a file:', filename);
+        } catch (error) {
+          console.error('File resolve error:', error);
+          reject(error);
+        }
       });
     });
   }
