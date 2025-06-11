@@ -16,10 +16,11 @@ const storage = new GridFsStorage({
       crypto.randomBytes(16, (err, buf) => {
         if (err) return reject(err);
         const filename = buf.toString('hex') + path.extname(file.originalname);
+        console.log('Preparing to upload file:', filename);
         resolve({ filename, bucketName: 'uploads' });
       });
     });
-  },
+  }
 });
 
 const upload = multer({ storage });
