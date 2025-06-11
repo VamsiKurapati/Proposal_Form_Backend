@@ -1,4 +1,3 @@
-// routes/proposals.js
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
@@ -9,7 +8,7 @@ const crypto = require('crypto');
 const path = require('path');
 require('dotenv').config();
 
-// GridFS Storage setup
+// GridFS Storage
 const storage = new GridFsStorage({
   url: process.env.MONGO_URI,
   file: (req, file) => {
@@ -25,15 +24,15 @@ const storage = new GridFsStorage({
 
 const upload = multer({ storage });
 
-// Utility: Generate file URLs
+// Generate file URLs
 const generateFileURLs = (ids) =>
-  ids.map((id) => `https://proposal-form-frontend.vercel.app/${id}`);
+  ids.map((id) => `${process.env.FRONTEND_URL || 'http://localhost:3000'}/file/${id}`);
 
 // CREATE
 router.post('/createProposal', upload.array('projects'), async (req, res) => {
   try {
-    const fileIds = req.files.map(file => file.id);
-    const fileNames = req.files.map(file => file.filename);
+    const fileIds = req.files?.map(file => file.id) || [];
+    const fileNames = req.files?.map(file => file.filename) || [];
 
     const newProposal = new Proposal({
       ...req.body,
@@ -52,9 +51,7 @@ router.post('/createProposal', upload.array('projects'), async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { name, email } = req.body;
-    if (!name || !email) {
-      return res.status(400).json({ error: 'Name and email are required' });
-    }
+    if (!name || !email) return res.status(400).json({ error: 'Name and email are required' });
 
     const all = await Proposal.find({ name, email }).sort({ createdAt: -1 });
     const withUrls = all.map(p => ({
@@ -90,10 +87,7 @@ router.get('/file/:id', async (req, res) => {
     const fileId = new mongoose.Types.ObjectId(req.params.id);
     const downloadStream = bucket.openDownloadStream(fileId);
 
-    downloadStream.on('error', () => {
-      res.status(404).send('File not found');
-    });
-
+    downloadStream.on('error', () => res.status(404).send('File not found'));
     downloadStream.pipe(res);
   } catch {
     res.status(400).send('Invalid file ID');
