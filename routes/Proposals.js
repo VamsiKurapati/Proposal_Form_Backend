@@ -36,10 +36,11 @@ router.post('/createProposal', upload.array('projects'), async (req, res) => {
     if (!files || files.length === 0) {
       return res.status(400).json({ error: 'At least one project file is required' });
     }
-    console.log('Files received:', files);
+    
+    console.log('Files received:', req.files);
 
     const projectFiles = req.files?.map(file => ({
-      fileId: file._id,
+      fileId: file.id || file._id, // Use _id for GridFS files
       filename: file.filename
     })) || [];
 
