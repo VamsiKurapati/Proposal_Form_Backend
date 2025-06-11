@@ -25,19 +25,20 @@ const storage = new GridFsStorage({
 const upload = multer({ storage });
 
 // Generate file URLs
-const generateFileURLs = (ids) =>
-  ids.map((id) => `${process.env.FRONTEND_URL || 'http://localhost:3000'}/file/${id}`);
+const generateFileURLs = (files = []) =>
+  files.map((file) => `${process.env.FRONTEND_URL || 'http://localhost:3000'}/file/${file.fileId}`);
 
 // CREATE
 router.post('/createProposal', upload.array('projects'), async (req, res) => {
   try {
-    const fileIds = req.files?.map(file => file.id) || [];
-    const fileNames = req.files?.map(file => file.filename) || [];
+    const projectFiles = req.files?.map(file => ({
+      fileId: file._id,
+      filename: file.filename
+    })) || [];
 
     const newProposal = new Proposal({
       ...req.body,
-      projectFileIds: fileIds,
-      projectFileNames: fileNames,
+      projectFiles
     });
 
     const saved = await newProposal.save();
@@ -56,7 +57,7 @@ router.post('/', async (req, res) => {
     const all = await Proposal.find({ name, email }).sort({ createdAt: -1 });
     const withUrls = all.map(p => ({
       ...p.toObject(),
-      projectFileUrls: generateFileURLs(p.projectFileIds || [])
+      projectFileUrls: generateFileURLs(p.projectFiles)
     }));
     res.json(withUrls);
   } catch (err) {
@@ -70,7 +71,7 @@ router.get('/:id', async (req, res) => {
     const proposal = await Proposal.findById(req.params.id);
     if (!proposal) return res.status(404).send('Not found');
 
-    const fileUrls = generateFileURLs(proposal.projectFileIds);
+    const fileUrls = generateFileURLs(proposal.projectFiles);
     res.json({ ...proposal.toObject(), projectFileUrls: fileUrls });
   } catch {
     res.status(500).send('Server error');
@@ -105,20 +106,22 @@ router.put('/:id', upload.array('projects'), async (req, res) => {
     });
 
     // Delete old files
-    for (const fileId of proposal.projectFileIds) {
+    for (const file of proposal.projectFiles) {
       try {
-        await bucket.delete(new mongoose.Types.ObjectId(fileId));
+        await bucket.delete(new mongoose.Types.ObjectId(file.fileId));
       } catch (err) {
         console.error('Failed to delete old file:', err.message);
       }
     }
 
-    const fileIds = req.files.map(file => file.id);
-    const fileNames = req.files.map(file => file.filename);
+    const projectFiles = req.files?.map(file => ({
+      fileId: file._id,
+      filename: file.filename
+    })) || [];
 
     const updated = await Proposal.findByIdAndUpdate(
       req.params.id,
-      { ...req.body, projectFileIds: fileIds, projectFileNames: fileNames },
+      { ...req.body, projectFiles },
       { new: true }
     );
 
@@ -138,9 +141,9 @@ router.delete('/:id', async (req, res) => {
       bucketName: 'uploads',
     });
 
-    for (const fileId of proposal.projectFileIds) {
+    for (const file of proposal.projectFiles) {
       try {
-        await bucket.delete(new mongoose.Types.ObjectId(fileId));
+        await bucket.delete(new mongoose.Types.ObjectId(file.fileId));
       } catch (err) {
         console.error('Failed to delete file from GridFS:', err.message);
       }
