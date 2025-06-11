@@ -41,7 +41,15 @@ const generateFileURLs = (files = []) =>
   files.map((file) => `${process.env.FRONTEND_URL || 'http://localhost:3000'}/file/${file.fileId}`);
 
 // CREATE proposal route
-router.post('/createProposal', upload.array('projects'), async (req, res) => {
+router.post('/createProposal', (req, res, next) => {
+  upload.array('projects')(req, res, function (err) {
+    if (err) {
+      console.error('Multer Error:', err); // 🛑 Log if Multer failed
+      return res.status(500).json({ error: 'File upload failed', details: err.message });
+    }
+    next(); // ✅ Proceed if no Multer error
+  });
+}, async (req, res) => {
   try {
     console.log("Entered /createProposal route");
     const files = req.files;
@@ -50,10 +58,8 @@ router.post('/createProposal', upload.array('projects'), async (req, res) => {
       return res.status(400).json({ error: 'At least one project file is required' });
     }
 
-    console.log('Files received:', files.map(f => f.filename));
-
     const projectFiles = files.map(file => ({
-      fileId: file._id, // ✅ Always use _id from GridFS
+      fileId: file._id,
       filename: file.filename
     }));
 
@@ -63,6 +69,7 @@ router.post('/createProposal', upload.array('projects'), async (req, res) => {
     });
 
     const savedProposal = await newProposal.save();
+    console.log('Proposal saved:', savedProposal);
     res.status(201).json(savedProposal);
   } catch (err) {
     console.error('Error in /createProposal:', err);
