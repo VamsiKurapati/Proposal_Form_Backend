@@ -15,9 +15,19 @@ const storage = new GridFsStorage({
     return new Promise((resolve, reject) => {
       crypto.randomBytes(16, (err, buf) => {
         if (err) return reject(err);
+
         const filename = buf.toString('hex') + path.extname(file.originalname);
+        const fileId = new mongoose.Types.ObjectId(); // ✅ using mongoose
+
         console.log('Preparing to upload file:', filename);
-        resolve({ filename, bucketName: 'uploads' });
+
+        resolve({
+          _id: fileId, // Optional (Multer also uses id)
+          id: fileId,  // ✅ Required for multer-gridfs-storage to avoid undefined error
+          filename,
+          bucketName: 'uploads',
+          metadata: { originalname: file.originalname }
+        });
       });
     });
   }
