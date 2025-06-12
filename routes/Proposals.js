@@ -342,29 +342,52 @@ router.put('/:id', upload.array('projects'), async (req, res) => {
       bucketName: 'uploads',
     });
 
-    // Delete old files
-    for (const file of proposal.uploadedDocuments) {
+    // Parse existingFiles from the request (as sent from frontend)
+    let retainedFiles = [];
+    if (req.body.existingFiles) {
       try {
-        await bucket.delete(new mongoose.Types.ObjectId(file.fileId));
+        retainedFiles = JSON.parse(req.body.existingFiles); // [{fileId, filename}]
       } catch (err) {
-        console.error('Failed to delete old file:', err.message);
+        console.error('Failed to parse existingFiles:', err.message);
+        return res.status(400).json({ error: 'Invalid existingFiles format' });
       }
     }
 
-    // FIXED: Use file.id instead of file._id
-    const uploadedDocuments = req.files?.map(file => ({
+    // Delete only the files that were removed by the user
+    for (const file of proposal.uploadedDocuments) {
+      const stillPresent = retainedFiles.find(f => f.fileId === String(file.fileId));
+      if (!stillPresent) {
+        try {
+          await bucket.delete(new mongoose.Types.ObjectId(file.fileId));
+        } catch (err) {
+          console.error('Failed to delete removed file:', err.message);
+        }
+      }
+    }
+
+    // New files
+    const newFiles = req.files?.map(file => ({
       fileId: file.id,
       filename: file.filename
     })) || [];
 
+    // Combine retained + newly uploaded
+    const updatedDocuments = [...retainedFiles, ...newFiles];
+
     const updated = await Proposal.findByIdAndUpdate(
       req.params.id,
-      { ...req.body, uploadedDocuments },
+      { ...req.body, uploadedDocuments: updatedDocuments },
       { new: true }
     );
 
-    res.json(updated);
-  } catch {
+    const fileUrls = generateFileURLs(updatedDocuments);
+
+    res.json({
+      ...updated.toObject(),
+      projectFileUrls: fileUrls
+    });
+  } catch (err) {
+    console.error('Update failed:', err.message);
     res.status(500).send('Update failed');
   }
 });
