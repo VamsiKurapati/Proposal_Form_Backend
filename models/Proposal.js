@@ -23,7 +23,9 @@ const ProposalSchema = new mongoose.Schema({
       fileId: mongoose.Types.ObjectId,
       filename: String
     }
-  ]
+  ],
+  name: { type: String, required: true },   // Submitter's name
+  email: { type: String, required: true },   // Submitter's email
 }, { timestamps: true });
 
 module.exports = mongoose.model('Proposal', ProposalSchema);
