@@ -342,30 +342,26 @@ router.put('/:id', upload.array('projects'), async (req, res) => {
       bucketName: 'uploads',
     });
 
-    // Parse existingFiles from the request (as sent from frontend)
-    let retainedFiles = [];
-    if (req.body.existingFiles) {
-      try {
-        retainedFiles = JSON.parse(req.body.existingFiles); // [{fileId, filename}]
-      } catch (err) {
-        console.error('Failed to parse existingFiles:', err.message);
-        return res.status(400).json({ error: 'Invalid existingFiles format' });
-      }
-    }
+    // Step 1: Parse retained files from the form data
+    const retainedFiles = req.body.existingFiles
+      ? Array.isArray(req.body.existingFiles)
+        ? req.body.existingFiles.map(f => JSON.parse(f))
+        : [JSON.parse(req.body.existingFiles)]
+      : [];
 
-    // Delete only the files that were removed by the user
+    // Step 2: Delete only files NOT in retained list
+    const retainedFileIds = new Set(retainedFiles.map(f => f.fileId));
     for (const file of proposal.uploadedDocuments) {
-      const stillPresent = retainedFiles.find(f => f.fileId === String(file.fileId));
-      if (!stillPresent) {
+      if (!retainedFileIds.has(file.fileId.toString())) {
         try {
           await bucket.delete(new mongoose.Types.ObjectId(file.fileId));
         } catch (err) {
-          console.error('Failed to delete removed file:', err.message);
+          console.error('Failed to delete old file:', err.message);
         }
       }
     }
 
-    // New files
+    // Step 3: Add New files
     const newFiles = req.files?.map(file => ({
       fileId: file.id,
       filename: file.filename
