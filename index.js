@@ -5,6 +5,7 @@ require('dotenv').config();
 const app = express();
 
 const proposalRoute = require('./routes/Proposals.js');
+const rfpDiscovery = require('./routes/rfpDiscoveryMLModel.js');
 const dbConnect = require('./utils/dbConnect.js');
 
 app.use(express.json());
@@ -31,6 +32,8 @@ async function startServer() {
 startServer();
 
 app.use('/api/proposals', proposalRoute);
+
+app.use('/api/rfp', rfpDiscovery);
 
 app.get('/', (req, res) => {
   res.send('Welcome to the Proposal API');
