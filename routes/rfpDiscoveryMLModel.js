@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const Proposal = require('../models/Proposal');
+const MatchedRFP = require('../models/MatchedRFP');
 require('dotenv').config();
 
 router.get('/getUsersData', async (req, res) => {
@@ -61,6 +62,51 @@ router.get('/getUsersData', async (req, res) => {
   } catch (err) {
     console.error('Error in /getUsersData:', err);
     res.status(500).json({ error: 'Failed to fetch data' });
+  }
+});
+
+router.post('/matchedRFPdata', async (req, res) => {
+  try {
+    const rfpDataArray = req.body;
+
+    if (!Array.isArray(rfpDataArray) || rfpDataArray.length === 0) {
+      return res.status(400).json({ error: 'Request body must be a non-empty array' });
+    }
+
+    const requiredFields = [
+      'title',
+      'description',
+      'logo',
+      'match',
+      'budget',
+      'deadline',
+      'organization',
+      'fundingType',
+      'organizationType',
+      'link',
+      'type',
+      'email'
+    ];
+
+    // Validate each RFP object has all required fields
+    const invalidEntry = rfpDataArray.find(rfp =>
+      requiredFields.some(field => !rfp[field] && rfp[field] !== 0) // allow 0 as valid (e.g. match=0)
+    );
+
+    if (invalidEntry) {
+      return res.status(400).json({ error: 'Each RFP must include all required fields' });
+    }
+
+    const result = await MatchedRFP.insertMany(rfpDataArray);
+
+    res.status(201).json({
+      message: 'Bulk RFP data saved successfully',
+      insertedCount: result.length,
+      data: result
+    });
+  } catch (err) {
+    console.error('Error in /matchedRFPdata:', err);
+    res.status(500).json({ error: 'Failed to save matched RFP data' });
   }
 });
 
