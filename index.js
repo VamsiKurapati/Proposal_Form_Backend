@@ -18,8 +18,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type','Authorization'],
 }));
 
-app.options('*', cors()); //Required to respond to preflight
-
 // Connect to MongoDB and Start the server
 async function startServer() {
   try{
