@@ -14,8 +14,8 @@ app.use(express.json());
 // CORS Configuration
 app.use(cors({
   origin: ["https://proposal-form-frontend.vercel.app"],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],  
-  allowedHeaders: ['Content-Type'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],  
+  allowedHeaders: ['Content-Type','Authorization'],
 }));
 
 // Connect to MongoDB and Start the server

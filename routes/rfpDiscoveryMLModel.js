@@ -1,4 +1,3 @@
-import verifyUser from '../utils/verifyUser';
 require('dotenv').config();
 
 const express = require('express');
@@ -8,6 +7,7 @@ const Proposal = require('../models/Proposal');
 const MatchedRFP = require('../models/MatchedRFP');
 const RFP = require('../models/RFP');
 const SavedRFP = require('../models/SavedRFP');
+const verifyToken = require('../utils/verifyUser.js')
 
 router.get('/getUsersData', async (req, res) => {
   try {

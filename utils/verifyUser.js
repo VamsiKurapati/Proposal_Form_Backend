@@ -1,15 +1,32 @@
+const { errorHandler } = require("./error.js");
 const jwt = require('jsonwebtoken');
 
-module.exports = function (req, res, next) {
-  const token = req.headers.authorization?.split(' ')[1]; // "Bearer <token>"
+const verifyToken = () => {
+    return (req, res, next) => {
+        try
+        {
+            const authHeader = req.headers.authorization;
+            
+            if (!authHeader || !authHeader.startsWith('Bearer ')) {
+                return next(errorHandler(401, "Unauthorized: Missing or malformed token"));
+            }
 
-  if (!token) return res.status(401).json({ error: 'Access denied. No token provided.' });
+            const token = authHeader.split(' ')[1];
+            if (!token) {
+                return next(errorHandler(401, "Unauthorized: Token is empty or incorrect"));
+            }
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // assuming payload includes `email`
-    next();
-  } catch (err) {
-    res.status(400).json({ error: 'Invalid token.' });
-  }
+            jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+                if (err){
+                    return next(errorHandler(403, `Forbidden: ${err}`));
+                }
+                req.user = user;
+                next();
+            });
+        } catch (err) {
+            return next(errorHandler(500, `Internal Server Error: ${err}`));
+        }
+    };
 };
+
+module.exports = verifyToken;
