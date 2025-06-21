@@ -1,9 +1,13 @@
+import verifyUser from '../utils/verifyUser';
+require('dotenv').config();
+
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const Proposal = require('../models/Proposal');
 const MatchedRFP = require('../models/MatchedRFP');
-require('dotenv').config();
+const RFP = require('../models/RFP');
+const SavedRFP = require('../models/SavedRFP');
 
 router.get('/getUsersData', async (req, res) => {
   try {
@@ -107,6 +111,76 @@ router.post('/matchedRFPdata', async (req, res) => {
   } catch (err) {
     console.error('Error in /matchedRFPdata:', err);
     res.status(500).json({ error: 'Failed to save matched RFP data' });
+  }
+});
+
+//GET ALL RFP
+router.get('/getAllRFP', verifyUser, async (req, res) => {
+  try {
+    const userEmail = req.user.email;
+
+    // Universal RFPs from a separate RFPs collection (not user-specific)
+    const allRFPs = await RFP.find({}).lean();
+
+    // Recommended: from matched RFPs with match >= 85, sorted by latest
+    const recommendedRFPs = await MatchedRFP.find({ email: userEmail, match: { $gte: 85 } })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Saved: from SavedRFPs
+    const savedRFPs = await SavedRFP.find({ email: userEmail }).lean();
+
+    res.status(200).json({
+      allRFPs,
+      recommendedRFPs,
+      recentRFPs: [], // Placeholder, criteria not defined yet
+      savedRFPs: savedRFPs.map(item => item.rfp),
+    });
+  } catch (err) {
+    console.error('Error in /getAllRFP:', err);
+    res.status(500).json({ error: 'Failed to load RFPs' });
+  }
+});
+
+// POST Save RFP
+router.post('/saveRFP', verifyUser, async (req, res) => {
+  try {
+    const userEmail = req.user.email;
+    const { rfpId, rfp } = req.body;
+
+    if (!rfpId || !rfp) {
+      return res.status(400).json({ error: 'rfpId and rfp are required' });
+    }
+
+    const existing = await SavedRFP.findOne({ userEmail, rfpId });
+    if (existing) {
+      return res.status(200).json({ message: 'Already saved' });
+    }
+
+    const newSave = await SavedRFP.create({ userEmail, rfpId, rfp });
+    res.status(201).json({ message: 'RFP saved successfully', saved: newSave });
+  } catch (err) {
+    console.error('Error in /saveRFP:', err);
+    res.status(500).json({ error: 'Failed to save RFP' });
+  }
+});
+
+// POST Unsave RFP
+router.post('/unsaveRFP', verifyUser, async (req, res) => {
+  try {
+    const userEmail = req.user.email;
+    const { rfpId } = req.body;
+
+    if (!rfpId) {
+      return res.status(400).json({ error: 'rfpId is required' });
+    }
+
+    await SavedRFP.deleteOne({ userEmail, rfpId });
+
+    res.status(200).json({ message: 'RFP unsaved successfully' });
+  } catch (err) {
+    console.error('Error in /unsaveRFP:', err);
+    res.status(500).json({ error: 'Failed to unsave RFP' });
   }
 });
 
