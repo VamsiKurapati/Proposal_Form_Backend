@@ -8,6 +8,7 @@ const proposalRoute = require('./routes/Proposals.js');
 const authRoute = require("./routes/Auth.js");
 const rfpDiscovery = require('./routes/rfpDiscoveryMLModel.js');
 const dbConnect = require('./utils/dbConnect.js');
+const verifyUser = require('./utils/verifyUser.js');
 
 app.use(express.json());
 
