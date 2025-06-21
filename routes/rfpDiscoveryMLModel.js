@@ -7,7 +7,7 @@ const Proposal = require('../models/Proposal');
 const MatchedRFP = require('../models/MatchedRFP');
 const RFP = require('../models/RFP');
 const SavedRFP = require('../models/SavedRFP');
-const verifyUser = require('../utils/verifyUser.js')
+const verifyUser = require('../utils/verifyUser');
 
 router.get('/getUsersData', async (req, res) => {
   try {
