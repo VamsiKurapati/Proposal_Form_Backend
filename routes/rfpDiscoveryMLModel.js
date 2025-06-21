@@ -121,14 +121,17 @@ router.get('/getAllRFP', verifyUser, async (req, res) => {
 
     // Universal RFPs from a separate RFPs collection (not user-specific)
     const allRFPs = await RFP.find({}).lean();
+    console.log("ALL RFP's : ", allRFPs);
 
     // Recommended: from matched RFPs with match >= 85, sorted by latest
     const recommendedRFPs = await MatchedRFP.find({ email: userEmail, match: { $gte: 85 } })
       .sort({ createdAt: -1 })
       .lean();
+    console.log("Recommended RFP's : ",recommendedRFPs);
 
     // Saved: from SavedRFPs
     const savedRFPs = await SavedRFP.find({ email: userEmail }).lean();
+    console.log("Saved RFP's : ", savedRFPs);
 
     res.status(200).json({
       allRFPs,
