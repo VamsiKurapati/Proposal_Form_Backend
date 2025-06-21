@@ -14,10 +14,11 @@ app.use(express.json());
 // CORS Configuration
 app.use(cors({
   origin: ["https://proposal-form-frontend.vercel.app"],
-  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],  
   allowedHeaders: ['Content-Type','Authorization'],
 }));
+
+app.options('*', cors()); //Required to respond to preflight
 
 // Connect to MongoDB and Start the server
 async function startServer() {
