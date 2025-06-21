@@ -1,4 +1,4 @@
-const { errorHandler } = require("./error.js");
+const { errorHandler } = require("./error");
 const jwt = require('jsonwebtoken');
 
 const verifyToken = () => {
