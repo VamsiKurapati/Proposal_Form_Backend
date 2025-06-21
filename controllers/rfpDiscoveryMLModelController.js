@@ -66,102 +66,47 @@ exports.getUsersData = async (req, res) => {
   }
 };
 
-// exports.matchedRFPData = async (req, res) => {
-//   try {
-//     const rfpDataArray = req.body;
-
-//     if (!Array.isArray(rfpDataArray) || rfpDataArray.length === 0) {
-//       return res.status(400).json({ error: 'Request body must be a non-empty array' });
-//     }
-
-//     const requiredFields = [
-//       'title',
-//       'description',
-//       'logo',
-//       'match',
-//       'budget',
-//       'deadline',
-//       'organization',
-//       'fundingType',
-//       'organizationType',
-//       'link',
-//       'type',
-//       'email'
-//     ];
-
-//     // Validate each RFP object has all required fields
-//     const invalidEntry = rfpDataArray.find(rfp =>
-//       requiredFields.some(field => !rfp[field] && rfp[field] !== 0) // allow 0 as valid (e.g. match=0)
-//     );
-
-//     if (invalidEntry) {
-//       return res.status(400).json({ error: 'Each RFP must include all required fields' });
-//     }
-
-//     const result = await MatchedRFP.insertMany(rfpDataArray);
-
-//     res.status(201).json({
-//       message: 'Bulk RFP data saved successfully',
-//       insertedCount: result.length,
-//       data: result
-//     });
-//   } catch (err) {
-//     console.error('Error in /matchedRFPdata:', err);
-//     res.status(500).json({ error: 'Failed to save matched RFP data' });
-//   }
-// };
-
 exports.matchedRFPData = async (req, res) => {
   try {
     const nestedRFPs = req.body;
 
-    if (!nestedRFPs || typeof nestedRFPs !== 'object' || Object.keys(nestedRFPs).length === 0) {
-      return res.status(400).json({ error: 'Request body must be a non-empty object' });
-    }
+    // if (!nestedRFPs || typeof nestedRFPs !== 'object' || Object.keys(nestedRFPs).length === 0) {
+    //   return res.status(400).json({ error: 'Request body must be a non-empty object' });
+    // }
 
     const transformedData = [];
 
-    for (const [id, rfps] of Object.entries(nestedRFPs)) {
-      if (!Array.isArray(rfps)) continue;
-      
-      const user = await Proposal.findById(id);
-      
+    for (const [userId, rfpArray] of Object.entries(nestedRFPs)) {
+      if (!Array.isArray(rfpArray)) continue;
+
+      const user = await Proposal.findById(userId);
       if (!user || !user.email) {
-        console.warn(`Skipping ID ${id} — user not found or missing email.`);
+        console.warn(`Skipping user ID ${userId}: Proposal not found or missing email.`);
         continue;
       }
 
-      for (const rfp of rfps) {
+      for (const rfp of rfpArray) {
         transformedData.push({
-          title: rfp['RFP Title'],
-          description: rfp['RFP Description'],
-          logo: 'None', // Add logic if available
+          title: rfp['RFP Title'] || '',
+          description: rfp['RFP Description'] || '',
+          logo: 'None',
           match: rfp['Match Score'] || 0,
           budget: rfp['Budget'] || 'Not found',
           deadline: rfp['Deadline'] || '',
-          organization: rfp['Organization'],
-          fundingType: 'Government', // or extract if available
+          organization: rfp['Organization'] || '',
+          fundingType: 'Government',
           organizationType: rfp['Industry'] || '',
           link: rfp['URL'] || '',
-          type: 'Matched', // or other type if available
-          email: email_1
+          type: 'Matched',
+          email: user.email
         });
       }
     }
 
+    // Validate all required fields
     const requiredFields = [
-      'title',
-      'description',
-      'logo',
-      'match',
-      'budget',
-      'deadline',
-      'organization',
-      'fundingType',
-      'organizationType',
-      'link',
-      'type',
-      'email'
+      'title', 'description', 'logo', 'match', 'budget', 'deadline',
+      'organization', 'fundingType', 'organizationType', 'link', 'type', 'email'
     ];
 
     const invalidEntry = transformedData.find(rfp =>
@@ -174,16 +119,18 @@ exports.matchedRFPData = async (req, res) => {
 
     const result = await MatchedRFP.insertMany(transformedData);
 
-    res.status(201).json({
+    return res.status(201).json({
       message: 'Bulk RFP data saved successfully',
       insertedCount: result.length,
       data: result
     });
+
   } catch (err) {
     console.error('Error in /matchedRFPdata:', err);
     res.status(500).json({ error: 'Failed to save matched RFP data' });
   }
 };
+
 
 exports.getAllRFP = async (req, res) => {
   try {
