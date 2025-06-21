@@ -1,7 +1,7 @@
 const { errorHandler } = require("./error");
 const jwt = require('jsonwebtoken');
 
-const verifyToken = () => {
+const verifyUser = () => {
     return (req, res, next) => {
         try
         {
@@ -32,4 +32,4 @@ const verifyToken = () => {
     };
 };
 
-module.exports = verifyToken;
+module.exports = verifyUser;
