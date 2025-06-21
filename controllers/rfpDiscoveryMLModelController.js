@@ -123,8 +123,14 @@ exports.matchedRFPData = async (req, res) => {
 
     for (const [id, rfps] of Object.entries(nestedRFPs)) {
       if (!Array.isArray(rfps)) continue;
-      const user = Proposal.findById({id});
-      const email_1 = user.email;
+      
+      const user = await Proposal.findById(id);
+      
+      if (!user || !user.email) {
+        console.warn(`Skipping ID ${id} — user not found or missing email.`);
+        continue;
+      }
+
       for (const rfp of rfps) {
         transformedData.push({
           title: rfp['RFP Title'],
@@ -178,7 +184,6 @@ exports.matchedRFPData = async (req, res) => {
     res.status(500).json({ error: 'Failed to save matched RFP data' });
   }
 };
-
 
 exports.getAllRFP = async (req, res) => {
   try {
