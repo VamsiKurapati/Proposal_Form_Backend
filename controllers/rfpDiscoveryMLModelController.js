@@ -66,12 +66,81 @@ exports.getUsersData = async (req, res) => {
   }
 };
 
+// exports.matchedRFPData = async (req, res) => {
+//   try {
+//     const rfpDataArray = req.body;
+
+//     if (!Array.isArray(rfpDataArray) || rfpDataArray.length === 0) {
+//       return res.status(400).json({ error: 'Request body must be a non-empty array' });
+//     }
+
+//     const requiredFields = [
+//       'title',
+//       'description',
+//       'logo',
+//       'match',
+//       'budget',
+//       'deadline',
+//       'organization',
+//       'fundingType',
+//       'organizationType',
+//       'link',
+//       'type',
+//       'email'
+//     ];
+
+//     // Validate each RFP object has all required fields
+//     const invalidEntry = rfpDataArray.find(rfp =>
+//       requiredFields.some(field => !rfp[field] && rfp[field] !== 0) // allow 0 as valid (e.g. match=0)
+//     );
+
+//     if (invalidEntry) {
+//       return res.status(400).json({ error: 'Each RFP must include all required fields' });
+//     }
+
+//     const result = await MatchedRFP.insertMany(rfpDataArray);
+
+//     res.status(201).json({
+//       message: 'Bulk RFP data saved successfully',
+//       insertedCount: result.length,
+//       data: result
+//     });
+//   } catch (err) {
+//     console.error('Error in /matchedRFPdata:', err);
+//     res.status(500).json({ error: 'Failed to save matched RFP data' });
+//   }
+// };
+
 exports.matchedRFPData = async (req, res) => {
   try {
-    const rfpDataArray = req.body;
+    const nestedRFPs = req.body;
 
-    if (!Array.isArray(rfpDataArray) || rfpDataArray.length === 0) {
-      return res.status(400).json({ error: 'Request body must be a non-empty array' });
+    if (!nestedRFPs || typeof nestedRFPs !== 'object' || Object.keys(nestedRFPs).length === 0) {
+      return res.status(400).json({ error: 'Request body must be a non-empty object' });
+    }
+
+    const transformedData = [];
+
+    for (const [id, rfps] of Object.entries(nestedRFPs)) {
+      if (!Array.isArray(rfps)) continue;
+      const user = Proposal.findById({id});
+      const email_1 = user.email;
+      for (const rfp of rfps) {
+        transformedData.push({
+          title: rfp['RFP Title'],
+          description: rfp['RFP Description'],
+          logo: 'None', // Add logic if available
+          match: rfp['Match Score'] || 0,
+          budget: rfp['Budget'] || 'Not found',
+          deadline: rfp['Deadline'] || '',
+          organization: rfp['Organization'],
+          fundingType: 'Government', // or extract if available
+          organizationType: rfp['Industry'] || '',
+          link: rfp['URL'] || '',
+          type: 'Matched', // or other type if available
+          email: email_1
+        });
+      }
     }
 
     const requiredFields = [
@@ -89,16 +158,15 @@ exports.matchedRFPData = async (req, res) => {
       'email'
     ];
 
-    // Validate each RFP object has all required fields
-    const invalidEntry = rfpDataArray.find(rfp =>
-      requiredFields.some(field => !rfp[field] && rfp[field] !== 0) // allow 0 as valid (e.g. match=0)
+    const invalidEntry = transformedData.find(rfp =>
+      requiredFields.some(field => rfp[field] === undefined || rfp[field] === null)
     );
 
     if (invalidEntry) {
       return res.status(400).json({ error: 'Each RFP must include all required fields' });
     }
 
-    const result = await MatchedRFP.insertMany(rfpDataArray);
+    const result = await MatchedRFP.insertMany(transformedData);
 
     res.status(201).json({
       message: 'Bulk RFP data saved successfully',
@@ -110,6 +178,7 @@ exports.matchedRFPData = async (req, res) => {
     res.status(500).json({ error: 'Failed to save matched RFP data' });
   }
 };
+
 
 exports.getAllRFP = async (req, res) => {
   try {
