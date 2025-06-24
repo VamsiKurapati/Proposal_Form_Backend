@@ -176,7 +176,22 @@ exports.save = async (req, res) => {
       return res.status(200).json({ message: 'Already saved' });
     }
 
-    const newSave = await SavedRFP.create({ userEmail, rfpId, rfp });
+    // ✅ Pick only fields defined in the schema
+    const cleanRFP = {
+      title: rfp.title,
+      description: rfp.description,
+      logo: rfp.logo,
+      match: rfp.match,
+      budget: rfp.budget,
+      deadline: rfp.deadline,
+      organization: rfp.organization,
+      fundingType: rfp.fundingType,
+      organizationType: rfp.organizationType,
+      link: rfp.link,
+      type: rfp.type,
+    };
+
+    const newSave = await SavedRFP.create({ userEmail, rfpId, rfp: cleanRFP });
     res.status(201).json({ message: 'RFP saved successfully', saved: newSave });
   } catch (err) {
     console.error('Error in /saveRFP:', err);
