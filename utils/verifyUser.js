@@ -21,8 +21,8 @@ const verifyUser = (req, res, next) => {
             if (err){
                 return next(errorHandler(403, `Forbidden: ${err}`));
             }
-            req.user = user;
-            console.log(user);
+            req.user = user.user;
+            console.log(user.user);
             next();
         });
     } catch (err) {
