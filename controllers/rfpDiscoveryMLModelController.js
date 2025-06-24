@@ -191,6 +191,8 @@ exports.save = async (req, res) => {
       type: rfp.type,
     };
 
+    console.log(rfp, cleanRFP);
+
     const newSave = await SavedRFP.create({ userEmail, rfpId, rfp: cleanRFP });
     res.status(201).json({ message: 'RFP saved successfully', saved: newSave });
   } catch (err) {
