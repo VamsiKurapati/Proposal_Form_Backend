@@ -14,7 +14,7 @@ const SavedRFPSchema = new mongoose.Schema({
     fundingType: String,
     organizationType: String,
     link: String,
-    type: String
+    type_: String
   }
 }, { timestamps: true });
 

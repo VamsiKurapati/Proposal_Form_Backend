@@ -188,10 +188,8 @@ exports.save = async (req, res) => {
       fundingType: rfp.fundingType,
       organizationType: rfp.organizationType,
       link: rfp.link,
-      type: rfp.type,
+      type_: rfp.type,
     };
-
-    console.log(rfp, cleanRFP);
 
     console.log(SavedRFP.schema.path('rfp').instance); // Should print: 'Embedded' or 'Object'
 
