@@ -18,4 +18,4 @@ const SavedRFPSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-module.exports = mongoose.model('SavedRFP', SavedRFPSchema);
+module.exports = mongoose.models.SavedRFP || mongoose.model('SavedRFP', SavedRFPSchema);
