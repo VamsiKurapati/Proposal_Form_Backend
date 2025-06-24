@@ -131,6 +131,47 @@ exports.matchedRFPData = async (req, res) => {
   }
 };
 
+exports.sendDataForProposalGeneration = async (req, res) => {
+  try {
+    const userEmail = req.user.email;
+    console.log("Email: ",userEmail);
+
+    // Universal RFPs from a separate RFPs collection (not user-specific)
+    const allRFPs = await RFP.find({}).lean();
+    console.log("ALL RFP's : ", allRFPs);
+
+    // Recommended: from matched RFPs with match >= 85, sorted by latest
+    const recommendedRFPs = await MatchedRFP.find({ email: userEmail, match: { $gte: 60 } })
+      .sort({ createdAt: -1 })
+      .lean();
+    console.log("Recommended RFP's : ",recommendedRFPs);
+
+    // Saved: from SavedRFPs
+    const savedRFPs_1 = await SavedRFP.find({ userEmail }).lean();
+    const savedRFPs = savedRFPs_1.map((item) => {
+      const { type_, ...restRFP } = item.rfp;
+      return {
+        ...item,
+        rfp: {
+          ...restRFP,
+          type: type_,
+          _id: item.rfpId,
+        },
+      };
+    });
+
+    res.status(200).json({
+      allRFPs,
+      recommendedRFPs,
+      recentRFPs: [], // Placeholder, criteria not defined yet
+      savedRFPs: savedRFPs.map(item => item.rfp),
+    });
+  } catch (err) {
+    console.error('Error in /getAllRFP:', err);
+    res.status(500).json({ error: 'Failed to load RFPs' });
+  }
+};
+
 exports.getAllRFP = async (req, res) => {
   try {
     const userEmail = req.user.email;
@@ -155,6 +196,7 @@ exports.getAllRFP = async (req, res) => {
         rfp: {
           ...restRFP,
           type: type_,
+          _id: item.rfpId,
         },
       };
     });
