@@ -141,7 +141,7 @@ exports.getAllRFP = async (req, res) => {
     console.log("ALL RFP's : ", allRFPs);
 
     // Recommended: from matched RFPs with match >= 85, sorted by latest
-    const recommendedRFPs = await MatchedRFP.find({ email: userEmail, match: { $gte: 10 } })
+    const recommendedRFPs = await MatchedRFP.find({ email: userEmail, match: { $gte: 60 } })
       .sort({ createdAt: -1 })
       .lean();
     console.log("Recommended RFP's : ",recommendedRFPs);
