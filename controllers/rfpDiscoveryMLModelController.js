@@ -193,6 +193,8 @@ exports.save = async (req, res) => {
 
     console.log(rfp, cleanRFP);
 
+    console.log(SavedRFP.schema.path('rfp').instance); // Should print: 'Embedded' or 'Object'
+
     const newSave = await SavedRFP.create({ userEmail, rfpId, rfp: cleanRFP });
     res.status(201).json({ message: 'RFP saved successfully', saved: newSave });
   } catch (err) {
