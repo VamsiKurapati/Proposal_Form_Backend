@@ -131,17 +131,17 @@ exports.matchedRFPData = async (req, res) => {
   }
 };
 
-
 exports.getAllRFP = async (req, res) => {
   try {
     const userEmail = req.user.email;
+    console.log("Email: ",userEmail);
 
     // Universal RFPs from a separate RFPs collection (not user-specific)
     const allRFPs = await RFP.find({}).lean();
     console.log("ALL RFP's : ", allRFPs);
 
     // Recommended: from matched RFPs with match >= 85, sorted by latest
-    const recommendedRFPs = await MatchedRFP.find({ email: userEmail, match: { $gte: 85 } })
+    const recommendedRFPs = await MatchedRFP.find({ email: userEmail, match: { $gte: 10 } })
       .sort({ createdAt: -1 })
       .lean();
     console.log("Recommended RFP's : ",recommendedRFPs);
