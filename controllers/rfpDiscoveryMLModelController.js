@@ -147,8 +147,17 @@ exports.getAllRFP = async (req, res) => {
     console.log("Recommended RFP's : ",recommendedRFPs);
 
     // Saved: from SavedRFPs
-    const savedRFPs = await SavedRFP.find({ email: userEmail }).lean();
-    console.log("Saved RFP's : ", savedRFPs);
+    const savedRFPs_1 = await SavedRFP.find({ userEmail }).lean();
+    const savedRFPs = savedRFPs_1.map((item) => {
+      const { type_, ...restRFP } = item.rfp;
+      return {
+        ...item,
+        rfp: {
+          ...restRFP,
+          type: type_,
+        },
+      };
+    });
 
     res.status(200).json({
       allRFPs,
@@ -176,7 +185,6 @@ exports.save = async (req, res) => {
       return res.status(200).json({ message: 'Already saved' });
     }
 
-    // ✅ Pick only fields defined in the schema
     const cleanRFP = {
       title: rfp.title,
       description: rfp.description,
@@ -190,8 +198,6 @@ exports.save = async (req, res) => {
       link: rfp.link,
       type_: rfp.type,
     };
-
-    // console.log(SavedRFP.schema.path('rfp').instance); // Should print: 'Embedded' or 'Object'
 
     const newSave = await SavedRFP.create({ userEmail, rfpId, rfp: cleanRFP });
     res.status(201).json({ message: 'RFP saved successfully', saved: newSave });
