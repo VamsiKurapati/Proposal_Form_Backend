@@ -287,6 +287,7 @@ exports.getUserandRFPData = async (req, res) => {
             rfp: RFP[0] // Get the first proposal
         };
 
+        res.status(200).json(data);
     } catch (error) {
         console.error("Error fetching user and RFP data:", error);
         return res.status(500).json({ message: "Internal server error." });
