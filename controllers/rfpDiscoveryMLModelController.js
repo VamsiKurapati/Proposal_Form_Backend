@@ -266,3 +266,29 @@ exports.unsave = async (req, res) => {
     res.status(500).json({ error: 'Failed to unsave RFP' });
   }
 };
+
+
+
+exports.getUserandRFPData = async (req, res) => {
+    try {
+        const email = "vamsi@draconx.com";
+
+        // Step 1: Fetch all proposals and limit to 1
+        const RFP = await MatchedRFP.find({ email: email }).sort({ createdAt: -1 });
+        if (!RFP || RFP.length === 0) {
+            return res.status(404).json({ message: "No proposals found for this user." });
+        }
+
+        const data = {
+            user: {
+                email: email,
+                // Include any other user-related data you need
+            },
+            rfp: RFP[0] // Get the first proposal
+        };
+
+    } catch (error) {
+        console.error("Error fetching user and RFP data:", error);
+        return res.status(500).json({ message: "Internal server error." });
+    }
+};
