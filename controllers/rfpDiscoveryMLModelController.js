@@ -274,7 +274,8 @@ exports.getUserandRFPData = async (req, res) => {
         const email = "vamsi@draconx.com";
 
         // Step 1: Fetch all proposals and limit to 1
-        const RFP = await MatchedRFP.find({ email: email }).sort({ createdAt: -1 });
+        // const RFP = await MatchedRFP.find({ email: email }).sort({ createdAt: -1 });
+        const RFP = await Proposal.find({ email: email }).sort({ createdAt: -1 }).limit(1).lean();
         if (!RFP || RFP.length === 0) {
             return res.status(404).json({ message: "No proposals found for this user." });
         }
