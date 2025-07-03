@@ -274,17 +274,65 @@ exports.getUserandRFPData = async (req, res) => {
         const email = "vamsi@draconx.com";
 
         // Step 1: Fetch all proposals and limit to 1
-        // const RFP = await MatchedRFP.find({ email: email }).sort({ createdAt: -1 });
-        const RFP = await Proposal.find({ email: email }).sort({ createdAt: -1 }).limit(1).lean();
+        const db = mongoose.connection.db;
+
+        // Step 1: Fetch all proposals
+        const proposals = await Proposal.find({}).lean();
+
+        // Step 2: Gather all unique fileIds from proposals
+        const allFileIds = proposals
+          .flatMap(proposal => proposal.uploadedDocuments?.map(doc => doc.fileId) || [])
+          .filter(Boolean);
+
+        // Step 3: Fetch file metadata from GridFS
+        const files = await db.collection('uploads.files')
+          .find({ _id: { $in: allFileIds } })
+          .toArray();
+
+        // Step 4: Fetch file chunks and convert to base64
+        const filesWithBase64 = await Promise.all(
+          files.map(async (file) => {
+            const chunks = await db.collection('uploads.chunks')
+              .find({ files_id: file._id })
+              .sort({ n: 1 })
+              .toArray();
+
+            const fileBuffer = Buffer.concat(chunks.map(chunk => chunk.data.buffer));
+            return {
+              ...file,
+              base64: fileBuffer.toString('base64'),
+            };
+          })
+        );
+
+        // Step 5: Map fileId to its full metadata + base64
+        const filesMap = filesWithBase64.reduce((acc, file) => {
+          acc[file._id.toString()] = file;
+          return acc;
+        }, {});
+
+        // Step 6: Attach enriched fileInfo to each uploadedDocument
+        const enrichedProposals = proposals.map(proposal => {
+          const enrichedDocs = (proposal.uploadedDocuments || []).map(doc => ({
+            ...doc,
+            fileInfo: filesMap[doc.fileId.toString()] || null,
+          }));
+
+          return {
+            ...proposal,
+            uploadedDocuments: enrichedDocs,
+          };
+        });
+
+        const RFP = await MatchedRFP.find({ email: email }).sort({ createdAt: -1 });
+
+        // const User = await Proposal.find({ email: email }).sort({ createdAt: -1 }).limit(1).lean();
         if (!RFP || RFP.length === 0) {
             return res.status(404).json({ message: "No proposals found for this user." });
         }
 
         const data = {
-            user: {
-                email: email,
-                // Include any other user-related data you need
-            },
+            user: enrichedProposals[0], // Get the first use
             rfp: RFP[0] // Get the first proposal
         };
 
