@@ -12,6 +12,8 @@ const matchedRFPSchema = new mongoose.Schema({
   organizationType: String,
   link: String,
   type: String,
+  contact: String,
+  timeline: String,
   email: { type: String, required: true },
 }, {
   timestamps: true

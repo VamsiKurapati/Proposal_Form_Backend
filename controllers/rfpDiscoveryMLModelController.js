@@ -11,7 +11,7 @@ exports.getUsersData = async (req, res) => {
     const db = mongoose.connection.db;
 
     // Step 1: Fetch all proposals
-    const proposals = await Proposal.find({}).lean();
+    const proposals = await Proposal.find({ email: "test@draconx.com"}).lean();
 
     // Step 2: Gather all unique fileIds from proposals
     const allFileIds = proposals
@@ -93,11 +93,13 @@ exports.matchedRFPData = async (req, res) => {
           match: rfp['Match Score'] || 0,
           budget: rfp['Budget'] || 'Not found',
           deadline: rfp['Deadline'] || '',
-          organization: rfp['Organization'] || '',
+          organization: rfp['Organization'] || rfp['Issuing Organization'] || '',
           fundingType: 'Government',
           organizationType: rfp['Industry'] || '',
           link: rfp['URL'] || '',
           type: 'Matched',
+          contact: rfp['Contact Information'] || '',
+          timeline: rfp['Timeline'] || '',
           email: user.email
         });
       }
@@ -271,7 +273,7 @@ exports.unsave = async (req, res) => {
 
 exports.getUserandRFPData = async (req, res) => {
     try {
-        const email = "vamsi@draconx.com";
+        const email = "test@draconx.com";
 
         // Step 1: Fetch all proposals and limit to 1
         const db = mongoose.connection.db;
@@ -326,14 +328,27 @@ exports.getUserandRFPData = async (req, res) => {
 
         const RFP = await MatchedRFP.find({ email: email }).sort({ createdAt: -1 });
 
+        const data_1 = {
+          "RFP Title": RFP[0].title,
+          "RFP Description": RFP[0].description,
+          "Match Score": RFP[0].match,
+          "Budget": RFP[0].budget,
+          "Deadline": RFP[0].deadline,
+          "Issuing Organization": RFP[0].organization,
+          "Industry": RFP[0].organizationType,
+          "URL": RFP[0].link,
+          "Contact Information": RFP[0].contact || '',
+          "Timeline": RFP[0].timeline || '',
+        };
+
         // const User = await Proposal.find({ email: email }).sort({ createdAt: -1 }).limit(1).lean();
         if (!RFP || RFP.length === 0) {
             return res.status(404).json({ message: "No proposals found for this user." });
         }
 
         const data = {
-            user: enrichedProposals[0], // Get the first use
-            rfp: RFP[0] // Get the first proposal
+            user: enrichedProposals[0], // Get the first user
+            rfp: data_1 // Get the first proposal
         };
 
         res.status(200).json(data);
