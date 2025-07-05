@@ -361,10 +361,27 @@ exports.getUserandRFPData = async (req, res) => {
 
 exports.generatedProposal = async (req, res) => {
   try {
-    const { email, rfpTitle, coverLetter, executiveSummary, projectPlan, partnershipOverview, referencesAndProvenResults } = req.body;
+    const {
+      "Cover Letter": coverLetter,
+      "Executive Summary": executiveSummary,
+      "Project Plan": projectPlan,
+      "Partnership Overview": partnershipOverview,
+      "References & Proven Results": referencesAndProvenResults,
+      email,
+      rfpTitle,
+    } = req.body;
 
-    if (!coverLetter || !executiveSummary || !projectPlan || !partnershipOverview || !referencesAndProvenResults) {
-      return res.status(400).json({ error: 'All fields are required' });
+    // Manual validation
+    if (
+      !coverLetter ||
+      !executiveSummary ||
+      !projectPlan ||
+      !partnershipOverview ||
+      !referencesAndProvenResults ||
+      !email ||
+      !rfpTitle
+    ) {
+      return res.status(400).json({ error: "All fields are required" });
     }
 
     const newProposal = new GeneratedProposal({
@@ -378,8 +395,7 @@ exports.generatedProposal = async (req, res) => {
     });
 
     await newProposal.save();
-
-    res.status(201).json({ message: 'Generated Proposal saved successfully', proposal: newProposal });
+    res.status(201).json({ message: "Proposal submitted successfully" });
   } catch (err) {
     console.error('Error in /generateProposal:', err);
     res.status(500).json({ error: 'Failed to generate proposal' });
