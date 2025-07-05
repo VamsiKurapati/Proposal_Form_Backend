@@ -5,6 +5,7 @@ const Proposal = require('../models/Proposal');
 const MatchedRFP = require('../models/MatchedRFP');
 const RFP = require('../models/RFP');
 const SavedRFP = require('../models/SavedRFP');
+const GeneratedProposal = require('../models/GeneratedProposal');
 
 exports.getUsersData = async (req, res) => {
   try {
@@ -279,7 +280,7 @@ exports.getUserandRFPData = async (req, res) => {
         const db = mongoose.connection.db;
 
         // Step 1: Fetch all proposals
-        const proposals = await Proposal.find({}).lean();
+        const proposals = await Proposal.find({ email: email }).lean();
 
         // Step 2: Gather all unique fileIds from proposals
         const allFileIds = proposals
@@ -356,4 +357,31 @@ exports.getUserandRFPData = async (req, res) => {
         console.error("Error fetching user and RFP data:", error);
         return res.status(500).json({ message: "Internal server error." });
     }
+};
+
+exports.generateProposal = async (req, res) => {
+  try {
+    const { email, rfpTitle, coverLetter, executiveSummary, projectPlan, partnershipOverview, referencesAndProvenResults } = req.body;
+
+    if (!coverLetter || !executiveSummary || !projectPlan || !partnershipOverview || !referencesAndProvenResults) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    const newProposal = new GeneratedProposal({
+      coverLetter,
+      executiveSummary,
+      projectPlan,
+      partnershipOverview,
+      referencesAndProvenResults,
+      email,
+      rfpTitle,
+    });
+
+    await newProposal.save();
+
+    res.status(201).json({ message: 'Generated Proposal saved successfully', proposal: newProposal });
+  } catch (err) {
+    console.error('Error in /generateProposal:', err);
+    res.status(500).json({ error: 'Failed to generate proposal' });
+  }
 };
