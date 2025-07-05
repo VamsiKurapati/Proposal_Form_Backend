@@ -359,7 +359,7 @@ exports.getUserandRFPData = async (req, res) => {
     }
 };
 
-exports.generateProposal = async (req, res) => {
+exports.generatedProposal = async (req, res) => {
   try {
     const { email, rfpTitle, coverLetter, executiveSummary, projectPlan, partnershipOverview, referencesAndProvenResults } = req.body;
 
