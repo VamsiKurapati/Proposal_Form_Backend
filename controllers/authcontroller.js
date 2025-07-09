@@ -63,12 +63,12 @@ exports.signupWithProfile = [
   multiUpload,
   async (req, res) => {
     try {
-      const { email, fullName, password, mobile, role } = req.body;
+      const { email, fullName, password, phone, role } = req.body;
       const existing = await User.findOne({ email });
       if (existing) return res.status(400).json({ message: "Email already registered" });
 
       const hashedPassword = await bcrypt.hash(password, 10);
-      const user = new User({ email, fullName, password: hashedPassword, mobile, role });
+      const user = new User({ email, fullName, password: hashedPassword, mobile: phone, role });
       await user.save();
 
       const profileData = {
@@ -78,12 +78,12 @@ exports.signupWithProfile = [
       if (role === "company") {
         profileData.companyName = req.body.companyName;
         profileData.industry = req.body.industry;
-        profileData.employees = req.body.employees;
+        profileData.location = req.body.location;
+        profileData.numberOfEmployees = req.body.numberOfEmployees;
+        profileData.website = req.body.website;
         profileData.bio = req.body.bio;
-        profileData.caseStudies = [].concat(req.body.caseStudies || []);
-        profileData.licenses = [].concat(req.body.licenses || []);
-        profileData.documents = (req.files["documents"] || []).map(file => ({ fileId: file.id, filename: file.filename }));
-        profileData.proposals = (req.files["proposals"] || []).map(file => ({ fileId: file.id, filename: file.filename }));
+        profileData.establishedYear = req.body.establishedYear;
+        profileData.linkedIn = req.body.linkedIn;
 
         const companyProfile = new CompanyProfile(profileData);
         await companyProfile.save();
@@ -91,7 +91,7 @@ exports.signupWithProfile = [
         profileData.companyName = req.body.companyName;
         profileData.location = req.body.location;
         profileData.jobTitle = req.body.jobTitle;
-        profileData.linkedin = req.body.linkedin;
+        profileData.linkedIn = req.body.linkedIn;
 
         const employeeProfile = new EmployeeProfile(profileData);
         await employeeProfile.save();

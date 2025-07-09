@@ -7,6 +7,8 @@ const app = express();
 const proposalRoute = require('./routes/Proposals.js');
 const authRoute = require("./routes/Auth.js");
 const rfpDiscovery = require('./routes/rfpDiscoveryMLModel.js');
+const profileRoute = require('./routes/Profile.js');
+
 const dbConnect = require('./utils/dbConnect.js');
 
 app.use(express.json());
@@ -37,6 +39,8 @@ app.use('/api/proposals', proposalRoute);
 app.use('/api/auth', authRoute);
 
 app.use('/api/rfp', rfpDiscovery);
+
+app.use('/api/profile', profileRoute);
 
 app.get('/', (req, res) => {
   res.send('Welcome to the Proposal API');
