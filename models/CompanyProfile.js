@@ -33,7 +33,7 @@ const companyProfileSchema = new mongoose.Schema({
       company: { type: String, required: true },
       image: { type: String, required: true },
       link: { type: String, required: true },
-      readTime: { type: Number, required: true },
+      readTime: { type: String, required: true },
       createdAt: { type: Date, default: Date.now },
       updatedAt: { type: Date, default: Date.now },
     },
