@@ -22,7 +22,7 @@ exports.getProfile = async (req, res) => {
             location: companyProfile.location,
             email: user.email,
             phone: user.mobile,
-            linkedIn: user.linkedIn,
+            linkedIn: companyProfile.linkedIn,
             bio: companyProfile.bio,
             website: companyProfile.website,
             services: companyProfile.services,
