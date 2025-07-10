@@ -197,14 +197,16 @@ exports.addCaseStudy = async (req, res) => {
         if (user.role !== "company") {
             return res.status(403).json({ message: "You are not authorized to add a case study" });
         }
+        console.log("Adding case study");
         const companyProfile = await CompanyProfile.findOneAndUpdate(
             { userId: req.user._id },
             { $push: { caseStudies: { title, company, image, link, readTime } } },
             { new: true }
         );
-
+        console.log("Case study added successfully");
         res.status(200).json({ message: "Case study added successfully" });
     } catch (error) {
+        console.log(error);
         res.status(500).json({ message: error.message });
     }
 };
