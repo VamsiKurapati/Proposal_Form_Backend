@@ -3,9 +3,8 @@ const router = express.Router();
 const { verifyToken } = require('../utils/verifyUser.js');
 
 
-const { getProfile, updateCompanyProfile } = require('../controllers/profileController');
+const { updateCompanyProfile, addEmployee, addCaseStudy, addLicenseAndCertification } = require('../controllers/profileController');
 
-router.get('/getProfile', verifyToken, getProfile);
 router.put('/updateCompanyProfile', verifyToken, updateCompanyProfile);
 router.post('/addEmployee', verifyToken, addEmployee);
 router.post('/addCaseStudy', verifyToken, addCaseStudy);
