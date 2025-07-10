@@ -5,6 +5,10 @@ const User = require("../models/User");
 const CompanyProfile = require("../models/CompanyProfile");
 const EmployeeProfile = require("../models/EmployeeProfile");
 const SubmittedProposals = require("../models/SubmittedProposals");
+const { GridFsStorage } = require("multer-gridfs-storage");
+const crypto = require("crypto");
+const path = require("path");
+const multer = require("multer");
 
 exports.getProfile = async (req, res) => {
     try {
@@ -49,29 +53,56 @@ exports.getProfile = async (req, res) => {
     }
 };
 
-exports.updateCompanyProfile = async (req, res) => {
-    try {
-        const user = await User.findById(req.user._id);
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-        if (user.role !== "company") {
-            return res.status(403).json({ message: "You are not authorized to update this profile" });
-        }
-        user.email = req.body.email;
-        user.mobile = req.body.phone;
-        await user.save();
+const storage = new GridFsStorage({
+    url: process.env.MONGO_URI,
+    file: (req, file) => {
+        return new Promise((resolve, reject) => {
+            crypto.randomBytes(16, (err, buf) => {
+                if (err) return reject(err);
+                const filename = buf.toString("hex") + path.extname(file.originalname);
+                resolve({
+                    filename,
+                    bucketName: "uploads",
+                    metadata: { originalname: file.originalname },
+                });
+            });
+        });
+    },
+});
 
-        const companyProfile = await CompanyProfile.findOneAndUpdate(
-            { userId: req.user._id },
-            { companyName: req.body.companyName, industry: req.body.industry, location: req.body.location, linkedIn: req.body.linkedIn, website: req.body.website, services: req.body.services, establishedYear: req.body.establishedYear, numberOfEmployees: req.body.numberOfEmployees, bio: req.body.bio },
-            { new: true }
-        );
-        res.status(200).json({ message: "Company profile updated successfully" });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+const upload = multer({ storage });
+const multiUpload = upload.fields([
+    { name: "documents", maxCount: 10 },
+    { name: "proposals", maxCount: 10 },
+]);
+
+exports.updateCompanyProfile = [
+    multiUpload,
+    async (req, res) => {
+        try {
+            const { companyName, industry, location, linkedIn, website, email, phone, services, establishedYear, numberOfEmployees, bio } = req.body;
+            const user = await User.findById(req.user._id);
+            if (!user) {
+                return res.status(404).json({ message: "User not found" });
+            }
+            if (user.role !== "company") {
+                return res.status(403).json({ message: "You are not authorized to update this profile" });
+            }
+            user.email = email;
+            user.mobile = phone;
+            await user.save();
+
+            const companyProfile = await CompanyProfile.findOneAndUpdate(
+                { userId: req.user._id },
+                { companyName, industry, location, linkedIn, website, services, establishedYear, numberOfEmployees, bio },
+                { new: true }
+            );
+            res.status(200).json({ message: "Company profile updated successfully" });
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
     }
-};
+];
 
 exports.addEmployee = async (req, res) => {
     try {
