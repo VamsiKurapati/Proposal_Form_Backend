@@ -4,10 +4,51 @@ const mongoose = require("mongoose");
 const User = require("../models/User");
 const CompanyProfile = require("../models/CompanyProfile");
 const EmployeeProfile = require("../models/EmployeeProfile");
+const SubmittedProposals = require("../models/SubmittedProposals");
+
+exports.getProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        const companyProfile = await CompanyProfile.findOne({ userId: req.user._id });
+        if (!companyProfile) {
+            return res.status(404).json({ message: "Company profile not found" });
+        }
+        const data = {
+            companyName: companyProfile.companyName,
+            industry: companyProfile.industry,
+            location: companyProfile.location,
+            email: user.email,
+            phone: user.phone,
+            linkedIn: user.linkedIn,
+            bio: companyProfile.bio,
+            website: companyProfile.website,
+            services: companyProfile.services,
+            establishedYear: companyProfile.establishedYear,
+            numberOfEmployees: companyProfile.numberOfEmployees,
+            caseStudies: companyProfile.caseStudies,
+            licensesAndCertifications: companyProfile.licensesAndCertifications,
+            employees: companyProfile.employees,
+        };
+        const Proposals = await SubmittedProposals.find({ companyId: req.user._id });
+        const data_1 = {
+            ...data,
+            totalProposals: Proposals.length,
+            activeProposals: Proposals.filter(proposal => proposal.status === "In Progress").length,
+            wonProposals: Proposals.filter(proposal => proposal.status === "Won").length,
+            successRate: ((Proposals.filter(proposal => proposal.status === "Won").length / Proposals.length) * 100).toFixed(2),
+        };
+        res.status(200).json(data_1);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
 
 exports.updateCompanyProfile = async (req, res) => {
     try {
-        const { companyName, industry, location, website, services, establishedYear, departments, teamSize, numberOfEmployees, bio } = req.body;
+        const { companyName, industry, location, email, phone, linkedIn, website, services, establishedYear, numberOfEmployees, bio } = req.body;
 
         const user = await User.findById(req.user._id);
         if (!user) {
@@ -16,13 +57,13 @@ exports.updateCompanyProfile = async (req, res) => {
         if (user.role !== "company") {
             return res.status(403).json({ message: "You are not authorized to update this profile" });
         }
-        user.email = req.body.email;
-        user.phone = req.body.phone;
+        user.email = email;
+        user.phone = phone;
         await user.save();
 
         const companyProfile = await CompanyProfile.findOneAndUpdate(
             { userId: req.user._id },
-            { companyName, industry, location, website, services, establishedYear, departments, teamSize, numberOfEmployees, bio },
+            { companyName, industry, location, linkedIn, website, services, establishedYear, departments, teamSize, numberOfEmployees, bio },
             { new: true }
         );
         res.status(200).json({ message: "Company profile updated successfully" });

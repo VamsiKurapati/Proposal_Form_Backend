@@ -7,6 +7,7 @@ const companyProfileSchema = new mongoose.Schema({
   industry: { type: String, required: true },
   location: { type: String, required: true },
   website: { type: String, required: true },
+  linkedIn: { type: String, required: true },
   services: { type: [String], default: [] },
   establishedYear: { type: Number, required: true },
   departments: { type: Number, default: 0 },
