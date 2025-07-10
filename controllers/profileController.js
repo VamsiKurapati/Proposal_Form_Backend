@@ -134,9 +134,9 @@ exports.addEmployee = async (req, res) => {
             console.log("User not found");
             const password = crypto.randomBytes(16).toString("hex");
             const hashedPassword = await bcrypt.hash(password, 10);
-            await User.create({ fullName: name, email, mobile: phone, password: hashedPassword, role: "employee" });
+            const user_2 = await User.create({ fullName: name, email, mobile: phone, password: hashedPassword, role: "employee" });
             console.log("User created");
-            const employeeProfile = new EmployeeProfile({ userId: user_1._id, name, email, phone, linkedIn, about, jobTitle, accessLevel });
+            const employeeProfile = new EmployeeProfile({ userId: user_2._id, name, email, phone, linkedIn, about, jobTitle, accessLevel });
             await employeeProfile.save();
             console.log("Employee profile created");
         } else {
