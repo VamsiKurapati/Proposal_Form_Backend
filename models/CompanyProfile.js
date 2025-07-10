@@ -38,13 +38,15 @@ const companyProfileSchema = new mongoose.Schema({
       updatedAt: { type: Date, default: Date.now },
     },
   ],
-  licensesAndCertifications: [{
-    name: { type: String, required: true },
-    issuer: { type: String, required: true },
-    validTill: { type: String, required: true },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now },
-  }],
+  licensesAndCertifications: [
+    {
+      name: { type: String, required: true },
+      issuer: { type: String, required: true },
+      validTill: { type: String, required: true },
+      createdAt: { type: Date, default: Date.now },
+      updatedAt: { type: Date, default: Date.now },
+    },
+  ],
   documents: [
     {
       name: String,
@@ -70,7 +72,7 @@ const companyProfileSchema = new mongoose.Schema({
       title: { type: String, required: true },
       description: { type: String, required: true },
       createdAt: { type: Date, default: Date.now },
-    }
+    },
   ],
   deadlines: [
     {
