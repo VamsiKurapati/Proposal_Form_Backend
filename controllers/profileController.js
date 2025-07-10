@@ -51,6 +51,7 @@ exports.getProfile = async (req, res) => {
 
 exports.updateCompanyProfile = async (req, res) => {
     try {
+        console.log(req.body);
         const { companyName, industry, location, email, phone, linkedIn, website, services, establishedYear, numberOfEmployees, bio } = req.body;
 
         const user = await User.findById(req.user._id);
