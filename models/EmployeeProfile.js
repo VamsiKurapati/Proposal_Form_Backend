@@ -3,14 +3,16 @@ const mongoose = require("mongoose");
 
 const employeeProfileSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  companyName: String,
-  linkedIn: String,
-  location: String,
-  jobTitle: String,
+  name: { type: String, required: true },
+  email: { type: String, required: true },
+  phone: { type: String, required: true },
+  linkedIn: { type: String, default: "No linkedIn" },
+  location: { type: String, default: "No location" },
+  jobTitle: { type: String, required: true },
   about: { type: String, default: "No description" },
-  department: String,
-  team: String,
-  accessLevel: String,
+  department: { type: String, default: "No department" },
+  team: { type: String, default: "No team" },
+  accessLevel: { type: String, default: "Viewer" },
 }, { timestamps: true });
 
 module.exports = mongoose.model("EmployeeProfile", employeeProfileSchema);
