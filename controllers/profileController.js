@@ -92,9 +92,21 @@ exports.updateCompanyProfile = [
             user.mobile = phone;
             await user.save();
 
+            let parsedServices = [];
+            console.log(services);
+            console.log(typeof services);
+            if (typeof services === "string") {
+                try {
+                    parsedServices = JSON.parse(services);
+                    if (!Array.isArray(parsedServices)) parsedServices = [];
+                } catch {
+                    parsedServices = [];
+                }
+            }
+
             const companyProfile = await CompanyProfile.findOneAndUpdate(
                 { userId: req.user._id },
-                { companyName, industry, location, linkedIn, website, services, establishedYear, numberOfEmployees, bio },
+                { companyName, industry, location, linkedIn, website, services: parsedServices, establishedYear, numberOfEmployees, bio },
                 { new: true }
             );
             res.status(200).json({ message: "Company profile updated successfully" });
