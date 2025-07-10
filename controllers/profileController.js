@@ -21,7 +21,7 @@ exports.getProfile = async (req, res) => {
             industry: companyProfile.industry,
             location: companyProfile.location,
             email: user.email,
-            phone: user.phone,
+            phone: user.mobile,
             linkedIn: user.linkedIn,
             bio: companyProfile.bio,
             website: companyProfile.website,
@@ -33,12 +33,15 @@ exports.getProfile = async (req, res) => {
             employees: companyProfile.employees,
         };
         const Proposals = await SubmittedProposals.find({ companyId: req.user._id });
+        const totalProposals = Proposals.length;
+        const wonProposals = Proposals.filter(proposal => proposal.status === "Won").length;
+        const successRate = totalProposals === 0 ? "0.00" : ((wonProposals / totalProposals) * 100).toFixed(2);
         const data_1 = {
             ...data,
-            totalProposals: Proposals.length,
+            totalProposals,
             activeProposals: Proposals.filter(proposal => proposal.status === "In Progress").length,
-            wonProposals: Proposals.filter(proposal => proposal.status === "Won").length,
-            successRate: ((Proposals.filter(proposal => proposal.status === "Won").length / Proposals.length) * 100).toFixed(2),
+            wonProposals,
+            successRate,
         };
         res.status(200).json(data_1);
     } catch (error) {
