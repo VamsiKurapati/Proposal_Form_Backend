@@ -27,15 +27,17 @@ const companyProfileSchema = new mongoose.Schema({
     },
   ],
   bio: { type: String, required: true },
-  caseStudies: [{
-    title: { type: String, required: true },
-    company: { type: String, required: true },
-    image: { type: String, required: true },
-    link: { type: String, required: true },
-    readTime: { type: Number, required: true },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now },
-  }],
+  caseStudies: [
+    {
+      title: { type: String, required: true },
+      company: { type: String, required: true },
+      image: { type: String, required: true },
+      link: { type: String, required: true },
+      readTime: { type: Number, required: true },
+      createdAt: { type: Date, default: Date.now },
+      updatedAt: { type: Date, default: Date.now },
+    },
+  ],
   licensesAndCertifications: [{
     name: { type: String, required: true },
     issuer: { type: String, required: true },
