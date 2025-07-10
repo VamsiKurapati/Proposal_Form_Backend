@@ -161,7 +161,7 @@ exports.addEmployee = async (req, res) => {
             }
         }
 
-        const employeeProfile = await EmployeeProfile.findOne({ userId: user_1._id });
+        const employeeProfile = await EmployeeProfile.findOne({ email });
         const companyProfile = await CompanyProfile.findOneAndUpdate(
             { userId: req.user._id },
             {
