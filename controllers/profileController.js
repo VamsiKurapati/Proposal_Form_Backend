@@ -51,9 +51,6 @@ exports.getProfile = async (req, res) => {
 
 exports.updateCompanyProfile = async (req, res) => {
     try {
-        console.log(req.body);
-        const { companyName, industry, location, email, phone, linkedIn, website, services, establishedYear, numberOfEmployees, bio } = req.body;
-
         const user = await User.findById(req.user._id);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
@@ -61,13 +58,13 @@ exports.updateCompanyProfile = async (req, res) => {
         if (user.role !== "company") {
             return res.status(403).json({ message: "You are not authorized to update this profile" });
         }
-        user.email = email;
-        user.phone = phone;
+        user.email = req.body.email;
+        user.mobile = req.body.phone;
         await user.save();
 
         const companyProfile = await CompanyProfile.findOneAndUpdate(
             { userId: req.user._id },
-            { companyName, industry, location, linkedIn, website, services, establishedYear, departments, teamSize, numberOfEmployees, bio },
+            { companyName: req.body.companyName, industry: req.body.industry, location: req.body.location, linkedIn: req.body.linkedIn, website: req.body.website, services: req.body.services, establishedYear: req.body.establishedYear, numberOfEmployees: req.body.numberOfEmployees, bio: req.body.bio },
             { new: true }
         );
         res.status(200).json({ message: "Company profile updated successfully" });
