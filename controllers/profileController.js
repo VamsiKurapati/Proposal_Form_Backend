@@ -188,6 +188,7 @@ exports.addEmployee = async (req, res) => {
 
 exports.addCaseStudy = async (req, res) => {
     try {
+        console.log(req.body);
         const { title, company, image, link, readTime } = req.body;
         const user = await User.findById(req.user._id);
         if (!user) {
