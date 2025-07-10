@@ -1,5 +1,6 @@
-const express = require("express");
-const jwt = require("jsonwebtoken");
+require('dotenv').config();
+
+const mongoose = require("mongoose");
 const User = require("../models/User");
 const CompanyProfile = require("../models/CompanyProfile");
 const EmployeeProfile = require("../models/EmployeeProfile");

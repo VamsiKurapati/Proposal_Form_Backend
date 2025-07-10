@@ -1,15 +1,13 @@
+//Profile.js
 const express = require('express');
 const router = express.Router();
-const { verifyToken } = require('../utils/verifyUser.js');
+const verifyUser = require('../utils/verifyUser.js');
 
+const { updateCompanyProfile, addEmployee, addCaseStudy, addLicenseAndCertification } = require('../controllers/profileController.js');
 
-const { updateCompanyProfile, addEmployee, addCaseStudy, addLicenseAndCertification } = require('../controllers/profileController');
-
-router.put('/updateCompanyProfile', verifyToken, updateCompanyProfile);
-router.post('/addEmployee', verifyToken, addEmployee);
-router.post('/addCaseStudy', verifyToken, addCaseStudy);
-router.post('/addLicenseAndCertification', verifyToken, addLicenseAndCertification);
+router.put('/updateCompanyProfile', verifyUser, updateCompanyProfile);
+router.post('/addEmployee', verifyUser, addEmployee);
+router.post('/addCaseStudy', verifyUser, addCaseStudy);
+router.post('/addLicenseAndCertification', verifyUser, addLicenseAndCertification);
 
 module.exports = router;
-// This file defines the routes for managing company profiles.
-// It includes routes for creating, retrieving, updating, and deleting profiles.
