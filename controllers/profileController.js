@@ -252,7 +252,7 @@ exports.addCaseStudy = [
             }
 
             // Construct the file URL for the uploaded case study file
-            const fileUrl = `${req.file.id}`;
+            const fileUrl = `${process.env.BACKEND_URL || "http://localhost:5000"}/api/profile/getCaseStudy/${req.file.id}`;
 
             console.log("Adding case study");
             const companyProfile = await CompanyProfile.findOneAndUpdate(
