@@ -12,6 +12,32 @@ const crypto = require("crypto");
 const path = require("path");
 const multer = require("multer");
 
+const storage = new GridFsStorage({
+    url: process.env.MONGO_URI,
+    file: (req, file) => {
+        return new Promise((resolve, reject) => {
+            crypto.randomBytes(16, (err, buf) => {
+                if (err) return reject(err);
+                const filename = buf.toString("hex") + path.extname(file.originalname);
+                resolve({
+                    filename,
+                    bucketName: "uploads",
+                    metadata: { originalname: file.originalname },
+                });
+            });
+        });
+    },
+});
+
+const upload = multer({ storage });
+const multiUpload = upload.fields([
+    { name: "documents", maxCount: 10 },
+    { name: "proposals", maxCount: 10 },
+]);
+
+const singleLogoUpload = upload.single('logo');
+const singleCaseStudyUpload = upload.single('caseStudy');
+
 exports.getProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
@@ -55,31 +81,6 @@ exports.getProfile = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-
-const storage = new GridFsStorage({
-    url: process.env.MONGO_URI,
-    file: (req, file) => {
-        return new Promise((resolve, reject) => {
-            crypto.randomBytes(16, (err, buf) => {
-                if (err) return reject(err);
-                const filename = buf.toString("hex") + path.extname(file.originalname);
-                resolve({
-                    filename,
-                    bucketName: "uploads",
-                    metadata: { originalname: file.originalname },
-                });
-            });
-        });
-    },
-});
-
-const upload = multer({ storage });
-const multiUpload = upload.fields([
-    { name: "documents", maxCount: 10 },
-    { name: "proposals", maxCount: 10 },
-]);
-
-const singleLogoUpload = upload.single('logo');
 
 exports.uploadLogo = [
     singleLogoUpload,
@@ -234,30 +235,48 @@ exports.addEmployee = async (req, res) => {
     }
 };
 
-exports.addCaseStudy = async (req, res) => {
-    try {
-        console.log(req.body);
-        const { title, company, image, link, readTime } = req.body;
-        const user = await User.findById(req.user._id);
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
+exports.addCaseStudy = [
+    singleCaseStudyUpload,
+    async (req, res) => {
+        try {
+            const { title, description, readTime } = req.body;
+            const user = await User.findById(req.user._id);
+            if (!user) {
+                return res.status(404).json({ message: "User not found" });
+            }
+            if (user.role !== "company") {
+                return res.status(403).json({ message: "You are not authorized to add a case study" });
+            }
+            if (!req.file) {
+                return res.status(400).json({ message: "No file uploaded" });
+            }
+
+            // Construct the file URL for the uploaded case study file
+            const fileUrl = `${req.file.id}`;
+
+            console.log("Adding case study");
+            const companyProfile = await CompanyProfile.findOneAndUpdate(
+                { userId: req.user._id },
+                {
+                    $push: {
+                        caseStudies: {
+                            title,
+                            about: description, // Map 'description' to 'about' field
+                            readTime,
+                            fileUrl
+                        }
+                    }
+                },
+                { new: true }
+            );
+            console.log("Case study added successfully");
+            res.status(200).json({ message: "Case study added successfully" });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ message: error.message });
         }
-        if (user.role !== "company") {
-            return res.status(403).json({ message: "You are not authorized to add a case study" });
-        }
-        console.log("Adding case study");
-        const companyProfile = await CompanyProfile.findOneAndUpdate(
-            { userId: req.user._id },
-            { $push: { caseStudies: { title, company, image, link, readTime } } },
-            { new: true }
-        );
-        console.log("Case study added successfully");
-        res.status(200).json({ message: "Case study added successfully" });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: error.message });
     }
-};
+];
 
 exports.addLicenseAndCertification = async (req, res) => {
     try {
@@ -278,6 +297,20 @@ exports.addLicenseAndCertification = async (req, res) => {
 };
 
 exports.getProfileImage = async (req, res) => {
+    try {
+        const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+            bucketName: "uploads",
+        });
+        const fileId = new mongoose.Types.ObjectId(req.params.id);
+        const downloadStream = bucket.openDownloadStream(fileId);
+        downloadStream.on("error", () => res.status(404).send("File not found"));
+        downloadStream.pipe(res);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.getCaseStudy = async (req, res) => {
     try {
         const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
             bucketName: "uploads",
