@@ -97,7 +97,7 @@ exports.uploadLogo = [
                 return res.status(400).json({ message: "No file uploaded" });
             }
             // Construct the file URL (assuming a /file/:id route exists for serving GridFS files)
-            const logoUrl = `${process.env.FRONTEND_URL || "http://localhost:5000"}/file/${req.file.id}`;
+            const logoUrl = `${process.env.BACKEND_URL || "http://localhost:5000"}/file/${req.file.id}`;
             // Update the company profile with the new logo URL
             if (user.role === "company") {
                 await CompanyProfile.findOneAndUpdate(
@@ -272,6 +272,20 @@ exports.addLicenseAndCertification = async (req, res) => {
             { new: true }
         );
         res.status(200).json({ message: "License and certification added successfully" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.getProfileImage = async (req, res) => {
+    try {
+        const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+            bucketName: "uploads",
+        });
+        const fileId = new mongoose.Types.ObjectId(req.params.id);
+        const downloadStream = bucket.openDownloadStream(fileId);
+        downloadStream.on("error", () => res.status(404).send("File not found"));
+        downloadStream.pipe(res);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
