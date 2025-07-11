@@ -37,6 +37,7 @@ const multiUpload = upload.fields([
 
 const singleLogoUpload = upload.single('logo');
 const singleCaseStudyUpload = upload.single('file');
+const singleDocumentUpload = upload.single('document');
 
 exports.getProfile = async (req, res) => {
     try {
@@ -296,6 +297,50 @@ exports.addLicenseAndCertification = async (req, res) => {
     }
 };
 
+exports.addDocument = [
+    singleDocumentUpload,
+    async (req, res) => {
+        try {
+            const { name, type } = req.body;
+            const user = await User.findById(req.user._id);
+            if (!user) {
+                return res.status(404).json({ message: "User not found" });
+            }
+            if (user.role !== "company") {
+                return res.status(403).json({ message: "You are not authorized to add documents" });
+            }
+            if (!req.file) {
+                return res.status(400).json({ message: "No file uploaded" });
+            }
+
+            // Construct the file URL for the uploaded document
+            const fileUrl = `${process.env.BACKEND_URL || "http://localhost:5000"}/api/profile/getDocument/${req.file.id}`;
+
+            console.log("Adding document");
+            const companyProfile = await CompanyProfile.findOneAndUpdate(
+                { userId: req.user._id },
+                {
+                    $push: {
+                        documents: {
+                            name: name || req.file.originalname,
+                            description: description || "No description",
+                            type: type || "PDF",
+                            size: req.file.size,
+                            url: fileUrl
+                        }
+                    }
+                },
+                { new: true }
+            );
+            console.log("Document added successfully");
+            res.status(200).json({ message: "Document added successfully" });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ message: error.message });
+        }
+    }
+];
+
 exports.getProfileImage = async (req, res) => {
     try {
         const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
@@ -311,6 +356,20 @@ exports.getProfileImage = async (req, res) => {
 };
 
 exports.getCaseStudy = async (req, res) => {
+    try {
+        const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+            bucketName: "uploads",
+        });
+        const fileId = new mongoose.Types.ObjectId(req.params.id);
+        const downloadStream = bucket.openDownloadStream(fileId);
+        downloadStream.on("error", () => res.status(404).send("File not found"));
+        downloadStream.pipe(res);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.getDocument = async (req, res) => {
     try {
         const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
             bucketName: "uploads",
