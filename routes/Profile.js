@@ -11,6 +11,6 @@ router.post('/addEmployee', verifyUser, addEmployee);
 router.post('/addCaseStudy', verifyUser, addCaseStudy);
 router.post('/addLicenseAndCertification', verifyUser, addLicenseAndCertification);
 router.post('/uploadLogo', verifyUser, uploadLogo);
-router.get('/getProfileImage/:id', verifyUser, getProfileImage);
+router.get('/getProfileImage/file/:id', getProfileImage);
 
 module.exports = router;

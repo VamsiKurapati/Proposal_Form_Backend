@@ -97,7 +97,7 @@ exports.uploadLogo = [
                 return res.status(400).json({ message: "No file uploaded" });
             }
             // Construct the file URL (assuming a /file/:id route exists for serving GridFS files)
-            const logoUrl = `${process.env.BACKEND_URL || "http://localhost:5000"}/file/${req.file.id}`;
+            const logoUrl = `${req.file.id}`;
             // Update the company profile with the new logo URL
             if (user.role === "company") {
                 await CompanyProfile.findOneAndUpdate(
