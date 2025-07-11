@@ -323,7 +323,6 @@ exports.addDocument = [
                     $push: {
                         documents: {
                             name: name || req.file.originalname,
-                            description: description || "No description",
                             type: type || "PDF",
                             size: req.file.size,
                             url: fileUrl
