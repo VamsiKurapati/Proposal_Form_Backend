@@ -2,7 +2,7 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const CompanyProfile = require("../models/CompanyProfile");
-const EmployeeProfile = require("../models/EmployeeProfile");
+const FreelancerProfile = require("../models/FreelancerProfile");
 const bcrypt = require("bcryptjs");
 const multer = require("multer");
 const { GridFsStorage } = require("multer-gridfs-storage");
@@ -93,8 +93,8 @@ exports.signupWithProfile = [
         profileData.jobTitle = req.body.jobTitle;
         profileData.linkedIn = req.body.linkedIn;
 
-        const employeeProfile = new EmployeeProfile(profileData);
-        await employeeProfile.save();
+        const freelancerProfile = new FreelancerProfile(profileData);
+        await freelancerProfile.save();
       }
 
       res.status(201).json({ message: "Signup and profile created successfully" });

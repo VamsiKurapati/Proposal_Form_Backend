@@ -13,6 +13,7 @@ const employeeProfileSchema = new mongoose.Schema({
   department: { type: String, default: "No department" },
   team: { type: String, default: "No team" },
   accessLevel: { type: String, default: "Viewer" },
+  logoUrl: { type: String },
 }, { timestamps: true });
 
 module.exports = mongoose.model("EmployeeProfile", employeeProfileSchema);

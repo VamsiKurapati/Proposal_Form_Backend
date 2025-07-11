@@ -82,6 +82,7 @@ const companyProfileSchema = new mongoose.Schema({
       createdAt: { type: Date, default: Date.now },
     }
   ],
+  logoUrl: { type: String }, // URL to the company profile image/logo
 }, { timestamps: true });
 
 module.exports = mongoose.model("CompanyProfile", companyProfileSchema);

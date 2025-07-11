@@ -5,6 +5,7 @@ const User = require("../models/User");
 const CompanyProfile = require("../models/CompanyProfile");
 const EmployeeProfile = require("../models/EmployeeProfile");
 const SubmittedProposals = require("../models/SubmittedProposals");
+const FreelancerProfile = require("../models/FreelancerProfile");
 const { GridFsStorage } = require("multer-gridfs-storage");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
@@ -36,6 +37,7 @@ exports.getProfile = async (req, res) => {
             caseStudies: companyProfile.caseStudies,
             licensesAndCertifications: companyProfile.licensesAndCertifications,
             employees: companyProfile.employees,
+            logoUrl: companyProfile.logoUrl,
         };
         const Proposals = await SubmittedProposals.find({ companyId: req.user._id });
         const totalProposals = Proposals.length;
@@ -76,6 +78,52 @@ const multiUpload = upload.fields([
     { name: "documents", maxCount: 10 },
     { name: "proposals", maxCount: 10 },
 ]);
+
+const singleLogoUpload = upload.single('logo');
+
+exports.uploadLogo = [
+    singleLogoUpload,
+    async (req, res) => {
+        try {
+            const user = await User.findById(req.user._id);
+            if (!user) {
+                return res.status(404).json({ message: "User not found" });
+            }
+
+            console.log(user.role);
+            console.log(req.file);
+
+            if (!req.file) {
+                return res.status(400).json({ message: "No file uploaded" });
+            }
+            // Construct the file URL (assuming a /file/:id route exists for serving GridFS files)
+            const logoUrl = `${process.env.FRONTEND_URL || "http://localhost:5000"}/file/${req.file.id}`;
+            // Update the company profile with the new logo URL
+            if (user.role === "company") {
+                await CompanyProfile.findOneAndUpdate(
+                    { userId: req.user._id },
+                    { logoUrl },
+                    { new: true }
+                );
+            } else if (user.role === "freelancer") {
+                await FreelancerProfile.findOneAndUpdate(
+                    { userId: req.user._id },
+                    { logoUrl },
+                    { new: true }
+                );
+            } else {
+                await EmployeeProfile.findOneAndUpdate(
+                    { userId: req.user._id },
+                    { logoUrl },
+                    { new: true }
+                );
+            }
+            res.status(200).json({ logoUrl });
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+];
 
 exports.updateCompanyProfile = [
     multiUpload,
