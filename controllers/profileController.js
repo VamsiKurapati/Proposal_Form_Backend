@@ -36,7 +36,7 @@ const multiUpload = upload.fields([
 ]);
 
 const singleLogoUpload = upload.single('logo');
-const singleCaseStudyUpload = upload.single('caseStudy');
+const singleCaseStudyUpload = upload.single('file');
 
 exports.getProfile = async (req, res) => {
     try {
