@@ -65,6 +65,7 @@ exports.getProfile = async (req, res) => {
             licensesAndCertifications: companyProfile.licensesAndCertifications,
             employees: companyProfile.employees,
             logoUrl: companyProfile.logoUrl,
+            documents: companyProfile.documents,
         };
         const Proposals = await SubmittedProposals.find({ companyId: req.user._id });
         const totalProposals = Proposals.length;
