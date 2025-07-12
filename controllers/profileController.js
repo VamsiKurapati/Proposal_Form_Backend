@@ -326,7 +326,8 @@ exports.addDocument = [
                             name: name || req.file.originalname,
                             type: type || "PDF",
                             size: req.file.size,
-                            url: fileUrl
+                            url: fileUrl,
+                            fileId: req.file.id
                         }
                     }
                 },

@@ -51,6 +51,7 @@ const companyProfileSchema = new mongoose.Schema({
       type: { type: String, default: "PDF" },
       size: { type: Number, required: true },
       url: { type: String, required: true },
+      fileId: { type: mongoose.Types.ObjectId, required: true },
       createdAt: { type: Date, default: Date.now },
       updatedAt: { type: Date, default: Date.now },
     },
