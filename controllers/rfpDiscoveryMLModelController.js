@@ -6,13 +6,14 @@ const MatchedRFP = require('../models/MatchedRFP');
 const RFP = require('../models/RFP');
 const SavedRFP = require('../models/SavedRFP');
 const GeneratedProposal = require('../models/GeneratedProposal');
+const DraftRFP = require('../models/DraftRFP');
 
 exports.getUsersData = async (req, res) => {
   try {
     const db = mongoose.connection.db;
 
     // Step 1: Fetch all proposals
-    const proposals = await Proposal.find({ email: "test@draconx.com"}).lean();
+    const proposals = await Proposal.find({ email: "test@draconx.com" }).lean();
 
     // Step 2: Gather all unique fileIds from proposals
     const allFileIds = proposals
@@ -137,7 +138,7 @@ exports.matchedRFPData = async (req, res) => {
 exports.sendDataForProposalGeneration = async (req, res) => {
   try {
     const userEmail = req.user.email;
-    console.log("Email: ",userEmail);
+    console.log("Email: ", userEmail);
 
     // Universal RFPs from a separate RFPs collection (not user-specific)
     const allRFPs = await RFP.find({}).lean();
@@ -147,7 +148,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     const recommendedRFPs = await MatchedRFP.find({ email: userEmail, match: { $gte: 60 } })
       .sort({ createdAt: -1 })
       .lean();
-    console.log("Recommended RFP's : ",recommendedRFPs);
+    console.log("Recommended RFP's : ", recommendedRFPs);
 
     // Saved: from SavedRFPs
     const savedRFPs_1 = await SavedRFP.find({ userEmail }).lean();
@@ -178,7 +179,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 exports.getAllRFP = async (req, res) => {
   try {
     const userEmail = req.user.email;
-    console.log("Email: ",userEmail);
+    console.log("Email: ", userEmail);
 
     // Universal RFPs from a separate RFPs collection (not user-specific)
     const allRFPs = await RFP.find({}).lean();
@@ -188,7 +189,7 @@ exports.getAllRFP = async (req, res) => {
     const recommendedRFPs = await MatchedRFP.find({ email: userEmail, match: { $gte: 60 } })
       .sort({ createdAt: -1 })
       .lean();
-    console.log("Recommended RFP's : ",recommendedRFPs);
+    console.log("Recommended RFP's : ", recommendedRFPs);
 
     // Saved: from SavedRFPs
     const savedRFPs_1 = await SavedRFP.find({ userEmail }).lean();
@@ -270,93 +271,160 @@ exports.unsave = async (req, res) => {
   }
 };
 
+exports.getSavedAndDraftRFPs = async (req, res) => {
+  try {
+    const userEmail = req.user.email;
 
+    const savedRFPs_1 = await SavedRFP.find({ userEmail }).lean();
+    const savedRFPs = savedRFPs_1.map((item) => {
+      const { type_, ...restRFP } = item.rfp;
+      return {
+        ...item,
+        rfp: {
+          ...restRFP,
+          type: type_,
+          _id: item.rfpId,
+        },
+      };
+    });
+
+    const draftRFPs_1 = await DraftRFP.find({ userEmail }).lean();
+    const draftRFPs = draftRFPs_1.map((item) => {
+      const { type_, ...restRFP } = item.rfp;
+      return {
+        ...item,
+        rfp: {
+          ...restRFP,
+          type: type_,
+          _id: item.rfpId,
+        },
+      };
+    });
+
+    res.status(200).json({ savedRFPs, draftRFPs });
+  } catch (err) {
+    console.error('Error in /getSavedAndDraftRFPs:', err);
+    res.status(500).json({ error: 'Failed to get saved and draft RFPs' });
+  }
+};
+
+exports.saveDraftRFP = async (req, res) => {
+  try {
+    const userEmail = req.user.email;
+    const { rfpId, rfp } = req.body;
+
+    const existing = await DraftRFP.findOne({ userEmail, rfpId });
+    if (existing) {
+      return res.status(200).json({ message: 'Already saved' });
+    }
+
+    const cleanRFP = {
+      title: rfp.title,
+      description: rfp.description,
+      logo: rfp.logo,
+      match: rfp.match,
+      budget: rfp.budget,
+      deadline: rfp.deadline,
+      organization: rfp.organization,
+      fundingType: rfp.fundingType,
+      organizationType: rfp.organizationType,
+      link: rfp.link,
+      type_: rfp.type,
+    };
+
+    const newDraft = await DraftRFP.create({ userEmail, rfpId, rfp: cleanRFP });
+    res.status(201).json({ message: 'RFP saved successfully', saved: newDraft });
+  } catch (err) {
+    console.error('Error in /saveDraftRFP:', err);
+    res.status(500).json({ error: 'Failed to save draft RFP' });
+  }
+};
 
 exports.getUserandRFPData = async (req, res) => {
-    try {
-        const email = "test@draconx.com";
+  try {
+    const email = "test@draconx.com";
 
-        // Step 1: Fetch all proposals and limit to 1
-        const db = mongoose.connection.db;
+    // Step 1: Fetch all proposals and limit to 1
+    const db = mongoose.connection.db;
 
-        // Step 1: Fetch all proposals
-        const proposals = await Proposal.find({ email: email }).lean();
+    // Step 1: Fetch all proposals
+    const proposals = await Proposal.find({ email: email }).lean();
 
-        // Step 2: Gather all unique fileIds from proposals
-        const allFileIds = proposals
-          .flatMap(proposal => proposal.uploadedDocuments?.map(doc => doc.fileId) || [])
-          .filter(Boolean);
+    // Step 2: Gather all unique fileIds from proposals
+    const allFileIds = proposals
+      .flatMap(proposal => proposal.uploadedDocuments?.map(doc => doc.fileId) || [])
+      .filter(Boolean);
 
-        // Step 3: Fetch file metadata from GridFS
-        const files = await db.collection('uploads.files')
-          .find({ _id: { $in: allFileIds } })
+    // Step 3: Fetch file metadata from GridFS
+    const files = await db.collection('uploads.files')
+      .find({ _id: { $in: allFileIds } })
+      .toArray();
+
+    // Step 4: Fetch file chunks and convert to base64
+    const filesWithBase64 = await Promise.all(
+      files.map(async (file) => {
+        const chunks = await db.collection('uploads.chunks')
+          .find({ files_id: file._id })
+          .sort({ n: 1 })
           .toArray();
 
-        // Step 4: Fetch file chunks and convert to base64
-        const filesWithBase64 = await Promise.all(
-          files.map(async (file) => {
-            const chunks = await db.collection('uploads.chunks')
-              .find({ files_id: file._id })
-              .sort({ n: 1 })
-              .toArray();
-
-            const fileBuffer = Buffer.concat(chunks.map(chunk => chunk.data.buffer));
-            return {
-              ...file,
-              base64: fileBuffer.toString('base64'),
-            };
-          })
-        );
-
-        // Step 5: Map fileId to its full metadata + base64
-        const filesMap = filesWithBase64.reduce((acc, file) => {
-          acc[file._id.toString()] = file;
-          return acc;
-        }, {});
-
-        // Step 6: Attach enriched fileInfo to each uploadedDocument
-        const enrichedProposals = proposals.map(proposal => {
-          const enrichedDocs = (proposal.uploadedDocuments || []).map(doc => ({
-            ...doc,
-            fileInfo: filesMap[doc.fileId.toString()] || null,
-          }));
-
-          return {
-            ...proposal,
-            uploadedDocuments: enrichedDocs,
-          };
-        });
-
-        const RFP = await MatchedRFP.find({ email: email }).sort({ createdAt: -1 });
-
-        const data_1 = {
-          "RFP Title": RFP[0].title,
-          "RFP Description": RFP[0].description,
-          "Match Score": RFP[0].match,
-          "Budget": RFP[0].budget,
-          "Deadline": RFP[0].deadline,
-          "Issuing Organization": RFP[0].organization,
-          "Industry": RFP[0].organizationType,
-          "URL": RFP[0].link,
-          "Contact Information": RFP[0].contact || '',
-          "Timeline": RFP[0].timeline || '',
+        const fileBuffer = Buffer.concat(chunks.map(chunk => chunk.data.buffer));
+        return {
+          ...file,
+          base64: fileBuffer.toString('base64'),
         };
+      })
+    );
 
-        // const User = await Proposal.find({ email: email }).sort({ createdAt: -1 }).limit(1).lean();
-        if (!RFP || RFP.length === 0) {
-            return res.status(404).json({ message: "No proposals found for this user." });
-        }
+    // Step 5: Map fileId to its full metadata + base64
+    const filesMap = filesWithBase64.reduce((acc, file) => {
+      acc[file._id.toString()] = file;
+      return acc;
+    }, {});
 
-        const data = {
-            user: enrichedProposals[0], // Get the first user
-            rfp: data_1 // Get the first proposal
-        };
+    // Step 6: Attach enriched fileInfo to each uploadedDocument
+    const enrichedProposals = proposals.map(proposal => {
+      const enrichedDocs = (proposal.uploadedDocuments || []).map(doc => ({
+        ...doc,
+        fileInfo: filesMap[doc.fileId.toString()] || null,
+      }));
 
-        res.status(200).json(data);
-    } catch (error) {
-        console.error("Error fetching user and RFP data:", error);
-        return res.status(500).json({ message: "Internal server error." });
+      return {
+        ...proposal,
+        uploadedDocuments: enrichedDocs,
+      };
+    });
+
+    const RFP = await MatchedRFP.find({ email: email }).sort({ createdAt: -1 });
+
+    const data_1 = {
+      "RFP Title": RFP[0].title,
+      "RFP Description": RFP[0].description,
+      "Match Score": RFP[0].match,
+      "Budget": RFP[0].budget,
+      "Deadline": RFP[0].deadline,
+      "Issuing Organization": RFP[0].organization,
+      "Industry": RFP[0].organizationType,
+      "URL": RFP[0].link,
+      "Contact Information": RFP[0].contact || '',
+      "Timeline": RFP[0].timeline || '',
+    };
+
+    // const User = await Proposal.find({ email: email }).sort({ createdAt: -1 }).limit(1).lean();
+    if (!RFP || RFP.length === 0) {
+      return res.status(404).json({ message: "No proposals found for this user." });
     }
+
+    const data = {
+      user: enrichedProposals[0], // Get the first user
+      rfp: data_1 // Get the first proposal
+    };
+
+    res.status(200).json(data);
+  } catch (error) {
+    console.error("Error fetching user and RFP data:", error);
+    return res.status(500).json({ message: "Internal server error." });
+  }
 };
 
 exports.generatedProposal = async (req, res) => {

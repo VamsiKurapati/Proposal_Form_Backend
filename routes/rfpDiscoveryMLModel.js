@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const verifyUser = require('../utils/verifyUser');
 
-const {getUsersData, matchedRFPData, getAllRFP, save, unsave, getUserandRFPData, generatedProposal } = require('../controllers/rfpDiscoveryMLModelController');
+const { getUsersData, matchedRFPData, getAllRFP, save, unsave, getUserandRFPData, generatedProposal, getSavedAndDraftRFPs, saveDraftRFP } = require('../controllers/rfpDiscoveryMLModelController');
 
 router.get('/getUsersData', getUsersData);
 router.post('/matchedRFPdata', matchedRFPData);
@@ -13,5 +13,8 @@ router.post('/unsaveRFP', verifyUser, unsave);
 
 router.get('/getUserandRFPData', getUserandRFPData);
 router.post('/generatedProposal', generatedProposal);
+
+router.get('/getSavedAndDraftRFPs', verifyUser, getSavedAndDraftRFPs);
+router.post('/saveDraftRFP', verifyUser, saveDraftRFP);
 
 module.exports = router;
