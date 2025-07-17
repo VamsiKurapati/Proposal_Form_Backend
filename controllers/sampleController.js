@@ -40,3 +40,16 @@ exports.setData = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+exports.deleteData = async (req, res) => {
+    const { name } = req.params;
+    if (!isValidName(name)) {
+        return res.status(400).json({ message: 'Invalid or missing name parameter' });
+    }
+    try {
+        const deletedData = await sampleJson.deleteMany({ name });
+        res.status(200).json({ message: 'Data deleted successfully', deletedData });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
