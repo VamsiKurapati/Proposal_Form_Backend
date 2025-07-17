@@ -3,7 +3,7 @@ const router = express.Router();
 
 const { getData, setData } = require('../controllers/sampleController');
 
-router.get('/getData/:name', getData);
-router.post('/sendData/:name', setData);
+router.get('/getData', getData);
+router.post('/sendData', setData);
 
 module.exports = router;
