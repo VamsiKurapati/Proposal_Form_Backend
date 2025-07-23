@@ -5,7 +5,6 @@ const User = require("../models/User");
 const CompanyProfile = require("../models/CompanyProfile");
 const EmployeeProfile = require("../models/EmployeeProfile");
 const SubmittedProposals = require("../models/SubmittedProposals");
-const FreelancerProfile = require("../models/FreelancerProfile");
 const { GridFsStorage } = require("multer-gridfs-storage");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
@@ -104,12 +103,6 @@ exports.uploadLogo = [
             // Update the company profile with the new logo URL
             if (user.role === "company") {
                 await CompanyProfile.findOneAndUpdate(
-                    { userId: req.user._id },
-                    { logoUrl },
-                    { new: true }
-                );
-            } else if (user.role === "freelancer") {
-                await FreelancerProfile.findOneAndUpdate(
                     { userId: req.user._id },
                     { logoUrl },
                     { new: true }
