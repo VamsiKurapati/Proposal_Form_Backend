@@ -173,58 +173,78 @@ exports.addEmployee = async (req, res) => {
             return res.status(403).json({ message: "You are not authorized to add an employee" });
         }
 
-        const user_1 = await User.findOne({ email });
-        if (!user_1) {
-            console.log("User not found");
-            const password = crypto.randomBytes(16).toString("hex");
-            const hashedPassword = await bcrypt.hash(password, 10);
-            const user_2 = await User.create({ fullName: name, email, mobile: phone, password: hashedPassword, role: "employee" });
-            console.log("User created");
-            const employeeProfile = new EmployeeProfile({ userId: user_2._id, name, email, phone, linkedIn, about, jobTitle, accessLevel, companyMail: user.email });
-            await employeeProfile.save();
-            console.log("Employee profile created");
-        } else {
-            console.log("User found");
-            const employeeProfile = await EmployeeProfile.findOne({ userId: user_1._id });
-            if (employeeProfile) {
-                console.log("Employee profile found");
-                employeeProfile.name = name;
-                employeeProfile.email = email;
-                employeeProfile.phone = phone;
-                employeeProfile.linkedIn = linkedIn;
-                employeeProfile.about = about;
-                employeeProfile.jobTitle = jobTitle;
-                employeeProfile.accessLevel = accessLevel;
-                employeeProfile.companyMail = user.email;
-                await employeeProfile.save();
-                console.log("Employee profile updated");
-            } else {
-                console.log("Employee profile not found");
-                const employeeProfile = new EmployeeProfile({ userId: user_1._id, name, email, phone, linkedIn, about, jobTitle, accessLevel, companyMail: user.email });
-                await employeeProfile.save();
-                console.log("Employee profile created");
-            }
-        }
-
-        const employeeProfile = await EmployeeProfile.findOne({ email });
-        const companyProfile = await CompanyProfile.findOneAndUpdate(
-            { userId: req.user._id },
-            {
-                $push: {
-                    employees: {
-                        employeeProfile: employeeProfile._id,
-                        name: employeeProfile.name,
-                        email: employeeProfile.email,
-                        phone: employeeProfile.phone,
-                        linkedIn: employeeProfile.linkedIn,
-                        about: employeeProfile.about,
-                        jobTitle: employeeProfile.jobTitle,
-                        accessLevel: employeeProfile.accessLevel
+        if (accessLevel == "member") {
+            const companyProfile = await CompanyProfile.findOneAndUpdate(
+                { userId: req.user._id },
+                {
+                    $push: {
+                        employees: {
+                            name: name,
+                            email: email,
+                            phone: phone,
+                            linkedIn: linkedIn,
+                            about: about,
+                            jobTitle: jobTitle,
+                            accessLevel: accessLevel,
+                        }
                     }
                 }
-            },
-            { new: true }
-        );
+            );
+        } else {
+            const user_1 = await User.findOne({ email });
+            if (!user_1) {
+                console.log("User not found");
+                const password = crypto.randomBytes(16).toString("hex");
+                const hashedPassword = await bcrypt.hash(password, 10);
+                const user_2 = await User.create({ fullName: name, email, mobile: phone, password: hashedPassword, role: "employee" });
+                console.log("User created");
+                const employeeProfile = new EmployeeProfile({ userId: user_2._id, name, email, phone, linkedIn, about, jobTitle, accessLevel, companyMail: user.email });
+                await employeeProfile.save();
+                console.log("Employee profile created");
+            } else {
+                console.log("User found");
+                const employeeProfile = await EmployeeProfile.findOne({ userId: user_1._id });
+                if (employeeProfile) {
+                    console.log("Employee profile found");
+                    employeeProfile.name = name;
+                    employeeProfile.email = email;
+                    employeeProfile.phone = phone;
+                    employeeProfile.linkedIn = linkedIn;
+                    employeeProfile.about = about;
+                    employeeProfile.jobTitle = jobTitle;
+                    employeeProfile.accessLevel = accessLevel;
+                    employeeProfile.companyMail = user.email;
+                    await employeeProfile.save();
+                    console.log("Employee profile updated");
+                } else {
+                    console.log("Employee profile not found");
+                    const employeeProfile = new EmployeeProfile({ userId: user_1._id, name, email, phone, linkedIn, about, jobTitle, accessLevel, companyMail: user.email });
+                    await employeeProfile.save();
+                    console.log("Employee profile created");
+                }
+            }
+
+            const employeeProfile = await EmployeeProfile.findOne({ email });
+            const companyProfile = await CompanyProfile.findOneAndUpdate(
+                { userId: req.user._id },
+                {
+                    $push: {
+                        employees: {
+                            employeeProfile: employeeProfile._id,
+                            name: employeeProfile.name,
+                            email: employeeProfile.email,
+                            phone: employeeProfile.phone,
+                            linkedIn: employeeProfile.linkedIn,
+                            about: employeeProfile.about,
+                            jobTitle: employeeProfile.jobTitle,
+                            accessLevel: employeeProfile.accessLevel
+                        }
+                    }
+                },
+                { new: true }
+            );
+        }
+
         res.status(200).json({ message: "Employee added successfully" });
     } catch (error) {
         res.status(500).json({ message: error.message });
