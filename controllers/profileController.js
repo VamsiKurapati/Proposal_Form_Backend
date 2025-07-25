@@ -173,7 +173,7 @@ exports.addEmployee = async (req, res) => {
             return res.status(403).json({ message: "You are not authorized to add an employee" });
         }
 
-        if (accessLevel == "member") {
+        if (accessLevel == "Member") {
             const companyProfile = await CompanyProfile.findOneAndUpdate(
                 { userId: req.user._id },
                 {
