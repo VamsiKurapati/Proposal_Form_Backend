@@ -1,7 +1,8 @@
 //rfpDiscoveryMLModel.js
 const express = require('express');
 const router = express.Router();
-const { verifyUser } = require('../utils/verifyUser');
+
+const verifyUser = require('../utils/verifyUser');
 
 const { getUsersData, matchedRFPData, getAllRFP, save, unsave, getUserandRFPData, generatedProposal, getSavedAndDraftRFPs, saveDraftRFP } = require('../controllers/rfpDiscoveryMLModelController');
 

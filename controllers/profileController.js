@@ -180,7 +180,7 @@ exports.addEmployee = async (req, res) => {
             const hashedPassword = await bcrypt.hash(password, 10);
             const user_2 = await User.create({ fullName: name, email, mobile: phone, password: hashedPassword, role: "employee" });
             console.log("User created");
-            const employeeProfile = new EmployeeProfile({ userId: user_2._id, name, email, phone, linkedIn, about, jobTitle, accessLevel });
+            const employeeProfile = new EmployeeProfile({ userId: user_2._id, name, email, phone, linkedIn, about, jobTitle, accessLevel, companyMail: user.email });
             await employeeProfile.save();
             console.log("Employee profile created");
         } else {
@@ -195,11 +195,12 @@ exports.addEmployee = async (req, res) => {
                 employeeProfile.about = about;
                 employeeProfile.jobTitle = jobTitle;
                 employeeProfile.accessLevel = accessLevel;
+                employeeProfile.companyMail = user.email;
                 await employeeProfile.save();
                 console.log("Employee profile updated");
             } else {
                 console.log("Employee profile not found");
-                const employeeProfile = new EmployeeProfile({ userId: user_1._id, name, email, phone, linkedIn, about, jobTitle, accessLevel });
+                const employeeProfile = new EmployeeProfile({ userId: user_1._id, name, email, phone, linkedIn, about, jobTitle, accessLevel, companyMail: user.email });
                 await employeeProfile.save();
                 console.log("Employee profile created");
             }

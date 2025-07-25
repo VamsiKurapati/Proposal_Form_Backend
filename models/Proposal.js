@@ -3,11 +3,14 @@ const mongoose = require('mongoose');
 
 const ProposalSchema = new mongoose.Schema({
   rfpId: { type: mongoose.Schema.Types.ObjectId, ref: "RFP", required: true },
+  title: { type: String, required: true },
+  client: { type: String, required: true },
   generatedProposal: { type: Object, required: true, default: {} },
-  companyId: { type: mongoose.Schema.Types.ObjectId, ref: "CompanyProfile", required: true },
+  companyMail: { type: String, required: true },
+  deadline: { type: Date, required: true },
   status: { type: String, required: true },
   submittedAt: { type: Date, default: Date.now },
-  currentUser: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, default: null },
+  currentEditor: { type: mongoose.Schema.Types.ObjectId, ref: "EmployeeProfile", required: true, default: null },
   isDeleted: { type: Boolean, default: false },
   deletedAt: { type: Date, default: null },
   deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },

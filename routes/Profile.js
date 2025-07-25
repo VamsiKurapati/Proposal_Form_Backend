@@ -1,7 +1,8 @@
 //Profile.js
 const express = require('express');
 const router = express.Router();
-const { verifyUser } = require('../utils/verifyUser');
+
+const verifyUser = require('../utils/verifyUser');
 
 const { getProfile, updateCompanyProfile, addEmployee, addCaseStudy, addLicenseAndCertification, uploadLogo, getProfileImage, getCaseStudy, addDocument, getDocument } = require('../controllers/profileController.js');
 

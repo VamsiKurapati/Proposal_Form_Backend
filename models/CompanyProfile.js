@@ -15,15 +15,14 @@ const companyProfileSchema = new mongoose.Schema({
   numberOfEmployees: { type: String, default: "0-10" },
   employees: [
     {
+      employeeId: { type: mongoose.Schema.Types.ObjectId, ref: "EmployeeProfile", default: null },
       name: String,
       about: String,
       jobTitle: String,
       email: String,
       phone: String,
       linkedIn: String,
-      department: { type: String, default: "General" },
-      team: { type: String, default: "General" },
-      accessLevel: String, // e.g., 'fullAccess', 'admin', 'editor', 'viewer'
+      accessLevel: String,
     },
   ],
   bio: { type: String, required: true },

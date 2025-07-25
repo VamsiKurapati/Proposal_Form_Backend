@@ -72,6 +72,16 @@ exports.editProposalStatus = async (req, res) => {
     }
 };
 
+exports.setCurrentEditor = async (req, res) => {
+    try {
+        const { proposalId, editorId } = req.body;
+        const proposal = await Proposal.findByIdAndUpdate(proposalId, { currentEditor: editorId }, { new: true });
+        res.status(200).json({ message: "Editor set successfully" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 exports.restoreProposal = async (req, res) => {
     try {
         const { proposalId } = req.body;
@@ -87,6 +97,16 @@ exports.deleteProposals = async (req, res) => {
         const { proposalIds } = req.body;
         const proposals = await Proposal.updateMany({ _id: { $in: proposalIds } }, { isDeleted: true, deletedBy: req.user._id, deletedAt: new Date(), restoreBy: new Date() + 15 * 24 * 60 * 60 * 1000 }); // 15 days
         res.status(200).json(proposals);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.deletePermanently = async (req, res) => {
+    try {
+        const { proposalId } = req.body;
+        await Proposal.findByIdAndDelete(proposalId);
+        res.status(200).json({ message: "Proposal deleted permanently" });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
