@@ -8,6 +8,7 @@ const employeeProfileSchema = new mongoose.Schema({
   phone: { type: String, required: true },
   linkedIn: { type: String, default: "No linkedIn" },
   location: { type: String, default: "No location" },
+  companyName: { type: String, default: "No company" },
   jobTitle: { type: String, required: true },
   about: { type: String, default: "No description" },
   department: { type: String, default: "No department" },

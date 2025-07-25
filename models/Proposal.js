@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const ProposalSchema = new mongoose.Schema({
   rfpId: { type: mongoose.Schema.Types.ObjectId, ref: "RFP", required: true },
   generatedProposal: { type: Object, required: true, default: {} },
+  companyId: { type: mongoose.Schema.Types.ObjectId, ref: "CompanyProfile", required: true },
   status: { type: String, required: true },
   submittedAt: { type: Date, default: Date.now },
   currentUser: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, default: null },
@@ -13,6 +14,9 @@ const ProposalSchema = new mongoose.Schema({
   isSaved: { type: Boolean, default: false },
   savedAt: { type: Date, default: null },
   savedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+  restoreBy: { type: Date, default: null },
+  restoredBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+  restoredAt: { type: Date, default: null },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Proposal', ProposalSchema);

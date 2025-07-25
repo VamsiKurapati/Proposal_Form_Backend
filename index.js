@@ -9,6 +9,7 @@ const authRoute = require("./routes/Auth.js");
 const rfpDiscovery = require('./routes/rfpDiscoveryMLModel.js');
 const profileRoute = require('./routes/Profile.js');
 const sampleRoute = require('./routes/Sample.js');
+const dashboardRoute = require('./routes/Dashboard.js');
 
 const dbConnect = require('./utils/dbConnect.js');
 
@@ -44,6 +45,8 @@ app.use('/api/rfp', rfpDiscovery);
 app.use('/api/profile', profileRoute);
 
 app.use('/api/sample', sampleRoute);
+
+app.use('/api/dashboard', dashboardRoute);
 
 app.get('/', (req, res) => {
   res.send('Welcome to the Proposal API');

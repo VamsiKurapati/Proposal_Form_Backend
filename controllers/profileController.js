@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const User = require("../models/User");
 const CompanyProfile = require("../models/CompanyProfile");
 const EmployeeProfile = require("../models/EmployeeProfile");
-const SubmittedProposals = require("../models/SubmittedProposals");
+const Proposal = require("../models/Proposal");
 const { GridFsStorage } = require("multer-gridfs-storage");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
@@ -66,7 +66,7 @@ exports.getProfile = async (req, res) => {
             logoUrl: companyProfile.logoUrl,
             documents: companyProfile.documents,
         };
-        const Proposals = await SubmittedProposals.find({ companyId: req.user._id });
+        const Proposals = await Proposal.find({ companyId: req.user._id });
         const totalProposals = Proposals.length;
         const wonProposals = Proposals.filter(proposal => proposal.status === "Won").length;
         const successRate = totalProposals === 0 ? "0.00" : ((wonProposals / totalProposals) * 100).toFixed(2);
