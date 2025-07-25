@@ -11,7 +11,7 @@ exports.getDashboardData = async (req, res) => {
         console.log(role);
         if (role === "company") {
             console.log("Insidecompany");
-            const companyProfile = await CompanyProfile.findOne({ user: user._id });
+            const companyProfile = await CompanyProfile.findOne({ userId: user._id });
             console.log("Company Profile", companyProfile);
             const proposals = await Proposal.find({ companyId: companyProfile._id });
             console.log("Proposals", proposals);
