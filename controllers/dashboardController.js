@@ -6,10 +6,15 @@ const Proposal = require("../models/Proposal");
 exports.getDashboardData = async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
+        console.log(user);
         const role = user.role;
+        console.log(role);
         if (role === "company") {
+            console.log("Insidecompany");
             const companyProfile = await CompanyProfile.findOne({ user: user._id });
+            console.log("Company Profile", companyProfile);
             const proposals = await Proposal.find({ companyId: companyProfile._id });
+            console.log("Proposals", proposals);
 
             const totalProposals = proposals.length;
             const inProgressProposals = proposals.filter(proposal => proposal.status === "In Progress").length;
