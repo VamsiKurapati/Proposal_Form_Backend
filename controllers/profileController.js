@@ -163,7 +163,7 @@ exports.updateCompanyProfile = [
 
 exports.addEmployee = async (req, res) => {
     try {
-        const { name, email, phone, linkedIn, about, jobTitle, accessLevel } = req.body;
+        const { name, email, phone, shortDesc, highestQualification, skills, jobTitle, accessLevel } = req.body;
 
         const user = await User.findById(req.user._id);
         if (!user) {
@@ -182,8 +182,9 @@ exports.addEmployee = async (req, res) => {
                             name: name,
                             email: email,
                             phone: phone,
-                            linkedIn: linkedIn,
-                            about: about,
+                            shortDesc: shortDesc,
+                            highestQualification: highestQualification,
+                            skills: skills,
                             jobTitle: jobTitle,
                             accessLevel: accessLevel,
                         }
@@ -198,7 +199,7 @@ exports.addEmployee = async (req, res) => {
                 const hashedPassword = await bcrypt.hash(password, 10);
                 const user_2 = await User.create({ fullName: name, email, mobile: phone, password: hashedPassword, role: "employee" });
                 console.log("User created");
-                const employeeProfile = new EmployeeProfile({ userId: user_2._id, name, email, phone, linkedIn, about, jobTitle, accessLevel, companyMail: user.email });
+                const employeeProfile = new EmployeeProfile({ userId: user_2._id, name, email, phone, about: shortDesc, highestQualification, skills, jobTitle, accessLevel, companyMail: user.email });
                 await employeeProfile.save();
                 console.log("Employee profile created");
             } else {
@@ -209,16 +210,17 @@ exports.addEmployee = async (req, res) => {
                     employeeProfile.name = name;
                     employeeProfile.email = email;
                     employeeProfile.phone = phone;
-                    employeeProfile.linkedIn = linkedIn;
-                    employeeProfile.about = about;
+                    employeeProfile.about = shortDesc;
                     employeeProfile.jobTitle = jobTitle;
+                    employeeProfile.skills = skills;
+                    employeeProfile.highestQualification = highestQualification;
                     employeeProfile.accessLevel = accessLevel;
                     employeeProfile.companyMail = user.email;
                     await employeeProfile.save();
                     console.log("Employee profile updated");
                 } else {
                     console.log("Employee profile not found");
-                    const employeeProfile = new EmployeeProfile({ userId: user_1._id, name, email, phone, linkedIn, about, jobTitle, accessLevel, companyMail: user.email });
+                    const employeeProfile = new EmployeeProfile({ userId: user_1._id, name, email, phone, shortDesc, highestQualification, skills, jobTitle, accessLevel, companyMail: user.email });
                     await employeeProfile.save();
                     console.log("Employee profile created");
                 }
@@ -234,8 +236,9 @@ exports.addEmployee = async (req, res) => {
                             name: employeeProfile.name,
                             email: employeeProfile.email,
                             phone: employeeProfile.phone,
-                            linkedIn: employeeProfile.linkedIn,
-                            about: employeeProfile.about,
+                            shortDesc: employeeProfile.shortDesc,
+                            highestQualification: employeeProfile.highestQualification,
+                            skills: employeeProfile.skills,
                             jobTitle: employeeProfile.jobTitle,
                             accessLevel: employeeProfile.accessLevel
                         }

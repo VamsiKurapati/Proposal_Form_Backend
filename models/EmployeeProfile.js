@@ -12,6 +12,8 @@ const employeeProfileSchema = new mongoose.Schema({
   jobTitle: { type: String, required: true },
   about: { type: String, default: "No description" },
   accessLevel: { type: String, default: "Viewer" },
+  highestQualification: { type: String, default: "Not specified" },
+  skills: { type: [String], default: [] },
   logoUrl: { type: String, default: "https://via.placeholder.com/150" },
 }, { timestamps: true });
 
