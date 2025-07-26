@@ -2,6 +2,7 @@ const User = require("../models/User");
 const CompanyProfile = require("../models/CompanyProfile");
 const EmployeeProfile = require("../models/EmployeeProfile");
 const Proposal = require("../models/Proposal");
+const CalendarEvent = require("../models/CalendarEvents");
 
 exports.getDashboardData = async (req, res) => {
     try {
@@ -72,6 +73,55 @@ exports.editProposalStatus = async (req, res) => {
         const { proposalId, status } = req.body;
         const proposal = await Proposal.findByIdAndUpdate(proposalId, { status }, { new: true });
         res.status(200).json(proposal);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.addCalendarEvent = async (req, res) => {
+    try {
+        const { title, startDate, endDate } = req.body;
+
+        const userId = req.user._id;
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (!title || !startDate || !endDate) {
+            return res.status(400).json({ message: "Title, start date, and end date are required" });
+        }
+
+        if(user.role === "company") {
+            const calendarEvent = new CalendarEvent({
+                companyId: userId,
+                employeeId: userId,
+                title,
+                startDate,
+                endDate,
+                status: "Deadline"
+            });
+            await calendarEvent.save();
+            res.status(201).json(calendarEvent);
+        } else if(user.role === "employee") {
+            const employeeProfile = await EmployeeProfile.findOne({ user: userId });
+            if (!employeeProfile) {
+                return res.status(404).json({ message: "Employee profile not found" });
+            }
+            const companyProfile = await CompanyProfile.findOne({ email: employeeProfile.companyMail });
+            const calendarEvent = new CalendarEvent({
+                companyId: companyProfile._id,
+                employeeId: userId,
+                title,
+                startDate,
+                endDate,
+                status: "Deadline"
+            });
+            await calendarEvent.save();
+            res.status(201).json(calendarEvent);
+        } else {
+            return res.status(400).json({ message: "Invalid user role" });
+        }
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

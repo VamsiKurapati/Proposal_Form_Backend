@@ -151,7 +151,7 @@ exports.updateCompanyProfile = [
 
             const companyProfile = await CompanyProfile.findOneAndUpdate(
                 { userId: req.user._id },
-                { companyName, industry, location, linkedIn, website, services: parsedServices, establishedYear, numberOfEmployees, bio },
+                { email, companyName, industry, location, linkedIn, website, services: parsedServices, establishedYear, numberOfEmployees, bio },
                 { new: true }
             );
             res.status(200).json({ message: "Company profile updated successfully" });
