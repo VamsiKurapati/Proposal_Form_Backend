@@ -101,9 +101,13 @@ exports.addCalendarEvent = async (req, res) => {
         //console.log("User Data:", user);
 
         if(user.role === "company") {
+            const companyProfile = await CompanyProfile.findOne({ userId });
+            if (!companyProfile) {
+                return res.status(404).json({ message: "Company profile not found" });
+            }
             const calendarEvent = new CalendarEvent({
-                companyId: userId,
-                employeeId: userId,
+                companyId: companyProfile._id,
+                employeeId: companyProfile._id,
                 title,
                 startDate: start,
                 endDate: end,
