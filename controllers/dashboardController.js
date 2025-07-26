@@ -14,7 +14,7 @@ exports.getDashboardData = async (req, res) => {
             console.log("Insidecompany");
             const companyProfile = await CompanyProfile.findOne({ userId: user._id });
             console.log("Company Profile", companyProfile);
-            const proposals = await Proposal.find({ companyId: companyProfile._id });
+            const proposals = await Proposal.find({ companyId: companyProfile._id }).populate('currentEditor', 'name email').sort({ createdAt: -1 });
             console.log("Proposals", proposals);
 
             const totalProposals = proposals.length;
@@ -27,14 +27,17 @@ exports.getDashboardData = async (req, res) => {
                 restoreIn: Math.ceil((new Date(proposal.restoreBy).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) + " days"
             }));
 
+            const calendarEvents = await CalendarEvent.find({ employeeId: companyProfile._id });
+
             const data = {
                 totalProposals,
                 inProgressProposals,
                 submittedProposals,
                 wonProposals,
                 proposals,
-                deletedProposals
-            }
+                deletedProposals,
+                calendarEvents,
+            };
 
             res.status(200).json(data);
         } else if (role === "employee") {
@@ -52,14 +55,17 @@ exports.getDashboardData = async (req, res) => {
                 restoreIn: Math.ceil((new Date(proposal.restoreBy).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) + " days"
             }));
 
+            const calendarEvents = await CalendarEvent.find({ employeeId: user._id });
+
             const data = {
                 totalProposals,
                 inProgressProposals,
                 submittedProposals,
                 wonProposals,
                 proposals,
-                deletedProposals
-            }
+                deletedProposals,
+                calendarEvents
+            };
 
             res.status(200).json(data);
         }
@@ -80,7 +86,7 @@ exports.editProposalStatus = async (req, res) => {
 
 exports.addCalendarEvent = async (req, res) => {
     try {
-        const { title, startDate, endDate } = req.body;
+        const { title, start, end } = req.body;
 
         const userId = req.user._id;
         const user = await User.findById(userId);
@@ -88,17 +94,19 @@ exports.addCalendarEvent = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        if (!title || !startDate || !endDate) {
+        if (!title || !start || !end) {
             return res.status(400).json({ message: "Title, start date, and end date are required" });
         }
+
+        //console.log("User Data:", user);
 
         if(user.role === "company") {
             const calendarEvent = new CalendarEvent({
                 companyId: userId,
                 employeeId: userId,
                 title,
-                startDate,
-                endDate,
+                startDate: start,
+                endDate: end,
                 status: "Deadline"
             });
             await calendarEvent.save();
@@ -113,8 +121,8 @@ exports.addCalendarEvent = async (req, res) => {
                 companyId: companyProfile._id,
                 employeeId: userId,
                 title,
-                startDate,
-                endDate,
+                startDate: start,
+                endDate: end,
                 status: "Deadline"
             });
             await calendarEvent.save();

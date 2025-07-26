@@ -215,3 +215,25 @@ exports.delete_1 = async (req, res) => {
     res.status(500).send('Delete failed');
   }
 };
+
+// SEND PROPOSAL PDF
+exports.sendProposalPDF = async (req, res) => {
+  try {
+    const proposal = await Proposal.findById(req.params.id);
+    if (!proposal) return res.status(404).send('Proposal not found');
+
+    // Assuming you have a function to generate PDF from proposal data
+    const pdfBuffer = await generatePDF(proposal.generatedProposal); // Implement this function
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="proposal-${proposal._id}.pdf"`,
+      'Content-Length': pdfBuffer.length
+    });
+
+    res.send(pdfBuffer);
+  } catch (err) {
+    console.error('Error generating PDF:', err.message);
+    res.status(500).send('Failed to generate PDF');
+  }
+};
