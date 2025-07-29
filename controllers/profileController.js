@@ -83,6 +83,40 @@ exports.getProfile = async (req, res) => {
     }
 };
 
+exports.getEmployeeProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (user.role !== "employee") {
+            return res.status(403).json({ message: "You are not authorized to view this profile" });
+        }
+
+        const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+        if (!employeeProfile) {
+            return res.status(404).json({ message: "Employee profile not found" });
+        }
+
+        const data = {
+            name: employeeProfile.name,
+            jobTitle: employeeProfile.jobTitle,
+            accessLevel: employeeProfile.accessLevel,
+            companyName: employeeProfile.companyName,
+            email: user.email,
+            phone: user.mobile,
+            location: employeeProfile.location,
+            highestQualification: employeeProfile.highestQualification,
+            skills: employeeProfile.skills,
+            logoUrl: employeeProfile.logoUrl,
+        };
+        res.status(200).json(data);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 exports.uploadLogo = [
     singleLogoUpload,
     async (req, res) => {
@@ -161,6 +195,46 @@ exports.updateCompanyProfile = [
     }
 ];
 
+exports.updateEmployeeProfile =  async (req, res) => {
+    try {
+        const { name, email, location, phone, highestQualification, skills } = req.body;
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        if (user.role !== "employee") {
+            return res.status(403).json({ message: "You are not authorized to update this profile" });
+        }
+
+        user.email = email;
+        user.mobile = phone;
+        await user.save();
+
+        const employeeProfile = await EmployeeProfile.findOneAndUpdate(
+            { userId: req.user._id },
+            { name, email, location, phone, highestQualification, skills },
+            { new: true }
+        );
+
+        const companyProfile = await CompanyProfile.findOne({ userId: employeeProfile.companyMail });
+        if (companyProfile) {
+            const employeeIndex = companyProfile.employees.findIndex(emp => emp.email === email);
+            if (employeeIndex !== -1) {
+                companyProfile.employees[employeeIndex].name = name;
+                companyProfile.employees[employeeIndex].email = email;
+                companyProfile.employees[employeeIndex].phone = phone;
+                companyProfile.employees[employeeIndex].highestQualification = highestQualification;
+                companyProfile.employees[employeeIndex].skills = skills;
+                await companyProfile.save();
+            }
+        }
+        res.status(200).json({ message: "Employee profile updated successfully" });
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 exports.addEmployee = async (req, res) => {
     try {
         const { name, email, phone, shortDesc, highestQualification, skills, jobTitle, accessLevel } = req.body;
@@ -196,6 +270,7 @@ exports.addEmployee = async (req, res) => {
             if (!user_1) {
                 console.log("User not found");
                 const password = crypto.randomBytes(16).toString("hex");
+                console.log("Password generated: ", password);
                 const hashedPassword = await bcrypt.hash(password, 10);
                 const user_2 = await User.create({ fullName: name, email, mobile: phone, password: hashedPassword, role: "employee" });
                 console.log("User created");

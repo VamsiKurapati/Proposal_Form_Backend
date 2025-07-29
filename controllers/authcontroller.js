@@ -115,7 +115,21 @@ exports.login = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    return res.status(200).json({ token, user: userWithoutPassword });
+    if (user.role === "company") {
+      return res.status(200).json({ token, user: userWithoutPassword });
+    } else if (user.role === "employee") {
+      const employeeProfile = await EmployeeProfile.findOne({ userId: user._id });
+      if (!employeeProfile) {
+        return res.status(404).json({ message: "Employee profile not found" });
+      }
+      const data = {
+        ...userWithoutPassword,
+        accessLevel: employeeProfile.accessLevel,
+      };
+      return res.status(200).json({ token, user: data });
+    } else {
+      return res.status(400).json({ message: "Invalid user role" });
+    }
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Server error" });
