@@ -490,10 +490,10 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       rfp: proposal,
     };
 
-    const res = await axios.post(`http://56.228.64.88:5000/run-proposal-generation`, data);
-    console.log("Response from proposal generation API: ", res.data);
+    const res_1 = await axios.post(`http://56.228.64.88:5000/run-proposal-generation`, data);
+    console.log("Response from proposal generation API: ", res_1.data);
 
-    res.status(200).json(data);
+    res.status(200).json(res_1.data);
   } catch (err) {
     console.error('Error in /sendDataForProposalGeneration:', err);
     res.status(500).json({ error: 'Failed to send data for proposal generation' });
