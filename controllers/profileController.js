@@ -344,7 +344,7 @@ exports.addEmployee = async (req, res) => {
                     console.log("Employee profile updated");
                 } else {
                     console.log("Employee profile not found");
-                    const employeeProfile = new EmployeeProfile({ userId: user_1._id, name, email, phone, shortDesc, highestQualification, skills, jobTitle, accessLevel, companyMail: user.email });
+                    const employeeProfile = new EmployeeProfile({ userId: user_1._id, name, email, phone, about: shortDesc, highestQualification, skills, jobTitle, accessLevel, companyMail: user.email });
                     await employeeProfile.save();
                     console.log("Employee profile created");
                 }
@@ -356,11 +356,11 @@ exports.addEmployee = async (req, res) => {
                 {
                     $push: {
                         employees: {
-                            employeeProfile: employeeProfile._id,
+                            employeeId: employeeProfile._id,
                             name: employeeProfile.name,
                             email: employeeProfile.email,
                             phone: employeeProfile.phone,
-                            shortDesc: employeeProfile.shortDesc,
+                            shortDesc: employeeProfile.about,
                             highestQualification: employeeProfile.highestQualification,
                             skills: employeeProfile.skills,
                             jobTitle: employeeProfile.jobTitle,
@@ -370,6 +370,8 @@ exports.addEmployee = async (req, res) => {
                 },
                 { new: true }
             );
+
+            await companyProfile.save();
         }
 
         res.status(200).json({ message: "Employee added successfully" });
