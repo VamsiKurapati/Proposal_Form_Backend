@@ -448,6 +448,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
     }
 
+    console.log("Proposal: ", proposal);
     console.log("Company Profile: ", companyProfile_1);
 
     const db = mongoose.connection.db;
