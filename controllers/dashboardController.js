@@ -27,7 +27,7 @@ exports.getDashboardData = async (req, res) => {
                 restoreIn: Math.ceil((new Date(proposal.restoreBy).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) + " days"
             }));
 
-            const calendarEvents = await CalendarEvent.find({ employeeId: companyProfile._id });
+            const calendarEvents = await CalendarEvent.find({ companyId: companyProfile._id });
 
             const employees = companyProfile.employees || [];
 
@@ -66,7 +66,12 @@ exports.getDashboardData = async (req, res) => {
                 restoreIn: Math.ceil((new Date(proposal.restoreBy).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) + " days"
             }));
 
-            const calendarEvents = await CalendarEvent.find({ employeeId: user._id });
+            const calendarEvents = await CalendarEvent.find({ 
+                $or: [
+                    { companyId: companyProfile._id},
+                    { employeeId: employeeProfile._id }
+                ]
+            });
 
             const employees = companyProfile.employees || [];
 
@@ -137,7 +142,7 @@ exports.addCalendarEvent = async (req, res) => {
             const companyProfile = await CompanyProfile.findOne({ email: employeeProfile.companyMail });
             const calendarEvent = new CalendarEvent({
                 companyId: companyProfile._id,
-                employeeId: userId,
+                employeeId: employeeProfile._id,
                 title,
                 startDate: start,
                 endDate: end,
