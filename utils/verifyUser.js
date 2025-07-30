@@ -14,16 +14,32 @@ const verifyUser = (roles) => (req, res, next) => {
             return next(errorHandler(401, "Unauthorized: Token is empty or incorrect"));
         }
 
-        jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
             if (err) {
                 return next(errorHandler(403, `Forbidden: ${err}`));
             }
-            req.user = user.user;
-            if (roles.includes(user.user.role)) {
-                next();
-            } else {
-                return next(errorHandler(403, "Forbidden: You are not authorized to access this resource"));
+            
+            const user = decoded.user;
+            if (!user || !user.role) {
+                return next(errorHandler(401, "Unauthorized: Invalid user payload"));
             }
+
+            req.user = user;
+
+            const userRole = user.role;
+            const accessLevel = user.role === "employee" ? user.accessLevel || "viewer" : "viewer";
+
+            // If user's role is allowed directly
+            if (roles.includes(userRole)) {
+                return next();
+            }
+
+            // If user is employee, and accessLevel matches allowed roles
+            if (userRole === "employee" && roles.includes(accessLevel)) {
+                return next();
+            }
+
+            return next(errorHandler(403, "Forbidden: Role or access level not permitted"));
         });
     } catch (err) {
         return next(errorHandler(500, `Internal Server Error: ${err}`));
