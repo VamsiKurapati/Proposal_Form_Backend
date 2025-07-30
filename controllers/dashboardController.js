@@ -44,9 +44,17 @@ exports.getDashboardData = async (req, res) => {
 
             res.status(200).json(data);
         } else if (role === "employee") {
-            const employeeProfile = await EmployeeProfile.findOne({ user: user._id });
+            console.log("Insideemployee");
+            const employeeProfile = await EmployeeProfile.findOne({ userId: user._id });
+            if (!employeeProfile) {
+                return res.status(404).json({ message: "Employee profile not found" });
+            }
+            console.log("Employee Profile", employeeProfile);
             const companyProfile = await CompanyProfile.findOne({ email: employeeProfile.companyMail });
-
+            if (!companyProfile) {
+                return res.status(404).json({ message: "Company profile not found" });
+            }
+            console.log("Company Profile", companyProfile);
             const proposals = await Proposal.find({ companyId: companyProfile._id });
             const totalProposals = proposals.length;
             const inProgressProposals = proposals.filter(proposal => proposal.status === "In Progress").length;
