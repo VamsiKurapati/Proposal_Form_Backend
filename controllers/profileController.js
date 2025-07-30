@@ -142,11 +142,16 @@ exports.getEmployeeProfile = async (req, res) => {
             return res.status(404).json({ message: "Employee profile not found" });
         }
 
+        const companyProfile = await CompanyProfile.findOne({ email: employeeProfile.companyMail });
+        if (!companyProfile) {
+            return res.status(404).json({ message: "Company profile not found" });
+        }
+
         const data = {
             name: employeeProfile.name,
             jobTitle: employeeProfile.jobTitle,
             accessLevel: employeeProfile.accessLevel,
-            companyName: employeeProfile.companyName,
+            companyName: companyProfile.companyName,
             email: user.email,
             phone: user.mobile,
             location: employeeProfile.location,
