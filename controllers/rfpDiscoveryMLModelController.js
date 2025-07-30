@@ -448,11 +448,13 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       companyProfile_1 = await CompanyProfile.findOne({ companyMail: userEmail });
     }
 
+    console.log("Company Profile: ", companyProfile_1);
+
     const db = mongoose.connection.db;
 
     //Extract the company Documents from upload.chunks and save them in the companyProfile_1.companyDocuments
     const files = await db.collection('uploads.files')
-      .find({ _id: { $in: companyProfile_1.documents } })
+      .find({ _id: { $in: companyProfile_1.documents.map(doc => doc.fileId) } })
       .toArray();
 
     const filesWithBase64 = await Promise.all(
