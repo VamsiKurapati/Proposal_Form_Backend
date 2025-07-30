@@ -156,7 +156,24 @@ exports.addCalendarEvent = async (req, res) => {
 exports.setCurrentEditor = async (req, res) => {
     try {
         const { proposalId, editorId } = req.body;
-        const proposal = await Proposal.findByIdAndUpdate(proposalId, { currentEditor: editorId }, { new: true });
+
+        if (!proposalId || !editorId) {
+            return res.status(400).json({ message: "Proposal ID and Editor ID are required" });
+        }
+        
+        const editor = await EmployeeProfile.findById(editorId);
+        if (!editor) {
+            return res.status(404).json({ message: "Editor not found" });
+        }
+        
+        const proposal = await Proposal.find(proposalId);
+        if (!proposal) {
+            return res.status(404).json({ message: "Proposal not found" });
+        }
+
+        proposal.currentEditor = editorId;
+        await proposal.save();
+
         res.status(200).json({ message: "Editor set successfully" });
     } catch (error) {
         res.status(500).json({ message: error.message });
