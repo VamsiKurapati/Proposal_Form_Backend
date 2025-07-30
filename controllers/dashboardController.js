@@ -29,6 +29,8 @@ exports.getDashboardData = async (req, res) => {
 
             const calendarEvents = await CalendarEvent.find({ employeeId: companyProfile._id });
 
+            const employees = companyProfile.employees || [];
+
             const data = {
                 totalProposals,
                 inProgressProposals,
@@ -37,12 +39,13 @@ exports.getDashboardData = async (req, res) => {
                 proposals,
                 deletedProposals,
                 calendarEvents,
+                employees,
             };
 
             res.status(200).json(data);
         } else if (role === "employee") {
             const employeeProfile = await EmployeeProfile.findOne({ user: user._id });
-            const companyProfile = await CompanyProfile.findOne({ companyName: employeeProfile.companyName });
+            const companyProfile = await CompanyProfile.findOne({ email: employeeProfile.companyMail });
 
             const proposals = await Proposal.find({ companyId: companyProfile._id });
             const totalProposals = proposals.length;
@@ -57,6 +60,8 @@ exports.getDashboardData = async (req, res) => {
 
             const calendarEvents = await CalendarEvent.find({ employeeId: user._id });
 
+            const employees = companyProfile.employees || [];
+
             const data = {
                 totalProposals,
                 inProgressProposals,
@@ -64,7 +69,8 @@ exports.getDashboardData = async (req, res) => {
                 wonProposals,
                 proposals,
                 deletedProposals,
-                calendarEvents
+                calendarEvents,
+                employees,
             };
 
             res.status(200).json(data);
