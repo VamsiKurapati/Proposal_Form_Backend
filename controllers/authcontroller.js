@@ -2,6 +2,7 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const CompanyProfile = require("../models/CompanyProfile");
+const EmployeeProfile = require("../models/EmployeeProfile");
 const bcrypt = require("bcryptjs");
 const multer = require("multer");
 const { GridFsStorage } = require("multer-gridfs-storage");
