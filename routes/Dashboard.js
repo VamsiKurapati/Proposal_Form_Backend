@@ -3,7 +3,7 @@ const router = express.Router();
 
 const verifyUser = require("../utils/verifyUser");
 
-const { getDashboardData, editProposalStatus, addCalendarEvent, restoreProposal, deleteProposals, setCurrentEditor, deletePermanently } = require("../controllers/dashboardController");
+const { getDashboardData, editProposalStatus, addCalendarEvent, restoreProposal, deleteProposals, setCurrentEditor, deletePermanently, updateProposal } = require("../controllers/dashboardController");
 
 router.get("/getDashboardData", verifyUser(["company", "editor", "viewer"]), getDashboardData);
 router.put("/editProposalStatus", verifyUser(["company", "editor"]), editProposalStatus);
@@ -12,5 +12,6 @@ router.put("/setCurrentEditor", verifyUser(["company", "editor"]), setCurrentEdi
 router.put("/restoreProposal", verifyUser(["company", "editor"]), restoreProposal);
 router.put("/deleteProposals", verifyUser(["company", "editor"]), deleteProposals);
 router.put("/deletePermanently", verifyUser(["company", "editor"]), deletePermanently);
+router.put("/updateProposal", verifyUser(["company", "editor"]), updateProposal);
 
 module.exports = router;

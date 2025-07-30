@@ -160,7 +160,7 @@ exports.setCurrentEditor = async (req, res) => {
         if (!proposalId || !editorId) {
             return res.status(400).json({ message: "Proposal ID and Editor ID are required" });
         }
-        
+
         const editor = await EmployeeProfile.findById(editorId);
         if (!editor) {
             return res.status(404).json({ message: "Editor not found" });
@@ -205,6 +205,23 @@ exports.deletePermanently = async (req, res) => {
         const { proposalId } = req.body;
         await Proposal.findByIdAndDelete(proposalId);
         res.status(200).json({ message: "Proposal deleted permanently" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.updateProposal = async (req, res) => {
+    try {
+        const { proposalId, updates } = req.body;
+        const proposal = await Proposal.findById(proposalId);
+        if (!proposal) {
+            return res.status(404).json({ message: "Proposal not found" });
+        }
+        proposal.deadline = updates.deadline;
+        proposal.submittedAt = updates.submittedAt;
+        proposal.status = updates.status;
+        await proposal.save();
+        res.status(200).json(proposal);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
