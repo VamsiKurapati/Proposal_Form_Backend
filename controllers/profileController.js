@@ -313,6 +313,8 @@ exports.addEmployee = async (req, res) => {
                     }
                 }
             );
+            await companyProfile.save();
+            console.log("Employee added to company profile");
         } else {
             const user_1 = await User.findOne({ email });
             if (!user_1) {
