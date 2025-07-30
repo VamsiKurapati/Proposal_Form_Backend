@@ -7,6 +7,10 @@ const RFP = require('../models/RFP');
 const SavedRFP = require('../models/SavedRFP');
 const GeneratedProposal = require('../models/GeneratedProposal');
 const DraftRFP = require('../models/DraftRFP');
+const User = require('../models/User');
+const EmployeeProfile = require('../models/EmployeeProfile');
+const CompanyProfile = require('../models/CompanyProfile');
+const axios = require('axios');
 
 exports.getUsersData = async (req, res) => {
   try {
@@ -132,47 +136,6 @@ exports.matchedRFPData = async (req, res) => {
   } catch (err) {
     console.error('Error in /matchedRFPdata:', err);
     res.status(500).json({ error: 'Failed to save matched RFP data' });
-  }
-};
-
-exports.sendDataForProposalGeneration = async (req, res) => {
-  try {
-    const userEmail = req.user.email;
-    console.log("Email: ", userEmail);
-
-    // Universal RFPs from a separate RFPs collection (not user-specific)
-    const allRFPs = await RFP.find({}).lean();
-    console.log("ALL RFP's : ", allRFPs);
-
-    // Recommended: from matched RFPs with match >= 85, sorted by latest
-    const recommendedRFPs = await MatchedRFP.find({ email: userEmail, match: { $gte: 60 } })
-      .sort({ createdAt: -1 })
-      .lean();
-    console.log("Recommended RFP's : ", recommendedRFPs);
-
-    // Saved: from SavedRFPs
-    const savedRFPs_1 = await SavedRFP.find({ userEmail }).lean();
-    const savedRFPs = savedRFPs_1.map((item) => {
-      const { type_, ...restRFP } = item.rfp;
-      return {
-        ...item,
-        rfp: {
-          ...restRFP,
-          type: type_,
-          _id: item.rfpId,
-        },
-      };
-    });
-
-    res.status(200).json({
-      allRFPs,
-      recommendedRFPs,
-      recentRFPs: [], // Placeholder, criteria not defined yet
-      savedRFPs: savedRFPs.map(item => item.rfp),
-    });
-  } catch (err) {
-    console.error('Error in /getAllRFP:', err);
-    res.status(500).json({ error: 'Failed to load RFPs' });
   }
 };
 
@@ -467,5 +430,70 @@ exports.generatedProposal = async (req, res) => {
   } catch (err) {
     console.error('Error in /generateProposal:', err);
     res.status(500).json({ error: 'Failed to generate proposal' });
+  }
+};
+
+exports.sendDataForProposalGeneration = async (req, res) => {
+  try {
+    const { proposal } = req.body;
+    const userEmail = req.user.email;
+    const user = await User.findOne({ email: userEmail });
+    let companyProfile_1 = "";
+    let companyMail = "";
+    if (user.role === "employee") {
+      const employeeProfile = await EmployeeProfile.findOne({ userId: user._id });
+      companyMail = employeeProfile.companyMail;
+      companyProfile_1 = await CompanyProfile.findOne({ companyMail: companyMail });
+    } else {
+      companyProfile_1 = await CompanyProfile.findOne({ companyMail: userEmail });
+    }
+
+    const db = mongoose.connection.db;
+
+    //Extract the company Documents from upload.chunks and save them in the companyProfile_1.companyDocuments
+    const files = await db.collection('uploads.files')
+      .find({ _id: { $in: companyProfile_1.documents } })
+      .toArray();
+
+    const filesWithBase64 = await Promise.all(
+      files.map(async (file) => {
+        const chunks = await db.collection('uploads.chunks')
+          .find({ files_id: file._id })
+          .sort({ n: 1 })
+          .toArray();
+        const fileBuffer = Buffer.concat(chunks.map(chunk => chunk.data.buffer));
+        return {
+          ...file,
+          base64: fileBuffer.toString('base64'),
+        };
+      })
+    );
+
+    const filesMap = filesWithBase64.reduce((acc, file) => {
+      acc[file._id.toString()] = file;
+      return acc;
+    }, {});
+
+    const companyDocuments_1 = (companyProfile_1.documents || []).map((doc) => {
+      return {
+        ...doc,
+        base64: filesMap[doc.toString()].base64,
+      };
+    });
+    console.log("Company Documents: ", companyDocuments_1);
+    companyProfile_1.documents = companyDocuments_1;
+
+    const data = {
+      user: companyProfile_1,
+      rfp: proposal,
+    };
+
+    const res = await axios.post(`http://56.228.64.88:5000/run-proposal-generation`, data);
+    console.log("Response from proposal generation API: ", res.data);
+
+    res.status(200).json(data);
+  } catch (err) {
+    console.error('Error in /sendDataForProposalGeneration:', err);
+    res.status(500).json({ error: 'Failed to send data for proposal generation' });
   }
 };
