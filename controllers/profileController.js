@@ -8,6 +8,7 @@ const Proposal = require("../models/Proposal");
 const { GridFsStorage } = require("multer-gridfs-storage");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
+const { randomInt } = require("crypto");
 const path = require("path");
 const multer = require("multer");
 
@@ -37,6 +38,48 @@ const multiUpload = upload.fields([
 const singleLogoUpload = upload.single('logo');
 const singleCaseStudyUpload = upload.single('file');
 const singleDocumentUpload = upload.single('document');
+
+// function generateStrongPassword(length = randomInt(8, 12)) {
+//   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
+//   const bytes = crypto.randomBytes(length);
+//   let password = '';
+
+//   for (let i = 0; i < bytes.length; i++) {
+//     password += chars[bytes[i] % chars.length];
+//   }
+
+//   return password;
+// }
+
+function generateStrongPassword(length = randomInt(8, 12)) {
+  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+  const digits = '0123456789';
+  const special = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+
+  const allChars = uppercase + lowercase + digits + special;
+
+  if (length < 8) throw new Error("Password length must be at least 8 characters");
+
+  // Ensure one uppercase and one special character
+  let password = '';
+  password += uppercase[randomInt(0, uppercase.length)];
+  password += special[randomInt(0, special.length)];
+
+  // Fill the rest of the password
+  const remainingLength = length - 2;
+  const bytes = crypto.randomBytes(remainingLength);
+
+  for (let i = 0; i < remainingLength; i++) {
+    password += allChars[bytes[i] % allChars.length];
+  }
+
+  // Shuffle the password so required chars are not always at the beginning
+  return password
+    .split('')
+    .sort(() => 0.5 - Math.random())
+    .join('');
+}
 
 exports.getProfile = async (req, res) => {
     try {
@@ -269,7 +312,8 @@ exports.addEmployee = async (req, res) => {
             const user_1 = await User.findOne({ email });
             if (!user_1) {
                 console.log("User not found");
-                const password = crypto.randomBytes(16).toString("hex");
+                // const password = crypto.randomBytes(16).toString("hex");
+                const password = generateStrongPassword();
                 console.log("Password generated: ", password);
                 const hashedPassword = await bcrypt.hash(password, 10);
                 const user_2 = await User.create({ fullName: name, email, mobile: phone, password: hashedPassword, role: "employee" });
