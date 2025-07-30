@@ -479,7 +479,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     const companyDocuments_1 = (companyProfile_1.documents || []).map((doc) => {
       return {
         ...doc,
-        base64: filesMap[doc.toString()].base64,
+        base64: filesMap[doc.fileId.toString()].base64,
       };
     });
     console.log("Company Documents: ", companyDocuments_1);
