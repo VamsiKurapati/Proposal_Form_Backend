@@ -443,9 +443,9 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     if (user.role === "employee") {
       const employeeProfile = await EmployeeProfile.findOne({ userId: user._id });
       companyMail = employeeProfile.companyMail;
-      companyProfile_1 = await CompanyProfile.findOne({ companyMail: companyMail });
+      companyProfile_1 = await CompanyProfile.findOne({ email: companyMail });
     } else {
-      companyProfile_1 = await CompanyProfile.findOne({ companyMail: userEmail });
+      companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
     }
 
     console.log("Company Profile: ", companyProfile_1);
