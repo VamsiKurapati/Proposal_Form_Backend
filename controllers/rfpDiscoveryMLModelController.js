@@ -458,6 +458,9 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       .find({ _id: { $in: companyProfile_1.documents.map(doc => doc.fileId) } })
       .toArray();
 
+    console.log("Files: ", files);
+
+
     const filesWithBase64 = await Promise.all(
       files.map(async (file) => {
         const chunks = await db.collection('uploads.chunks')
@@ -483,8 +486,35 @@ exports.sendDataForProposalGeneration = async (req, res) => {
         base64: filesMap[doc.fileId.toString()].base64,
       };
     });
+
     console.log("Company Documents: ", companyDocuments_1);
-    companyProfile_1.documents = companyDocuments_1;
+
+    const caseStudies_1 = (companyProfile_1.caseStudies || []).map((study) => {
+      return {
+        ...study,
+        name: study.title,
+      };
+    });
+
+    console.log("Case Studies: ", caseStudies_1);
+
+    const pastProjects_1 = (companyProfile_1.proposals || []).map((project) => {
+      return {
+        ...project,
+        name: project.title,
+      };
+    });
+
+    console.log("Past Projects: ", pastProjects_1);
+
+    const certifications_1 = (companyProfile_1.licensesAndCertifications || []).map((certification) => {
+      return {
+        ...certification,
+        name: certification.name,
+      };
+    });
+
+    console.log("Certifications: ", certifications_1);
 
     const rfp = {
       "RFP Title": proposal.title,
@@ -495,12 +525,32 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       "Issuing Organization": proposal.organization,
       "Industry": proposal.organizationType,
       "URL": proposal.link,
-      "Contact Information": proposal.contact,
-      "Timeline": proposal.timeline,
-    }
+      "Contact Information": proposal.contact || '',
+      "Timeline": proposal.timeline || '',
+    };
+
+    const userData = {
+      "_id": companyProfile_1._id,
+      "companyName": companyProfile_1.companyName,
+      "companyOverview": companyProfile_1.bio,
+      "yearOfEstablishment": companyProfile_1.establishedYear,
+      "employeeCount": companyProfile_1.numberOfEmployees,
+      "services": companyProfile_1.services,
+      "industry": companyProfile_1.industry,
+      "location": companyProfile_1.location,
+      "website": companyProfile_1.website,
+      "linkedIn": companyProfile_1.linkedIn,
+      "certifications": certifications_1,
+      "documents": companyDocuments_1,
+      "caseStudies": caseStudies_1,
+      "pastProjects": pastProjects_1,
+    };
+
+    console.log("User Data: ", userData);
+    console.log("RFP: ", rfp);
 
     const data = {
-      user: companyProfile_1,
+      user: userData,
       rfp: rfp,
     };
 
