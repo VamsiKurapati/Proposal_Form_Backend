@@ -555,7 +555,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       "documents": companyDocuments_1,
       "caseStudies": caseStudies_1,
       "pastProjects": pastProjects_1,
-      "employees": employeeData_1,
+      "employees_information": employeeData_1,
       "awards": companyProfile_1.awards || [],
       "clientPortfolio": companyProfile_1.clients || [],
       "preferredIndustries": companyProfile_1.preferredIndustries || [],
