@@ -482,8 +482,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
     const companyDocuments_1 = (companyProfile_1.documents || []).map((doc) => {
       return {
-        ...doc,
-        base64: filesMap[doc.fileId.toString()].base64,
+        [doc.name + "." + doc.type]: filesMap[doc.fileId.toString()].base64,
       };
     });
 
@@ -491,8 +490,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
     const caseStudies_1 = (companyProfile_1.caseStudies || []).map((study) => {
       return {
-        ...study,
-        name: study.title,
+        [study.title]: study.about,
       };
     });
 
@@ -500,7 +498,6 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
     const pastProjects_1 = (companyProfile_1.proposals || []).map((project) => {
       return {
-        ...project,
         name: project.title,
       };
     });
@@ -509,8 +506,9 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
     const certifications_1 = (companyProfile_1.licensesAndCertifications || []).map((certification) => {
       return {
-        ...certification,
         name: certification.name,
+        issuer: certification.issuer,
+        validTill: certification.validTill,
       };
     });
 
