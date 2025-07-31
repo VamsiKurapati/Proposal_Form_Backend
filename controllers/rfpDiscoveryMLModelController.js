@@ -448,8 +448,8 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
     }
 
-    console.log("Proposal: ", proposal);
-    console.log("Company Profile: ", companyProfile_1);
+    // console.log("Proposal: ", proposal);
+    // console.log("Company Profile: ", companyProfile_1);
 
     const db = mongoose.connection.db;
 
@@ -514,6 +514,18 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
     console.log("Certifications: ", certifications_1);
 
+    const employeeData_1 = (companyProfile_1.employees || []).map((employee) => {
+      return {
+        name: employee.name,
+        jobTitle: employee.jobTitle,
+        highestQualification: employee.highestQualification,
+        skills: employee.skills,
+        email: employee.email,
+      };
+    });
+
+    console.log("Employee Data: ", employeeData_1);
+
     const rfp = {
       "RFP Title": proposal.title,
       "RFP Description": proposal.description,
@@ -542,6 +554,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       "documents": companyDocuments_1,
       "caseStudies": caseStudies_1,
       "pastProjects": pastProjects_1,
+      "employees": employeeData_1,
     };
 
     console.log("User Data: ", userData);
