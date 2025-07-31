@@ -81,6 +81,7 @@ exports.getProfile = async (req, res) => {
         }
         const data = {
             companyName: companyProfile.companyName,
+            adminName: companyProfile.adminName,
             industry: companyProfile.industry,
             location: companyProfile.location,
             email: user.email,
@@ -98,6 +99,7 @@ exports.getProfile = async (req, res) => {
             documents: companyProfile.documents,
             awards: companyProfile.awards,
             clients: companyProfile.clients,
+            preferredIndustries: companyProfile.preferredIndustries,
         };
         const Proposals = await Proposal.find({ companyId: req.user._id });
         const totalProposals = Proposals.length;
@@ -197,7 +199,7 @@ exports.updateCompanyProfile = [
     multiUpload,
     async (req, res) => {
         try {
-            const { companyName, industry, location, linkedIn, website, email, phone, services, establishedYear, numberOfEmployees, bio, awards, clients } = req.body;
+            const { companyName, industry, location, linkedIn, website, email, phone, services, establishedYear, numberOfEmployees, bio, awards, clients, preferredIndustries, adminName } = req.body;
             const user = await User.findById(req.user._id);
             if (!user) {
                 return res.status(404).json({ message: "User not found" });
@@ -215,7 +217,9 @@ exports.updateCompanyProfile = [
             if (typeof services === "string") {
                 try {
                     parsedServices = JSON.parse(services);
-                    if (!Array.isArray(parsedServices)) parsedServices = [];
+                    if (!Array.isArray(parsedServices)) {
+                        parsedServices = [];
+                    }
                 } catch {
                     parsedServices = [];
                 }
@@ -227,7 +231,9 @@ exports.updateCompanyProfile = [
             if (typeof awards === "string") {
                 try {
                     parsedAwards = JSON.parse(awards);
-                    if (!Array.isArray(parsedAwards)) parsedAwards = [];
+                    if (!Array.isArray(parsedAwards)) {
+                        parsedAwards = [];
+                    }
                 } catch {
                     parsedAwards = [];
                 }
@@ -236,15 +242,29 @@ exports.updateCompanyProfile = [
             if (typeof clients === "string") {
                 try {
                     parsedClients = JSON.parse(clients);
-                    if (!Array.isArray(parsedClients)) parsedClients = [];
+                    if (!Array.isArray(parsedClients)) {
+                        parsedClients = [];
+                    }
                 } catch {
                     parsedClients = [];
                 }
             }
 
+            let parsedPreferredIndustries = [];
+            if (typeof preferredIndustries === "string") {
+                try {
+                    parsedPreferredIndustries = JSON.parse(preferredIndustries);
+                    if (!Array.isArray(parsedPreferredIndustries)) {
+                        parsedPreferredIndustries = [];
+                    }
+                } catch {
+                    parsedPreferredIndustries = [];
+                }
+            }
+
             const companyProfile = await CompanyProfile.findOneAndUpdate(
                 { userId: req.user._id },
-                { email, companyName, industry, location, linkedIn, website, services: parsedServices, establishedYear, numberOfEmployees, bio, awards: parsedAwards, clients: parsedClients },
+                { email, companyName, adminName, industry, location, linkedIn, website, services: parsedServices, establishedYear, numberOfEmployees, bio, awards: parsedAwards, clients: parsedClients, preferredIndustries: parsedPreferredIndustries },
                 { new: true }
             );
             res.status(200).json({ message: "Company profile updated successfully" });

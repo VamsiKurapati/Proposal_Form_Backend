@@ -1,4 +1,3 @@
-const express = require("express");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const CompanyProfile = require("../models/CompanyProfile");
@@ -8,33 +7,6 @@ const multer = require("multer");
 const { GridFsStorage } = require("multer-gridfs-storage");
 const crypto = require("crypto");
 const path = require("path");
-
-exports.signup = async (req, res) => {
-  const { fullName, email, password, mobile, organization } = req.body;
-
-  try {
-    const existing = await User.findOne({ email });
-    if (existing) {
-      return res.status(400).json({ message: "Email already registered" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = new User({
-      fullName,
-      email,
-      password: hashedPassword,
-      mobile,
-      organization
-    });
-
-    await user.save();
-    return res.status(201).json({ message: "User registered successfully" });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: "Server error" });
-  }
-};
 
 const storage = new GridFsStorage({
   url: process.env.MONGO_URI,
@@ -85,6 +57,7 @@ exports.signupWithProfile = [
         profileData.bio = req.body.bio;
         profileData.establishedYear = req.body.establishedYear;
         profileData.linkedIn = req.body.linkedIn;
+        profileData.adminName = req.body.adminName;
 
         const companyProfile = new CompanyProfile(profileData);
         await companyProfile.save();

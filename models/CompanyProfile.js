@@ -5,6 +5,7 @@ const companyProfileSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   email: { type: String, required: true, unique: true },
   companyName: { type: String, required: true },
+  adminName: { type: String, required: true },
   industry: { type: String, required: true },
   location: { type: String, required: true },
   website: { type: String, required: true },
@@ -13,6 +14,7 @@ const companyProfileSchema = new mongoose.Schema({
   establishedYear: { type: Number, required: true },
   awards: { type: [String], default: [] },
   clients: { type: [String], default: [] },
+  preferredIndustries: { type: [String], default: [] },
   numberOfEmployees: { type: String, default: "0-10" },
   employees: [
     {
