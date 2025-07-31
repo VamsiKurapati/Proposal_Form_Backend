@@ -576,9 +576,152 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     const res_1 = await axios.post(`http://56.228.64.88:5000/run-proposal-generation`, data);
     console.log("Response from proposal generation API: ", res_1.data);
 
-    res.status(200).json(res_1.data);
+    const proposalData = res_1.data;
+    const new_Proposal = new Proposal({
+      rfpId: proposal.rfpId,
+      title: proposal.title,
+      client: proposal.organization,
+      generatedProposal: proposalData.generatedProposal,
+      images: [],
+      companyMail: companyMail,
+      deadline: proposal.deadline,
+      status: "Draft",
+      submittedAt: new Date(),
+      currentEditor: user._id,
+      isDeleted: false,
+      deletedAt: null,
+      deletedBy: null,
+      isSaved: false,
+      savedAt: null,
+      savedBy: null,
+      restoreBy: null,
+      restoredBy: null,
+      restoredAt: null,
+    });
+
+    await new_Proposal.save();
+
+    res.status(200).json(proposalData);
   } catch (err) {
     console.error('Error in /sendDataForProposalGeneration:', err);
     res.status(500).json({ error: 'Failed to send data for proposal generation' });
+  }
+};
+
+exports.sendDataForRFPDiscovery = async (req, res) => {
+  try {
+    const userEmail = req.user.email;
+    const user = await User.findOne({ email: userEmail });
+    let companyProfile_1 = "";
+    let companyMail = "";
+    if (user.role === "employee") {
+      const employeeProfile = await EmployeeProfile.findOne({ userId: user._id });
+      companyMail = employeeProfile.companyMail;
+      companyProfile_1 = await CompanyProfile.findOne({ email: companyMail });
+    } else {
+      companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
+    }
+
+    const db = mongoose.connection.db;
+
+    //Extract the company Documents from upload.chunks and save them in the companyProfile_1.companyDocuments
+    const files = await db.collection('uploads.files')
+      .find({ _id: { $in: companyProfile_1.documents.map(doc => doc.fileId) } })
+      .toArray();
+
+    const filesWithBase64 = await Promise.all(
+      files.map(async (file) => {
+        const chunks = await db.collection('uploads.chunks')
+          .find({ files_id: file._id })
+          .sort({ n: 1 })
+          .toArray();
+        const fileBuffer = Buffer.concat(chunks.map(chunk => chunk.data.buffer));
+        return {
+          ...file,
+          base64: fileBuffer.toString('base64'),
+        };
+      })
+    );
+
+    const filesMap = filesWithBase64.reduce((acc, file) => {
+      acc[file._id.toString()] = file;
+      return acc;
+    }, {});
+
+    const companyDocuments_1 = (companyProfile_1.documents || []).map((doc) => {
+      return {
+        [doc.name + "." + doc.type]: filesMap[doc.fileId.toString()].base64,
+      };
+    });
+
+    const caseStudies_1 = (companyProfile_1.caseStudies || []).map((study) => {
+      return {
+        [study.title]: study.about,
+      };
+    });
+
+    const pastProjects_1 = (companyProfile_1.proposals || []).map((project) => {
+      return {
+        name: project.title,
+      };
+    });
+
+    const certifications_1 = (companyProfile_1.licensesAndCertifications || []).map((certification) => {
+      return {
+        name: certification.name,
+        issuer: certification.issuer,
+        validTill: certification.validTill,
+      };
+    });
+
+    const employeeData_1 = (companyProfile_1.employees || []).map((employee) => {
+      return {
+        name: employee.name,
+        jobTitle: employee.jobTitle,
+        highestQualification: employee.highestQualification,
+        skills: employee.skills,
+        email: employee.email,
+      };
+    });
+
+    const userData = {
+      "_id": companyProfile_1._id,
+      "email": companyProfile_1.email,
+      "companyName": companyProfile_1.companyName,
+      "companyOverview": companyProfile_1.bio,
+      "yearOfEstablishment": companyProfile_1.establishedYear,
+      "employeeCount": companyProfile_1.numberOfEmployees,
+      "services": companyProfile_1.services || [],
+      "industry": companyProfile_1.industry,
+      "location": companyProfile_1.location,
+      "website": companyProfile_1.website,
+      "linkedIn": companyProfile_1.linkedIn,
+      "certifications": certifications_1,
+      "documents": companyDocuments_1,
+      "caseStudies": caseStudies_1,
+      "pastProjects": pastProjects_1,
+      "employees_information": employeeData_1,
+      "awards": companyProfile_1.awards || [],
+      "clientPortfolio": companyProfile_1.clients || [],
+      "preferredIndustries": companyProfile_1.preferredIndustries || [],
+      "pointOfContact": {
+        "name": companyProfile_1.adminName,
+        "email": companyProfile_1.email,
+      }
+    };
+
+    console.log("User Data: ", userData);
+
+    const data = {
+      user: userData,
+    };
+
+    const res_1 = await axios.post(`http://56.228.64.88:5000/run-rfp-discovery`, data);
+    console.log("Response from RFP discovery API: ", res_1.data);
+
+    res.status(200).json(res_1.data);
+  } catch (err) {
+    console.error('Error in /sendDataForRFPDiscovery:', err);
+    res.status(500).json({ error: 'Failed to send data for RFP discovery' });
   }
 };
