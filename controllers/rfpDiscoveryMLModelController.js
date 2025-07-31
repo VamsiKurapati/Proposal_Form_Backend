@@ -114,7 +114,7 @@ exports.matchedRFPData = async (req, res) => {
     // Validate all required fields
     const requiredFields = [
       'title', 'description', 'logo', 'match', 'budget', 'deadline',
-      'organization', 'fundingType', 'organizationType', 'link', 'type', 'email'
+      'organization', 'fundingType', 'organizationType', 'link', 'type', 'contact', 'timeline', 'email'
     ];
 
     const invalidEntry = transformedData.find(rfp =>
@@ -486,9 +486,22 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     console.log("Company Documents: ", companyDocuments_1);
     companyProfile_1.documents = companyDocuments_1;
 
+    const rfp = {
+      "RFP Title": proposal.title,
+      "RFP Description": proposal.description,
+      "Match Score": proposal.match,
+      "Budget": proposal.budget,
+      "Deadline": proposal.deadline,
+      "Issuing Organization": proposal.organization,
+      "Industry": proposal.organizationType,
+      "URL": proposal.link,
+      "Contact Information": proposal.contact,
+      "Timeline": proposal.timeline,
+    }
+
     const data = {
       user: companyProfile_1,
-      rfp: proposal,
+      rfp: rfp,
     };
 
     const res_1 = await axios.post(`http://56.228.64.88:5000/run-proposal-generation`, data);

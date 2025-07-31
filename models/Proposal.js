@@ -6,6 +6,7 @@ const ProposalSchema = new mongoose.Schema({
   title: { type: String, required: true },
   client: { type: String, required: true },
   generatedProposal: { type: Object, required: true, default: {} },
+  images: { type: [String], default: [] },
   companyMail: { type: String, required: true },
   deadline: { type: Date, required: true },
   status: { type: String, required: true },
