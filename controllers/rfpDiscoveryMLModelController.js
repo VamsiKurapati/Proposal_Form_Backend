@@ -545,7 +545,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       "companyOverview": companyProfile_1.bio,
       "yearOfEstablishment": companyProfile_1.establishedYear,
       "employeeCount": companyProfile_1.numberOfEmployees,
-      "services": companyProfile_1.services,
+      "services": companyProfile_1.services || [],
       "industry": companyProfile_1.industry,
       "location": companyProfile_1.location,
       "website": companyProfile_1.website,
@@ -555,6 +555,8 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       "caseStudies": caseStudies_1,
       "pastProjects": pastProjects_1,
       "employees": employeeData_1,
+      "awards": companyProfile_1.awards || [],
+      "clientPortfolio": companyProfile_1.clients || [],
     };
 
     console.log("User Data: ", userData);

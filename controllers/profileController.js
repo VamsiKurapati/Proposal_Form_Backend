@@ -39,46 +39,34 @@ const singleLogoUpload = upload.single('logo');
 const singleCaseStudyUpload = upload.single('file');
 const singleDocumentUpload = upload.single('document');
 
-// function generateStrongPassword(length = randomInt(8, 12)) {
-//   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
-//   const bytes = crypto.randomBytes(length);
-//   let password = '';
-
-//   for (let i = 0; i < bytes.length; i++) {
-//     password += chars[bytes[i] % chars.length];
-//   }
-
-//   return password;
-// }
-
 function generateStrongPassword(length = randomInt(8, 12)) {
-  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const lowercase = 'abcdefghijklmnopqrstuvwxyz';
-  const digits = '0123456789';
-  const special = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+    const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+    const digits = '0123456789';
+    const special = '!@#$%^&*()_+-=[]{}|;:,.<>?';
 
-  const allChars = uppercase + lowercase + digits + special;
+    const allChars = uppercase + lowercase + digits + special;
 
-  if (length < 8) throw new Error("Password length must be at least 8 characters");
+    if (length < 8) throw new Error("Password length must be at least 8 characters");
 
-  // Ensure one uppercase and one special character
-  let password = '';
-  password += uppercase[randomInt(0, uppercase.length)];
-  password += special[randomInt(0, special.length)];
+    // Ensure one uppercase and one special character
+    let password = '';
+    password += uppercase[randomInt(0, uppercase.length)];
+    password += special[randomInt(0, special.length)];
 
-  // Fill the rest of the password
-  const remainingLength = length - 2;
-  const bytes = crypto.randomBytes(remainingLength);
+    // Fill the rest of the password
+    const remainingLength = length - 2;
+    const bytes = crypto.randomBytes(remainingLength);
 
-  for (let i = 0; i < remainingLength; i++) {
-    password += allChars[bytes[i] % allChars.length];
-  }
+    for (let i = 0; i < remainingLength; i++) {
+        password += allChars[bytes[i] % allChars.length];
+    }
 
-  // Shuffle the password so required chars are not always at the beginning
-  return password
-    .split('')
-    .sort(() => 0.5 - Math.random())
-    .join('');
+    // Shuffle the password so required chars are not always at the beginning
+    return password
+        .split('')
+        .sort(() => 0.5 - Math.random())
+        .join('');
 }
 
 exports.getProfile = async (req, res) => {
@@ -108,6 +96,8 @@ exports.getProfile = async (req, res) => {
             employees: companyProfile.employees,
             logoUrl: companyProfile.logoUrl,
             documents: companyProfile.documents,
+            awards: companyProfile.awards,
+            clients: companyProfile.clients,
         };
         const Proposals = await Proposal.find({ companyId: req.user._id });
         const totalProposals = Proposals.length;
@@ -207,7 +197,7 @@ exports.updateCompanyProfile = [
     multiUpload,
     async (req, res) => {
         try {
-            const { companyName, industry, location, linkedIn, website, email, phone, services, establishedYear, numberOfEmployees, bio } = req.body;
+            const { companyName, industry, location, linkedIn, website, email, phone, services, establishedYear, numberOfEmployees, bio, awards, clients } = req.body;
             const user = await User.findById(req.user._id);
             if (!user) {
                 return res.status(404).json({ message: "User not found" });
@@ -231,9 +221,30 @@ exports.updateCompanyProfile = [
                 }
             }
 
+            let parsedAwards = [];
+            let parsedClients = [];
+
+            if (typeof awards === "string") {
+                try {
+                    parsedAwards = JSON.parse(awards);
+                    if (!Array.isArray(parsedAwards)) parsedAwards = [];
+                } catch {
+                    parsedAwards = [];
+                }
+            }
+
+            if (typeof clients === "string") {
+                try {
+                    parsedClients = JSON.parse(clients);
+                    if (!Array.isArray(parsedClients)) parsedClients = [];
+                } catch {
+                    parsedClients = [];
+                }
+            }
+
             const companyProfile = await CompanyProfile.findOneAndUpdate(
                 { userId: req.user._id },
-                { email, companyName, industry, location, linkedIn, website, services: parsedServices, establishedYear, numberOfEmployees, bio },
+                { email, companyName, industry, location, linkedIn, website, services: parsedServices, establishedYear, numberOfEmployees, bio, awards: parsedAwards, clients: parsedClients },
                 { new: true }
             );
             res.status(200).json({ message: "Company profile updated successfully" });
@@ -243,7 +254,7 @@ exports.updateCompanyProfile = [
     }
 ];
 
-exports.updateEmployeeProfile =  async (req, res) => {
+exports.updateEmployeeProfile = async (req, res) => {
     try {
         const { name, email, location, phone, highestQualification, skills } = req.body;
         const user = await User.findById(req.user._id);

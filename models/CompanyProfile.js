@@ -11,8 +11,8 @@ const companyProfileSchema = new mongoose.Schema({
   linkedIn: { type: String, required: true },
   services: { type: [String], default: [] },
   establishedYear: { type: Number, required: true },
-  departments: { type: Number, default: 0 },
-  teamSize: { type: Number, default: 0 },
+  awards: { type: [String], default: [] },
+  clients: { type: [String], default: [] },
   numberOfEmployees: { type: String, default: "0-10" },
   employees: [
     {
