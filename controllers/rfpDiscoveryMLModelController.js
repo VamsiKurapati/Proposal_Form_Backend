@@ -458,7 +458,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       .find({ _id: { $in: companyProfile_1.documents.map(doc => doc.fileId) } })
       .toArray();
 
-    console.log("Files: ", files);
+    // console.log("Files: ", files);
 
 
     const filesWithBase64 = await Promise.all(
@@ -486,7 +486,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       };
     });
 
-    console.log("Company Documents: ", companyDocuments_1);
+    // console.log("Company Documents: ", companyDocuments_1);
 
     const caseStudies_1 = (companyProfile_1.caseStudies || []).map((study) => {
       return {
@@ -494,7 +494,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       };
     });
 
-    console.log("Case Studies: ", caseStudies_1);
+    // console.log("Case Studies: ", caseStudies_1);
 
     const pastProjects_1 = (companyProfile_1.proposals || []).map((project) => {
       return {
@@ -502,7 +502,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       };
     });
 
-    console.log("Past Projects: ", pastProjects_1);
+    // console.log("Past Projects: ", pastProjects_1);
 
     const certifications_1 = (companyProfile_1.licensesAndCertifications || []).map((certification) => {
       return {
@@ -512,7 +512,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       };
     });
 
-    console.log("Certifications: ", certifications_1);
+    // console.log("Certifications: ", certifications_1);
 
     const employeeData_1 = (companyProfile_1.employees || []).map((employee) => {
       return {
@@ -524,7 +524,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       };
     });
 
-    console.log("Employee Data: ", employeeData_1);
+    // console.log("Employee Data: ", employeeData_1);
 
     const rfp = {
       "RFP Title": proposal.title,
