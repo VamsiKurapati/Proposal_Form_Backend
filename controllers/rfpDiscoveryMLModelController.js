@@ -79,7 +79,7 @@ exports.getAllRFP = async (req, res) => {
     res.status(200).json({
       allRFPs,
       recommendedRFPs,
-      recentRFPs,
+      recentRFPs: recommendedRFPs,
       savedRFPs,
     });
   } catch (err) {
