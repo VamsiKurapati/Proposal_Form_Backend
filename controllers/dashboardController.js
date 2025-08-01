@@ -66,9 +66,9 @@ exports.getDashboardData = async (req, res) => {
                 restoreIn: Math.ceil((new Date(proposal.restoreBy).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) + " days"
             }));
 
-            const calendarEvents = await CalendarEvent.find({ 
+            const calendarEvents = await CalendarEvent.find({
                 $or: [
-                    { companyId: companyProfile._id},
+                    { companyId: companyProfile._id },
                     { employeeId: employeeProfile._id }
                 ]
             });
@@ -119,7 +119,7 @@ exports.addCalendarEvent = async (req, res) => {
 
         //console.log("User Data:", user);
 
-        if(user.role === "company") {
+        if (user.role === "company") {
             const companyProfile = await CompanyProfile.findOne({ userId });
             if (!companyProfile) {
                 return res.status(404).json({ message: "Company profile not found" });
@@ -134,7 +134,7 @@ exports.addCalendarEvent = async (req, res) => {
             });
             await calendarEvent.save();
             res.status(201).json(calendarEvent);
-        } else if(user.role === "employee") {
+        } else if (user.role === "employee") {
             const employeeProfile = await EmployeeProfile.findOne({ user: userId });
             if (!employeeProfile) {
                 return res.status(404).json({ message: "Employee profile not found" });
@@ -166,11 +166,11 @@ exports.setCurrentEditor = async (req, res) => {
             return res.status(400).json({ message: "Proposal ID and Editor ID are required" });
         }
 
-        const editor = await EmployeeProfile.findById(editorId);
+        const editor = await User.findById(editorId);
         if (!editor) {
             return res.status(404).json({ message: "Editor not found" });
         }
-        
+
         const proposal = await Proposal.find(proposalId);
         if (!proposal) {
             return res.status(404).json({ message: "Proposal not found" });

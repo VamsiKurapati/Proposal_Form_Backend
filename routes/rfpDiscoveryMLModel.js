@@ -4,20 +4,24 @@ const router = express.Router();
 
 const verifyUser = require('../utils/verifyUser');
 
-const { getUsersData, matchedRFPData, getAllRFP, save, unsave, getUserandRFPData, generatedProposal, getSavedAndDraftRFPs, saveDraftRFP, sendDataForProposalGeneration } = require('../controllers/rfpDiscoveryMLModelController');
+const { getUsersData, matchedRFPData, getAllRFP, saveRFP, unsaveRFP, saveDraftRFP, postAllRFPs, getUserandRFPData, generatedProposal, getSavedAndDraftRFPs, sendDataForProposalGeneration, sendDataForRFPDiscovery } = require('../controllers/rfpDiscoveryMLModelController');
 
 router.get('/getUsersData', getUsersData);
 router.post('/matchedRFPdata', matchedRFPData);
-router.get('/getAllRFP', verifyUser(["company", "editor", "viewer"]), getAllRFP);
-router.post('/saveRFP', verifyUser(["company", "editor", "viewer"]), save);
-router.post('/unsaveRFP', verifyUser(["company", "editor", "viewer"]), unsave);
-
 router.get('/getUserandRFPData', getUserandRFPData);
 router.post('/generatedProposal', generatedProposal);
+router.post('/postAllRFPs', postAllRFPs);
 
+
+router.get('/getAllRFP', verifyUser(["company", "editor", "viewer"]), getAllRFP);
 router.get('/getSavedAndDraftRFPs', verifyUser(["company", "editor", "viewer"]), getSavedAndDraftRFPs);
-router.post('/saveDraftRFP', verifyUser(["company", "editor", "viewer"]), saveDraftRFP);
 
-router.post('/sendDataForProposalGeneration', verifyUser(["company", "editor", "viewer"]), sendDataForProposalGeneration);
+
+router.post('/saveRFP', verifyUser(["company", "editor", "viewer"]), saveRFP);
+router.post('/unsaveRFP', verifyUser(["company", "editor", "viewer"]), unsaveRFP);
+router.post('/saveDraftRFP', verifyUser(["company", "editor"]), saveDraftRFP);
+
+router.post('/sendDataForProposalGeneration', verifyUser(["company", "editor"]), sendDataForProposalGeneration);
+router.post('/sendDataForRFPDiscovery', verifyUser(["company", "editor", "viewer"]), sendDataForRFPDiscovery);
 
 module.exports = router;

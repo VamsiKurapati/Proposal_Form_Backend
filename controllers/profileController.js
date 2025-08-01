@@ -287,6 +287,7 @@ exports.updateEmployeeProfile = async (req, res) => {
 
         user.email = email;
         user.mobile = phone;
+        user.fullName = name;
         await user.save();
 
         const employeeProfile = await EmployeeProfile.findOneAndUpdate(

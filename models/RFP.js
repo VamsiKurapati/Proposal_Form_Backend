@@ -10,10 +10,8 @@ const RFPSchema = new mongoose.Schema({
   fundingType: String,
   organizationType: String,
   link: String,
-  type_: String,
   contact: String,
   timeline: String,
-  email: { type: String, required: true },
 }, {
   timestamps: true
 });
