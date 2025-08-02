@@ -347,12 +347,12 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     const res_1 = await axios.post(`http://56.228.64.88:5000/run-proposal-generation`, data);
     console.log("Response from proposal generation API: ", res_1.data);
 
-    const proposalData = res_1.data;
+    const proposalData = res_1.data.proposal;
     const new_Proposal = new Proposal({
       rfpId: proposal.rfpId,
       title: proposal.title,
       client: proposal.organization,
-      generatedProposal: proposalData.generatedProposal,
+      initialProposal: proposalData,
       companyMail: userEmail,
       deadline: proposal.deadline,
       status: "Draft",
