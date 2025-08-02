@@ -157,6 +157,26 @@ exports.getEmployeeProfile = async (req, res) => {
     }
 };
 
+exports.getProposals = async (req, res) => {
+    try {
+        let userEmail = req.user.email;
+        let companyMail = "";
+
+        if (req.user.role === "company") {
+            companyMail = userEmail;
+        }
+        else {
+            const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+            companyMail = employeeProfile.companyMail;
+        }
+
+        const proposals = await Proposal.find({ companyMail: companyMail }).populate("currentEditor", "_id fullName email");
+        res.status(200).json(proposals);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 exports.uploadLogo = [
     singleLogoUpload,
     async (req, res) => {

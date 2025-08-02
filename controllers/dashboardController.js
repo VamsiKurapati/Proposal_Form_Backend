@@ -14,7 +14,7 @@ exports.getDashboardData = async (req, res) => {
             console.log("Insidecompany");
             const companyProfile = await CompanyProfile.findOne({ userId: user._id });
             console.log("Company Profile", companyProfile);
-            const proposals = await Proposal.find({ companyId: companyProfile._id }).populate('currentEditor', 'name email').sort({ createdAt: -1 });
+            const proposals = await Proposal.find({ companyId: companyProfile._id }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 });
             console.log("Proposals", proposals);
 
             const totalProposals = proposals.length;
