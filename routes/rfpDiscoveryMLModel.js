@@ -13,15 +13,15 @@ router.post('/generatedProposal', generatedProposal);
 router.post('/postAllRFPs', postAllRFPs);
 
 
-router.get('/getAllRFP', verifyUser(["company", "editor", "viewer"]), getAllRFP);
-router.get('/getSavedAndDraftRFPs', verifyUser(["company", "editor", "viewer"]), getSavedAndDraftRFPs);
+router.get('/getAllRFP', verifyUser(["company", "employee"]), getAllRFP);
+router.get('/getSavedAndDraftRFPs', verifyUser(["company", "employee"]), getSavedAndDraftRFPs);
 
 
-router.post('/saveRFP', verifyUser(["company", "editor", "viewer"]), saveRFP);
-router.post('/unsaveRFP', verifyUser(["company", "editor", "viewer"]), unsaveRFP);
-router.post('/saveDraftRFP', verifyUser(["company", "editor"]), saveDraftRFP);
+router.post('/saveRFP', verifyUser(["company", "employee"]), saveRFP);
+router.post('/unsaveRFP', verifyUser(["company", "employee"]), unsaveRFP);
+router.post('/saveDraftRFP', verifyUser(["company", "employee"]), saveDraftRFP);
 
 router.post('/sendDataForProposalGeneration', verifyUser(["company", "editor"]), sendDataForProposalGeneration);
-router.post('/sendDataForRFPDiscovery', verifyUser(["company", "editor", "viewer"]), sendDataForRFPDiscovery);
+router.post('/triggerRFPDiscovery', verifyUser(["company", "employee"]), sendDataForRFPDiscovery);
 
 module.exports = router;
