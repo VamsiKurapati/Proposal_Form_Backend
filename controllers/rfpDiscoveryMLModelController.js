@@ -489,7 +489,7 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
 
     console.log("Response from RFP discovery API: ", res_1.data);
 
-    const nestedRFPs = res_1.data;
+    const nestedRFPs = res_1.data.matches;
 
     const transformedData = [];
 
