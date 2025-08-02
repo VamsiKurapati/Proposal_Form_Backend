@@ -301,7 +301,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       "Match Score": proposal.match,
       "Budget": proposal.budget,
       "Deadline": proposal.deadline,
-      "Issuing Organization": proposal.organization,
+      "Issuing Organization": proposal.organization || "Not found",
       "Industry": proposal.organizationType,
       "URL": proposal.link,
       "Contact Information": proposal.contact || '',
