@@ -483,7 +483,11 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
       user: userData,
     };
 
-    const res_1 = await axios.post(`http://56.228.64.88:5000/run-rfp-discovery`, data);
+    const dataInArray = [data];
+
+    const res_1 = await axios.post(`http://56.228.64.88:5000/run-rfp-discovery`, dataInArray);
+
+    console.log("Response from RFP discovery API: ", res_1.data);
 
     const nestedRFPs = res_1.data;
 
