@@ -233,8 +233,6 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
     }
 
-    console.log("Company Profile: ", companyProfile_1);
-
     const db = mongoose.connection.db;
 
     //Extract the company Documents from upload.chunks and save them in the companyProfile_1.companyDocuments
@@ -336,20 +334,16 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       }
     };
 
-    console.log("User Data: ", userData);
-    console.log("RFP: ", rfp);
-
     const data = {
       user: userData,
       rfp: rfp,
     };
 
     const res_1 = await axios.post(`http://56.228.64.88:5000/run-proposal-generation`, data);
-    console.log("Response from proposal generation API: ", res_1.data);
 
     const proposalData = res_1.data.proposal;
     const new_Proposal = new Proposal({
-      rfpId: proposal.rfpId,
+      rfpId: proposal._id,
       title: proposal.title,
       client: proposal.organization,
       initialProposal: proposalData,
@@ -396,8 +390,6 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
     } else {
       companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
     }
-
-    console.log("Company Profile: ", companyProfile_1);
 
     const db = mongoose.connection.db;
 
@@ -487,14 +479,11 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
       }
     };
 
-    console.log("User Data: ", userData);
-
     const data = {
       user: userData,
     };
 
     const res_1 = await axios.post(`http://56.228.64.88:5000/run-rfp-discovery`, data);
-    console.log("Response from RFP discovery API: ", res_1.data);
 
     const nestedRFPs = res_1.data;
 
