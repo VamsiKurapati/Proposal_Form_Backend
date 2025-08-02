@@ -345,7 +345,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     const new_Proposal = new Proposal({
       rfpId: proposal._id,
       title: proposal.title,
-      client: proposal.organization,
+      client: proposal.organization || "Not found",
       initialProposal: proposalData,
       companyMail: userEmail,
       deadline: proposal.deadline,
