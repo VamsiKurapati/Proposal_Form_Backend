@@ -349,7 +349,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       initialProposal: proposalData,
       companyMail: userEmail,
       deadline: proposal.deadline,
-      status: "Draft",
+      status: "In Progress",
       submittedAt: new Date(),
       currentEditor: req.user._id,
       isDeleted: false,
