@@ -22,9 +22,11 @@ exports.getDashboardData = async (req, res) => {
             const wonProposals = proposals.filter(proposal => proposal.status === "Won").length;
             const submittedProposals = proposals.filter(proposal => proposal.status === "Submitted").length;
 
+            const notDeletedProposals = proposals.filter(proposal => !proposal.isDeleted);
+
             const deletedProposals = proposals.filter(proposal => proposal.isDeleted).map(proposal => ({
                 ...proposal,
-                restoreIn: Math.ceil((new Date(proposal.restoreBy).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) + " days"
+                restoreBy: Math.ceil((new Date(proposal.restoreBy).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) + " days"
             }));
 
             const calendarEvents = await CalendarEvent.find({ companyId: companyProfile._id });
@@ -36,7 +38,7 @@ exports.getDashboardData = async (req, res) => {
                 inProgressProposals,
                 submittedProposals,
                 wonProposals,
-                proposals,
+                proposals: notDeletedProposals,
                 deletedProposals,
                 calendarEvents,
                 employees,
@@ -61,9 +63,11 @@ exports.getDashboardData = async (req, res) => {
             const submittedProposals = proposals.filter(proposal => proposal.status === "Submitted").length;
             const wonProposals = proposals.filter(proposal => proposal.status === "Won").length;
 
+            const notDeletedProposals = proposals.filter(proposal => !proposal.isDeleted);
+
             const deletedProposals = proposals.filter(proposal => proposal.isDeleted).map(proposal => ({
                 ...proposal,
-                restoreIn: Math.ceil((new Date(proposal.restoreBy).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) + " days"
+                restoreBy: Math.ceil((new Date(proposal.restoreBy).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) + " days"
             }));
 
             const calendarEvents = await CalendarEvent.find({
@@ -80,7 +84,7 @@ exports.getDashboardData = async (req, res) => {
                 inProgressProposals,
                 submittedProposals,
                 wonProposals,
-                proposals,
+                proposals: notDeletedProposals,
                 deletedProposals,
                 calendarEvents,
                 employees,
@@ -166,17 +170,23 @@ exports.setCurrentEditor = async (req, res) => {
             return res.status(400).json({ message: "Proposal ID and Editor ID are required" });
         }
 
-        const editor = await User.findById(editorId);
+        const editor = await EmployeeProfile.findById(editorId);
         if (!editor) {
             return res.status(404).json({ message: "Editor not found" });
         }
 
-        const proposal = await Proposal.find(proposalId);
+        const userId = editor.userId;
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const proposal = await Proposal.findById(proposalId);
         if (!proposal) {
             return res.status(404).json({ message: "Proposal not found" });
         }
 
-        proposal.currentEditor = editorId;
+        proposal.currentEditor = user._id;
         await proposal.save();
 
         res.status(200).json({ message: "Editor set successfully" });
