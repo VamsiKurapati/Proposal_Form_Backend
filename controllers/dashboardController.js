@@ -24,10 +24,13 @@ exports.getDashboardData = async (req, res) => {
 
             const notDeletedProposals = proposals.filter(proposal => !proposal.isDeleted);
 
-            const deletedProposals = proposals.filter(proposal => proposal.isDeleted).map(proposal => ({
-                ...proposal,
-                restoreBy: Math.ceil((new Date(proposal.restoreBy).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) + " days"
-            }));
+            const deletedProposals = proposals.filter(proposal => proposal.isDeleted).map(proposal => {
+                const proposalObj = proposal.toObject();
+                return {
+                    ...proposalObj,
+                    restoreIn: Math.ceil((new Date(proposal.restoreBy).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) + " days"
+                };
+            });
 
             const calendarEvents = await CalendarEvent.find({ companyId: companyProfile._id });
 
@@ -65,10 +68,13 @@ exports.getDashboardData = async (req, res) => {
 
             const notDeletedProposals = proposals.filter(proposal => !proposal.isDeleted);
 
-            const deletedProposals = proposals.filter(proposal => proposal.isDeleted).map(proposal => ({
-                ...proposal,
-                restoreBy: Math.ceil((new Date(proposal.restoreBy).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) + " days"
-            }));
+            const deletedProposals = proposals.filter(proposal => proposal.isDeleted).map(proposal => {
+                const proposalObj = proposal.toObject();
+                return {
+                    ...proposalObj,
+                    restoreIn: Math.ceil((new Date(proposal.restoreBy).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) + " days"
+                };
+            });
 
             const calendarEvents = await CalendarEvent.find({
                 $or: [
@@ -198,7 +204,7 @@ exports.setCurrentEditor = async (req, res) => {
 exports.restoreProposal = async (req, res) => {
     try {
         const { proposalId } = req.body;
-        const proposal = await Proposal.findByIdAndUpdate(proposalId, { isDeleted: false, restoredBy: req.user._id, restoredAt: new Date() }, { new: true });
+        const proposal = await Proposal.findByIdAndUpdate(proposalId, { isDeleted: false, deletedBy: null, deletedAt: null, restoreBy: null, restoredBy: req.user._id, restoredAt: new Date() }, { new: true });
         res.status(200).json(proposal);
     } catch (error) {
         res.status(500).json({ message: error.message });
