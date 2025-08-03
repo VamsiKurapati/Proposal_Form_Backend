@@ -367,7 +367,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
     const new_Draft = new DraftRFP({
       userEmail: userEmail,
-      rfpId: proposal.rfpId,
+      rfpId: proposal._id,
       rfp: { ...proposal },
     });
     await new_Draft.save();
