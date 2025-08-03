@@ -279,6 +279,7 @@ exports.updateProposal = async (req, res) => {
         if (!proposal) {
             return res.status(404).json({ message: "Proposal not found" });
         }
+        console.log("Updates", updates);
         proposal.deadline = updates.deadline;
         proposal.submittedAt = updates.submittedAt;
         proposal.status = updates.status;
