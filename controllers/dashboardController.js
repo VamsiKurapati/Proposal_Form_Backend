@@ -28,7 +28,25 @@ exports.getDashboardData = async (req, res) => {
                 const proposalObj = proposal.toObject();
                 return {
                     ...proposalObj,
-                    restoreIn: Math.ceil((new Date(proposal.restoreBy).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) + " days"
+                    restoreIn: (() => {
+                        if (!proposal.restoreBy) return "No restore date";
+
+                        const now = new Date();
+                        const restoreDate = new Date(proposal.restoreBy);
+
+                        if (isNaN(restoreDate.getTime())) return "Invalid restore date";
+
+                        const diffTime = restoreDate.getTime() - now.getTime();
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                        if (diffDays <= 0) {
+                            return "Available for restoration";
+                        } else if (diffDays === 1) {
+                            return "1 day";
+                        } else {
+                            return `${diffDays} days`;
+                        }
+                    })()
                 };
             });
 
@@ -72,7 +90,25 @@ exports.getDashboardData = async (req, res) => {
                 const proposalObj = proposal.toObject();
                 return {
                     ...proposalObj,
-                    restoreIn: Math.ceil((new Date(proposal.restoreBy).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) + " days"
+                    restoreIn: (() => {
+                        if (!proposal.restoreBy) return "No restore date";
+
+                        const now = new Date();
+                        const restoreDate = new Date(proposal.restoreBy);
+
+                        if (isNaN(restoreDate.getTime())) return "Invalid restore date";
+
+                        const diffTime = restoreDate.getTime() - now.getTime();
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                        if (diffDays <= 0) {
+                            return "Available for restoration";
+                        } else if (diffDays === 1) {
+                            return "1 day";
+                        } else {
+                            return `${diffDays} days`;
+                        }
+                    })()
                 };
             });
 
@@ -214,7 +250,12 @@ exports.restoreProposal = async (req, res) => {
 exports.deleteProposals = async (req, res) => {
     try {
         const { proposalIds } = req.body;
-        const proposals = await Proposal.updateMany({ _id: { $in: proposalIds } }, { isDeleted: true, deletedBy: req.user._id, deletedAt: new Date(), restoreBy: new Date() + 15 * 24 * 60 * 60 * 1000 }); // 15 days
+        const proposals = await Proposal.updateMany({ _id: { $in: proposalIds } }, {
+            isDeleted: true,
+            deletedBy: req.user._id,
+            deletedAt: new Date(),
+            restoreBy: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)
+        }); // 15 days
         res.status(200).json(proposals);
     } catch (error) {
         res.status(500).json({ message: error.message });
