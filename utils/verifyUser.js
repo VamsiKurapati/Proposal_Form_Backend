@@ -18,13 +18,15 @@ const verifyUser = (roles) => (req, res, next) => {
             if (err) {
                 return next(errorHandler(403, `Forbidden: ${err}`));
             }
-            
+
             const user = decoded.user;
             if (!user || !user.role) {
                 return next(errorHandler(401, "Unauthorized: Invalid user payload"));
             }
 
             req.user = user;
+
+            console.log(user);
 
             const userRole = user.role;
             const accessLevel = user.role === "employee" ? user.accessLevel || "viewer" : "viewer";
