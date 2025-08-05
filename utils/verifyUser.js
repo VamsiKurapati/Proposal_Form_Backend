@@ -6,9 +6,13 @@ const verifyUser = (roles) => async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
 
+        console.log("Auth Header: ", authHeader);
+
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
             return next(errorHandler(401, "Unauthorized: Missing or malformed token"));
         }
+
+        console.log("Auth Header Split: ", authHeader.split(' '));
 
         const token = authHeader.split(' ')[1];
         if (!token) {
@@ -27,17 +31,13 @@ const verifyUser = (roles) => async (req, res, next) => {
 
             req.user = user;
 
-            console.log(user);
-
-            const userRole = user.role;
-
             // If user's role is allowed directly
-            if (roles.includes(userRole)) {
+            if (roles.includes(req.user.role)) {
                 return next();
             }
 
             // If user is employee, and accessLevel matches allowed roles
-            if (userRole === "employee") {
+            if (req.user.role === "employee") {
                 const employeeProfile = await EmployeeProfile.findOne({ userId: user._id });
                 const accessLevel = employeeProfile.accessLevel || "Viewer";
                 if (roles.includes(accessLevel)) {
