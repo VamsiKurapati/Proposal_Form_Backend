@@ -294,11 +294,14 @@ exports.basicComplianceCheck = async (req, res) => {
 
     const userEmail = "draconx@draconx.com";
 
-    const proposal = await Proposal.find({ email: userEmail }).sort({ createdAt: -1 }).limit(1);
+    const proposal = await Proposal.find({ companyMail: userEmail }).sort({ createdAt: -1 }).limit(1);
+
+    console.log("Proposal: ", proposal);
 
     const initialProposal_1 = proposal.initialProposal;
-    const proposal_in_array = [initialProposal_1];
+    console.log("Initial proposal: ", initialProposal_1);
 
+    const proposal_in_array = [initialProposal_1];
     console.log("Proposal in array: ", proposal_in_array);
 
     const resProposal = await axios.post('http://56.228.64.88:5000/basic-compliance', { proposal_in_array });
