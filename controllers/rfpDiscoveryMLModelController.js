@@ -548,6 +548,55 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
   }
 };
 
+exports.handleFileUploadAndSendForRFPExtraction = async (req, res) => {
+  try {
+    const { formDataToSend } = req.body;
+
+    let userEmail = req.user.email;
+    if (req.user.role === "employee") {
+      const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+      userEmail = employeeProfile.companyMail;
+    }
+
+    console.log("Form Data: ", formDataToSend);
+    console.log("File: ", formDataToSend.file);
+
+    const res = await axios.post(`http://56.228.64.88:5000/extract-structured-rfp`, formDataToSend.file, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    console.log("Response from RFP extraction API: ", res.data);
+
+    const rfp = res.data;
+
+    const newRFP = new MatchedRFP({
+      title: rfp.title,
+      description: rfp.description,
+      organization: rfp.organization,
+      organizationType: rfp.organizationType,
+      link: rfp.link,
+      email: userEmail,
+      match: rfp.match,
+      budget: rfp.budget,
+      deadline: rfp.deadline,
+      contact: rfp.contact,
+      timeline: rfp.timeline,
+      match: 100.00,
+      logo: 'None',
+      type: 'Uploaded',
+    });
+
+    await newRFP.save();
+
+    res.status(200).json(newRFP);
+  } catch (err) {
+    console.error('Error in /handleFileUploadAndSendForRFPExtraction:', err);
+    res.status(500).json({ error: 'Failed to handle file upload and send for RFP extraction' });
+  }
+};
+
 
 
 

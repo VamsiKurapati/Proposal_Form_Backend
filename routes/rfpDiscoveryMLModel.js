@@ -4,7 +4,7 @@ const router = express.Router();
 
 const verifyUser = require('../utils/verifyUser');
 
-const { getUsersData, matchedRFPData, getRecommendedAndSavedRFPs, getOtherRFPs, saveRFP, unsaveRFP, saveDraftRFP, postAllRFPs, getUserandRFPData, generatedProposal, getSavedAndDraftRFPs, sendDataForProposalGeneration, sendDataForRFPDiscovery } = require('../controllers/rfpDiscoveryMLModelController');
+const { getUsersData, matchedRFPData, getRecommendedAndSavedRFPs, getOtherRFPs, saveRFP, unsaveRFP, saveDraftRFP, postAllRFPs, getUserandRFPData, generatedProposal, getSavedAndDraftRFPs, sendDataForProposalGeneration, sendDataForRFPDiscovery, handleFileUploadAndSendForRFPExtraction } = require('../controllers/rfpDiscoveryMLModelController');
 
 router.get('/getUsersData', getUsersData);
 router.post('/matchedRFPdata', matchedRFPData);
@@ -24,5 +24,6 @@ router.post('/saveDraftRFP', verifyUser(["company", "employee"]), saveDraftRFP);
 
 router.post('/sendDataForProposalGeneration', verifyUser(["company", "Editor"]), sendDataForProposalGeneration);
 router.post('/triggerRFPDiscovery', verifyUser(["company", "employee"]), sendDataForRFPDiscovery);
+router.post('/uploadRFPForExtraction', verifyUser(["company", "employee"]), handleFileUploadAndSendForRFPExtraction);
 
 module.exports = router;
