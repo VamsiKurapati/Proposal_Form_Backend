@@ -22,21 +22,11 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// Connect to MongoDB and Start the server
-async function startServer() {
-  try {
-    await dbConnect();
-    app.listen(process.env.PORT, () => {
-      console.log(`server is running on port ${process.env.PORT}`);
-    });
-  } catch (error) {
-    console.error(`Error Connecting To DB: ${error.message}`);
-  }
-}
-
-startServer();
-
-app.use('/api/proposals', proposalRoute);
+// Register routes before starting server
+app.use('/api/proposals', (req, res, next) => {
+  console.log(`=== Proposal route hit: ${req.method} ${req.url} ===`);
+  next();
+}, proposalRoute);
 
 app.use('/api/auth', authRoute);
 
@@ -51,3 +41,17 @@ app.use('/api/dashboard', dashboardRoute);
 app.get('/', (req, res) => {
   res.send('Welcome to the Proposal API');
 });
+
+// Connect to MongoDB and Start the server
+async function startServer() {
+  try {
+    await dbConnect();
+    app.listen(process.env.PORT, () => {
+      console.log(`server is running on port ${process.env.PORT}`);
+    });
+  } catch (error) {
+    console.error(`Error Connecting To DB: ${error.message}`);
+  }
+}
+
+startServer();

@@ -285,7 +285,14 @@ exports.getImage = async (req, res) => {
 };
 
 exports.basicComplianceCheck = async (req, res) => {
+  console.log("=== basicComplianceCheck function called ===");
+  console.log("Request method:", req.method);
+  console.log("Request URL:", req.url);
+  console.log("Request headers:", req.headers);
+
   try {
+    console.log("=== basicComplianceCheck function started ===");
+
     // let userEmail = req.user.email;
     // if (req.user.role === "employee") {
     //   const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
@@ -293,6 +300,7 @@ exports.basicComplianceCheck = async (req, res) => {
     // }
 
     const userEmail = "draconx@draconx.com";
+    console.log("User email: ", userEmail);
 
     const proposals = await Proposal.find({ companyMail: userEmail }).sort({ createdAt: -1 }).limit(1);
 
@@ -329,6 +337,7 @@ exports.basicComplianceCheck = async (req, res) => {
     res.status(200).json(compliance_data);
   } catch (error) {
     console.error('Error in basicComplianceCheck:', error);
+    console.error('Error stack:', error.stack);
     res.status(500).json({ message: error.message });
   }
 };
