@@ -552,6 +552,10 @@ exports.handleFileUploadAndSendForRFPExtraction = async (req, res) => {
   try {
     const { formDataToSend } = req.body;
 
+    console.log("Req: ", req);
+    console.log("Req Body: ", req.body);
+    console.log("Req User: ", req.user);
+
     let userEmail = req.user.email;
     if (req.user.role === "employee") {
       const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
