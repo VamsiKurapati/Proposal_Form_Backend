@@ -297,7 +297,7 @@ exports.basicComplianceCheck = async (req, res) => {
       }
     ];
 
-    const resProposal = await axios.post('http://56.228.64.88:5000/basic-compliance-check', rfp);
+    const resProposal = await axios.post('http://56.228.64.88:5000/basic-compliance', rfp);
 
     console.log("Response: ", resProposal);
 
