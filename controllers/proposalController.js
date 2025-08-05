@@ -294,12 +294,21 @@ exports.basicComplianceCheck = async (req, res) => {
 
     const userEmail = "draconx@draconx.com";
 
-    const proposal = await Proposal.find({ companyMail: userEmail }).sort({ createdAt: -1 }).limit(1);
+    const proposals = await Proposal.find({ companyMail: userEmail }).sort({ createdAt: -1 }).limit(1);
 
-    console.log("Proposal: ", proposal);
+    console.log("Proposals: ", proposals);
 
+    if (!proposals || proposals.length === 0) {
+      return res.status(404).json({ message: "No proposals found for this user" });
+    }
+
+    const proposal = proposals[0]; // Get the first proposal from the array
     const initialProposal_1 = proposal.initialProposal;
     console.log("Initial proposal: ", initialProposal_1);
+
+    if (!initialProposal_1) {
+      return res.status(404).json({ message: "No initial proposal found" });
+    }
 
     const proposal_in_array = [initialProposal_1];
     console.log("Proposal in array: ", proposal_in_array);
@@ -319,6 +328,7 @@ exports.basicComplianceCheck = async (req, res) => {
 
     res.status(200).json(compliance_data);
   } catch (error) {
+    console.error('Error in basicComplianceCheck:', error);
     res.status(500).json({ message: error.message });
   }
 };
