@@ -4,7 +4,7 @@ const router = express.Router();
 
 const verifyUser = require('../utils/verifyUser');
 
-const { getUsersData, matchedRFPData, getAllRFP, saveRFP, unsaveRFP, saveDraftRFP, postAllRFPs, getUserandRFPData, generatedProposal, getSavedAndDraftRFPs, sendDataForProposalGeneration, sendDataForRFPDiscovery } = require('../controllers/rfpDiscoveryMLModelController');
+const { getUsersData, matchedRFPData, getRecommendedAndSavedRFPs, getOtherRFPs, saveRFP, unsaveRFP, saveDraftRFP, postAllRFPs, getUserandRFPData, generatedProposal, getSavedAndDraftRFPs, sendDataForProposalGeneration, sendDataForRFPDiscovery } = require('../controllers/rfpDiscoveryMLModelController');
 
 router.get('/getUsersData', getUsersData);
 router.post('/matchedRFPdata', matchedRFPData);
@@ -13,7 +13,8 @@ router.post('/generatedProposal', generatedProposal);
 router.post('/postAllRFPs', postAllRFPs);
 
 
-router.get('/getAllRFP', verifyUser(["company", "employee"]), getAllRFP);
+router.get('/getRecommendedAndSavedRFPs', verifyUser(["company", "employee"]), getRecommendedAndSavedRFPs);
+router.get('/getOtherRFPs', verifyUser(["company", "employee"]), getOtherRFPs);
 router.get('/getSavedAndDraftRFPs', verifyUser(["company", "employee"]), getSavedAndDraftRFPs);
 
 

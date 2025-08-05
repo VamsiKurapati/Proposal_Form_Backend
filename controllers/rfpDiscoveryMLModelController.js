@@ -43,7 +43,7 @@ exports.postAllRFPs = async (req, res) => {
   }
 };
 
-exports.getAllRFP = async (req, res) => {
+exports.getRecommendedAndSavedRFPs = async (req, res) => {
   try {
     let userEmail = req.user.email;
     console.log("Email: ", userEmail);
@@ -53,19 +53,11 @@ exports.getAllRFP = async (req, res) => {
       userEmail = employeeProfile.companyMail;
     }
 
-    // Universal RFPs from a separate RFPs collection (not user-specific)
-    const allRFPs = await RFP.find({}).lean();
-    console.log("ALL RFP's : ", allRFPs);
-
     // Recommended: from matched RFPs with match >= 60, sorted by latest
     const recommendedRFPs = await MatchedRFP.find({ email: userEmail, match: { $gte: 60 } })
       .sort({ createdAt: -1 })
       .lean();
     console.log("Recommended RFP's : ", recommendedRFPs);
-
-    // 10 Recent RFPs from All RFPs, sorted by latest
-    const recentRFPs = await RFP.find({}).sort({ createdAt: -1 }).limit(10).lean();
-    console.log("Recent RFP's : ", recentRFPs);
 
     // Saved: from SavedRFPs
     const savedRFPs_1 = await SavedRFP.find({ userEmail }).lean();
@@ -77,13 +69,30 @@ exports.getAllRFP = async (req, res) => {
     });
 
     res.status(200).json({
-      allRFPs,
       recommendedRFPs,
-      recentRFPs: recommendedRFPs,
       savedRFPs,
     });
   } catch (err) {
-    console.error('Error in /getAllRFP:', err);
+    console.error('Error in /getRecommendedAndSavedRFPs:', err);
+    res.status(500).json({ error: 'Failed to load RFPs' });
+  }
+};
+
+exports.getOtherRFPs = async (req, res) => {
+  try {
+    let userEmail = req.user.email;
+    if (req.user.role === "employee") {
+      const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+      userEmail = employeeProfile.companyMail;
+    }
+
+    const industries = req.body.industries;
+    const otherRFPs = await RFP.find({ organizationType: { $in: industries } }).lean();
+    console.log("Other RFP's : ", otherRFPs);
+
+    res.status(200).json({ otherRFPs });
+  } catch (err) {
+    console.error('Error in /getOtherRFPs:', err);
     res.status(500).json({ error: 'Failed to load RFPs' });
   }
 };
