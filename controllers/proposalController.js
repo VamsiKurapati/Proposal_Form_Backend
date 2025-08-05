@@ -285,14 +285,7 @@ exports.getImage = async (req, res) => {
 };
 
 exports.basicComplianceCheck = async (req, res) => {
-  console.log("=== basicComplianceCheck function called ===");
-  console.log("Request method:", req.method);
-  console.log("Request URL:", req.url);
-  console.log("Request headers:", req.headers);
-
   try {
-    console.log("=== basicComplianceCheck function started ===");
-
     // let userEmail = req.user.email;
     // if (req.user.role === "employee") {
     //   const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });

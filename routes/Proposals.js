@@ -5,13 +5,13 @@ const { create, readAll, read, serve, update, delete_1, sendProposalPDF, uploadI
 
 router.post('/createProposal', create);
 router.post('/', readAll);
-router.get('/:id', read);
+router.get('/basicComplianceCheck', basicComplianceCheck);
 router.get('/file/:id', serve);
+router.get('/getProposal/:id', sendProposalPDF);
+router.get('/getImage/:imageId', getImage);
+router.get('/:id', read);
 router.put('/:id', update);
 router.delete('/:id', delete_1);
-router.get('/getProposal/:id', sendProposalPDF);
 router.post('/uploadImage', uploadImage);
-router.get('/getImage/:imageId', getImage);
-router.get('/basicComplianceCheck', basicComplianceCheck);
 
 module.exports = router;

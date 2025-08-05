@@ -23,10 +23,7 @@ app.use(cors({
 }));
 
 // Register routes before starting server
-app.use('/api/proposals', (req, res, next) => {
-  console.log(`=== Proposal route hit: ${req.method} ${req.url} ===`);
-  next();
-}, proposalRoute);
+app.use('/api/proposals', proposalRoute);
 
 app.use('/api/auth', authRoute);
 
