@@ -1,7 +1,8 @@
 const { errorHandler } = require("./error");
 const jwt = require('jsonwebtoken');
+const EmployeeProfile = require('../models/EmployeeProfile');
 
-const verifyUser = (roles) => (req, res, next) => {
+const verifyUser = (roles) => async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
 
@@ -14,7 +15,7 @@ const verifyUser = (roles) => (req, res, next) => {
             return next(errorHandler(401, "Unauthorized: Token is empty or incorrect"));
         }
 
-        jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
             if (err) {
                 return next(errorHandler(403, `Forbidden: ${err}`));
             }
@@ -29,7 +30,8 @@ const verifyUser = (roles) => (req, res, next) => {
             console.log(user);
 
             const userRole = user.role;
-            const accessLevel = user.role === "employee" ? user.accessLevel || "viewer" : "viewer";
+            const employeeProfile = await EmployeeProfile.findOne({ userId: user._id });
+            const accessLevel = employeeProfile.accessLevel || "viewer";
 
             // If user's role is allowed directly
             if (roles.includes(userRole)) {
