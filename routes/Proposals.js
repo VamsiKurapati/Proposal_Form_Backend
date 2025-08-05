@@ -12,6 +12,6 @@ router.delete('/:id', delete_1);
 router.get('/getProposal/:id', sendProposalPDF);
 router.post('/uploadImage', uploadImage);
 router.get('/getImage/:imageId', getImage);
-router.post('/basicComplianceCheck', basicComplianceCheck);
+router.get('/basicComplianceCheck', basicComplianceCheck);
 
 module.exports = router;
