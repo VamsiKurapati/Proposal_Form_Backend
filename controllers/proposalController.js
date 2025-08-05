@@ -286,18 +286,22 @@ exports.getImage = async (req, res) => {
 
 exports.basicComplianceCheck = async (req, res) => {
   try {
-    const rfp = [
-      {
-        "Cover Page": "Proposal Title: SmartEd Enhancement Project\nSubmitted by: EduTech Solutions Pvt. Ltd.\nDate: June 15, 2025",
-        "Executive Summary": "This proposal outlines EduTech's plan to enhance the SmartEd e-learning platform with improved AI-based assessment tools, localization support, and mobile-first experience to cater to rural learners. The goal is to boost accessibility and student engagement across government institutions.",
-        "Scope": "1. Redesign frontend to support local languages\n2. Integrate AI-based test generators\n3. Implement analytics dashboards for teachers\n4. Mobile-optimized UI/UX overhaul\n5. Pilot deployment across 50 public schools in Rajasthan",
-        "Budget": "Total Budget Requested: $87,000\nBreakdown: Design - $12k, Dev - $55k, QA - $10k, Deployment - $10k",
-        "Timeline": "Phase 1: July–Aug 2025 (Design & Planning)\nPhase 2: Sep–Dec 2025 (Development)\nPhase 3: Jan 2026 (Pilot Launch)",
-        "Contact Info": "name: Ravi Mehra\nEmail: ravi.m@edutechsol.com\nPhone: +91-9876543210\nCompany Address: 17 Ashok Nagar, Jaipur, India"
-      }
-    ];
+    // let userEmail = req.user.email;
+    // if (req.user.role === "employee") {
+    //   const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+    //   userEmail = employeeProfile.companyMail;
+    // }
 
-    const resProposal = await axios.post('http://56.228.64.88:5000/basic-compliance', rfp);
+    const userEmail = "draconx@draconx.com";
+
+    const proposal = await Proposal.find({ email: userEmail }).sort({ createdAt: -1 }).limit(1);
+
+    const initialProposal_1 = proposal.initialProposal;
+    const proposal_in_array = [initialProposal_1];
+
+    console.log("Proposal in array: ", proposal_in_array);
+
+    const resProposal = await axios.post('http://56.228.64.88:5000/basic-compliance', { proposal_in_array });
 
     console.log("Response: ", resProposal);
 
