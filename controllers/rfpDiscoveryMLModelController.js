@@ -550,13 +550,6 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
 
 exports.handleFileUploadAndSendForRFPExtraction = async (req, res) => {
   try {
-    console.log("Req: ", req);
-    console.log("Req Body: ", req.body);
-    console.log("Req User: ", req.user);
-
-    const { formDataToSend } = req.body;
-
-    console.log("Form Data To Send: ", formDataToSend);
 
     let userEmail = req.user.email;
     if (req.user.role === "employee") {
@@ -564,10 +557,9 @@ exports.handleFileUploadAndSendForRFPExtraction = async (req, res) => {
       userEmail = employeeProfile.companyMail;
     }
 
-    console.log("Form Data: ", formDataToSend);
-    console.log("File: ", formDataToSend.file);
+    console.log("File: ", req.file);
 
-    const res = await axios.post(`http://56.228.64.88:5000/extract-structured-rfp`, formDataToSend.file, {
+    const res = await axios.post(`http://56.228.64.88:5000/extract-structured-rfp`, req.file, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

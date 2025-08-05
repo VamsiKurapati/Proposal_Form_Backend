@@ -6,13 +6,9 @@ const verifyUser = (roles) => async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
 
-        console.log("Auth Header: ", authHeader);
-
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
             return next(errorHandler(401, "Unauthorized: Missing or malformed token"));
         }
-
-        console.log("Auth Header Split: ", authHeader.split(' '));
 
         const token = authHeader.split(' ')[1];
         if (!token) {
