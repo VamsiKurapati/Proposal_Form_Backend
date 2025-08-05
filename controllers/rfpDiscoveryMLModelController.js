@@ -734,6 +734,8 @@ exports.handleFileUploadAndSendForRFPExtraction = [
         }
       }
 
+      console.log("API Response: ", apiResponse);
+
       // Extract RFP data from API response
       let rfp = null;
       if (apiResponse.data && typeof apiResponse.data === 'object') {
