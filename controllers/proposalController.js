@@ -305,7 +305,16 @@ exports.basicComplianceCheck = async (req, res) => {
 
     console.log("Response: ", resProposal);
 
-    res.status(200).json(resProposal.data);
+    const data = resProposal.data.report;
+
+    const firstKey = Object.keys(data)[0];
+    const firstValue = data[firstKey];
+
+    const compliance_data = firstValue["compliance_flags"];
+
+    console.log("Compliance data: ", compliance_data);
+
+    res.status(200).json(compliance_data);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
