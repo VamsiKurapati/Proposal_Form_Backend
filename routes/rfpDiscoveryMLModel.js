@@ -14,7 +14,7 @@ router.post('/postAllRFPs', postAllRFPs);
 
 
 router.get('/getRecommendedAndSavedRFPs', verifyUser(["company", "employee"]), getRecommendedAndSavedRFPs);
-router.get('/getOtherRFPs', verifyUser(["company", "employee"]), getOtherRFPs);
+router.post('/getOtherRFPs', verifyUser(["company", "employee"]), getOtherRFPs);
 router.get('/getSavedAndDraftRFPs', verifyUser(["company", "employee"]), getSavedAndDraftRFPs);
 
 

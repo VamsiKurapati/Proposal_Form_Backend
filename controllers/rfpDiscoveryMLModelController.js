@@ -550,11 +550,13 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
 
 exports.handleFileUploadAndSendForRFPExtraction = async (req, res) => {
   try {
-    const { formDataToSend } = req.body;
-
     console.log("Req: ", req);
     console.log("Req Body: ", req.body);
     console.log("Req User: ", req.user);
+
+    const { formDataToSend } = req.body;
+
+    console.log("Form Data To Send: ", formDataToSend);
 
     let userEmail = req.user.email;
     if (req.user.role === "employee") {
