@@ -711,8 +711,8 @@ exports.handleFileUploadAndSendForRFPExtraction = [
 
       // Send file to external API with retry mechanism
       let apiResponse;
-      let retryCount = 0;
-      const maxRetries = 2;
+      let retryCount = 1;
+      const maxRetries = 1;
 
       while (retryCount <= maxRetries) {
         try {
@@ -744,6 +744,7 @@ exports.handleFileUploadAndSendForRFPExtraction = [
 
           if (structuredData && structuredData.structured_fields) {
             const fields = structuredData.structured_fields;
+            console.log("Fields: ", fields);
 
             rfp = {
               title: fields['RFP Title'] || req.file.originalname.replace('.pdf', '').replace('.txt', ''),
