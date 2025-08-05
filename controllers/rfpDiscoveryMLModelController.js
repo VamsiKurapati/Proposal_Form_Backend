@@ -18,6 +18,11 @@ const storage = new GridFsStorage({
   url: process.env.MONGO_URI,
   options: { useNewUrlParser: true, useUnifiedTopology: true },
   file: (req, file) => {
+    console.log('GridFS storage file config called with:', {
+      originalname: file.originalname,
+      mimetype: file.mimetype,
+      size: file.size
+    });
     return {
       bucketName: "uploads",
       filename: `${Date.now()}-${file.originalname}`,
@@ -25,7 +30,31 @@ const storage = new GridFsStorage({
   },
 });
 
-const upload = multer({ storage });
+// Add error handling for GridFS storage
+storage.on('error', (error) => {
+  console.error('GridFS storage error:', error);
+});
+
+storage.on('connection', () => {
+  console.log('GridFS storage connected successfully');
+});
+
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    console.log('Multer fileFilter called with file:', file);
+    // Accept PDF and TXT files
+    if (file.mimetype === 'application/pdf' || file.mimetype === 'text/plain' ||
+      file.originalname.endsWith('.pdf') || file.originalname.endsWith('.txt')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF and TXT files are allowed'), false);
+    }
+  }
+});
 
 const singleFileUpload = upload.single('file');
 
@@ -615,16 +644,54 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
 };
 
 exports.handleFileUploadAndSendForRFPExtraction = [
-  singleFileUpload,
+  (req, res, next) => {
+    singleFileUpload(req, res, (err) => {
+      if (err instanceof multer.MulterError) {
+        console.error('Multer error:', err);
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({
+            error: 'File too large. Maximum size is 10MB.',
+            details: { code: err.code, field: err.field }
+          });
+        }
+        return res.status(400).json({
+          error: 'File upload error',
+          details: err.message
+        });
+      } else if (err) {
+        console.error('File upload error:', err);
+        return res.status(400).json({
+          error: err.message || 'File upload failed'
+        });
+      }
+      next();
+    });
+  },
   async (req, res) => {
     const startTime = Date.now();
     try {
       // Log the start of the process
       console.log('=== RFP File Upload Started ===');
+      console.log('User ID:', req.user._id);
+      console.log('User Role:', req.user.role);
+      console.log('User Email:', req.user.email);
+      console.log('Request Headers:', req.headers);
+      console.log('Request Body Keys:', Object.keys(req.body || {}));
+      console.log('Request Files:', req.files);
+      console.log('Request File:', req.file);
 
       if (!req.file) {
         console.log('Error: No file uploaded');
-        return res.status(400).json({ error: 'No file uploaded' });
+        console.log('Request body:', req.body);
+        console.log('Request headers content-type:', req.headers['content-type']);
+        return res.status(400).json({
+          error: 'No file uploaded',
+          debug: {
+            headers: req.headers,
+            body: req.body,
+            files: req.files
+          }
+        });
       }
 
       // Log file details
