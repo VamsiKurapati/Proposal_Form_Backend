@@ -11,6 +11,72 @@ const EmployeeProfile = require('../models/EmployeeProfile');
 const CompanyProfile = require('../models/CompanyProfile');
 const axios = require('axios');
 
+const { GridFsStorage } = require("multer-gridfs-storage");
+const multer = require("multer");
+
+const storage = new GridFsStorage({
+  url: process.env.MONGO_URI,
+  options: { useNewUrlParser: true, useUnifiedTopology: true },
+  file: (req, file) => {
+    return {
+      bucketName: "uploads",
+      filename: `${Date.now()}-${file.originalname}`,
+    };
+  },
+});
+
+const upload = multer({ storage });
+
+const singleFileUpload = upload.single('file');
+
+// File validation utilities
+const validateFile = (file) => {
+  const errors = [];
+
+  // File size validation (10MB limit)
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+  if (file.size > MAX_FILE_SIZE) {
+    errors.push({
+      type: 'SIZE_LIMIT_EXCEEDED',
+      message: 'File size too large. Maximum size is 10MB.',
+      currentSize: file.size,
+      maxSize: MAX_FILE_SIZE
+    });
+  }
+
+  // File type validation
+  const allowedMimeTypes = [
+    'application/pdf',
+    'text/plain',
+  ];
+
+  const allowedExtensions = ['.pdf', '.txt'];
+  const fileExtension = file.originalname.toLowerCase().substring(file.originalname.lastIndexOf('.'));
+
+  if (!allowedMimeTypes.includes(file.mimetype) && !allowedExtensions.includes(fileExtension)) {
+    errors.push({
+      type: 'INVALID_FILE_TYPE',
+      message: 'Invalid file type. Only PDF and TXT files are allowed.',
+      allowedTypes: ['PDF', 'TXT'],
+      receivedType: file.mimetype,
+      receivedExtension: fileExtension
+    });
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};
+
+const formatFileSize = (bytes) => {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+};
+
 exports.postAllRFPs = async (req, res) => {
   try {
     const nestedRFPs = req.body;
@@ -548,52 +614,156 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
   }
 };
 
-exports.handleFileUploadAndSendForRFPExtraction = async (req, res) => {
-  try {
+exports.handleFileUploadAndSendForRFPExtraction = [
+  singleFileUpload,
+  async (req, res) => {
+    const startTime = Date.now();
+    try {
+      // Log the start of the process
+      console.log('=== RFP File Upload Started ===');
 
-    let userEmail = req.user.email;
-    if (req.user.role === "employee") {
-      const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
-      userEmail = employeeProfile.companyMail;
+      if (!req.file) {
+        console.log('Error: No file uploaded');
+        return res.status(400).json({ error: 'No file uploaded' });
+      }
+
+      // Log file details
+      console.log('File Details:', {
+        originalName: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: formatFileSize(req.file.size),
+        fieldname: req.file.fieldname
+      });
+
+      // File validation using utility function
+      const validation = validateFile(req.file);
+      if (!validation.isValid) {
+        console.log('File validation failed:', validation.errors);
+        return res.status(400).json({
+          error: 'File validation failed',
+          details: validation.errors
+        });
+      }
+
+      console.log('File validation passed');
+
+      // Get user email
+      let userEmail = req.user.email;
+      if (req.user.role === "employee") {
+        console.log('User is employee, fetching employee profile');
+        const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+        if (!employeeProfile) {
+          console.log('Error: Employee profile not found for user:', req.user._id);
+          return res.status(404).json({ error: 'Employee profile not found' });
+        }
+        userEmail = employeeProfile.companyMail;
+        console.log('Employee company email:', userEmail);
+      }
+
+      console.log('Sending file to RFP extraction API...');
+      console.log('API URL: http://56.228.64.88:5000/extract-structured-rfp');
+      console.log('File size being sent:', req.file.size, 'bytes');
+
+      // Send file to external API
+      const apiResponse = await axios.post(`http://56.228.64.88:5000/extract-structured-rfp`, req.file.buffer, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        timeout: 60000, // 60 second timeout for large files
+      });
+
+      console.log('API Response received');
+      console.log('API Response Status:', apiResponse.status);
+      console.log('API Response Data:', JSON.stringify(apiResponse.data, null, 2));
+
+      const rfp = apiResponse.data;
+
+      // Validate RFP data from API
+      if (!rfp || !rfp.title || !rfp.description) {
+        console.log('Error: Invalid RFP data received from API');
+        console.log('Received data:', rfp);
+        return res.status(400).json({
+          error: 'Invalid RFP data received from extraction API',
+          receivedData: rfp
+        });
+      }
+
+      console.log('Creating new RFP record in database...');
+
+      const newRFP = new MatchedRFP({
+        title: rfp.title,
+        description: rfp.description,
+        organization: rfp.organization || '',
+        organizationType: rfp.organizationType || '',
+        link: rfp.link || '',
+        email: userEmail,
+        budget: rfp.budget || 'Not found',
+        deadline: rfp.deadline || '',
+        contact: rfp.contact || '',
+        timeline: rfp.timeline || '',
+        match: 100.00, // Fixed match score for uploaded files
+        logo: 'None',
+        type: 'Uploaded',
+      });
+
+      await newRFP.save();
+      console.log('RFP saved successfully. RFP ID:', newRFP._id);
+
+      console.log('=== RFP File Upload Completed Successfully ===');
+
+      res.status(200).json({
+        message: 'RFP extracted and saved successfully',
+        rfp: newRFP,
+        fileInfo: {
+          originalName: req.file.originalname,
+          size: formatFileSize(req.file.size),
+          type: req.file.mimetype,
+          extension: req.file.originalname.toLowerCase().substring(req.file.originalname.lastIndexOf('.'))
+        },
+        processingInfo: {
+          uploadTime: new Date().toISOString(),
+          processingDuration: Date.now() - startTime + 'ms'
+        }
+      });
+
+    } catch (err) {
+      console.error('=== RFP File Upload Error ===');
+      console.error('Error Type:', err.constructor.name);
+      console.error('Error Message:', err.message);
+      console.error('Error Stack:', err.stack);
+
+      // Handle specific error types
+      if (err.response?.status === 422) {
+        console.error('API Validation Error:', err.response.data);
+        return res.status(422).json({
+          error: 'File format not supported or invalid content',
+          details: err.response.data
+        });
+      }
+
+      if (err.code === 'ECONNREFUSED') {
+        console.error('Connection refused to RFP extraction service');
+        return res.status(503).json({ error: 'RFP extraction service is unavailable' });
+      }
+
+      if (err.code === 'ETIMEDOUT') {
+        console.error('Request timeout to RFP extraction service');
+        return res.status(504).json({ error: 'RFP extraction service timeout' });
+      }
+
+      if (err.code === 'ENOTFOUND') {
+        console.error('RFP extraction service not found');
+        return res.status(503).json({ error: 'RFP extraction service not available' });
+      }
+
+      // Generic error response
+      res.status(500).json({
+        error: 'Failed to handle file upload and send for RFP extraction',
+        details: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
+      });
     }
-
-    console.log("File: ", req.file);
-
-    const res = await axios.post(`http://56.228.64.88:5000/extract-structured-rfp`, req.file, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-
-    console.log("Response from RFP extraction API: ", res.data);
-
-    const rfp = res.data;
-
-    const newRFP = new MatchedRFP({
-      title: rfp.title,
-      description: rfp.description,
-      organization: rfp.organization,
-      organizationType: rfp.organizationType,
-      link: rfp.link,
-      email: userEmail,
-      match: rfp.match,
-      budget: rfp.budget,
-      deadline: rfp.deadline,
-      contact: rfp.contact,
-      timeline: rfp.timeline,
-      match: 100.00,
-      logo: 'None',
-      type: 'Uploaded',
-    });
-
-    await newRFP.save();
-
-    res.status(200).json(newRFP);
-  } catch (err) {
-    console.error('Error in /handleFileUploadAndSendForRFPExtraction:', err);
-    res.status(500).json({ error: 'Failed to handle file upload and send for RFP extraction' });
   }
-};
+];
 
 
 
