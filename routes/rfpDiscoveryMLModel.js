@@ -21,7 +21,7 @@ router.post('/saveRFP', verifyUser(["company", "employee"]), saveRFP);
 router.post('/unsaveRFP', verifyUser(["company", "employee"]), unsaveRFP);
 router.post('/saveDraftRFP', verifyUser(["company", "employee"]), saveDraftRFP);
 
-router.post('/sendDataForProposalGeneration', verifyUser(["company", "editor"]), sendDataForProposalGeneration);
+router.post('/sendDataForProposalGeneration', verifyUser(["company", "Editor"]), sendDataForProposalGeneration);
 router.post('/triggerRFPDiscovery', verifyUser(["company", "employee"]), sendDataForRFPDiscovery);
 
 module.exports = router;

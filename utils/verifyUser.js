@@ -39,7 +39,7 @@ const verifyUser = (roles) => async (req, res, next) => {
             // If user is employee, and accessLevel matches allowed roles
             if (userRole === "employee") {
                 const employeeProfile = await EmployeeProfile.findOne({ userId: user._id });
-                const accessLevel = employeeProfile.accessLevel || "viewer";
+                const accessLevel = employeeProfile.accessLevel || "Viewer";
                 if (roles.includes(accessLevel)) {
                     return next();
                 }
