@@ -18,11 +18,6 @@ const storage = new GridFsStorage({
   url: process.env.MONGO_URI,
   options: { useNewUrlParser: true, useUnifiedTopology: true },
   file: (req, file) => {
-    console.log('GridFS storage file config called with:', {
-      originalname: file.originalname,
-      mimetype: file.mimetype,
-      size: file.size
-    });
     return {
       bucketName: "uploads",
       filename: `${Date.now()}-${file.originalname}`,
@@ -35,17 +30,12 @@ storage.on('error', (error) => {
   console.error('GridFS storage error:', error);
 });
 
-storage.on('connection', () => {
-  console.log('GridFS storage connected successfully');
-});
-
 const upload = multer({
   storage,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
   fileFilter: (req, file, cb) => {
-    console.log('Multer fileFilter called with file:', file);
     // Accept PDF and TXT files
     if (file.mimetype === 'application/pdf' || file.mimetype === 'text/plain' ||
       file.originalname.endsWith('.pdf') || file.originalname.endsWith('.txt')) {
@@ -109,7 +99,6 @@ const formatFileSize = (bytes) => {
 exports.postAllRFPs = async (req, res) => {
   try {
     const nestedRFPs = req.body;
-    console.log("Nested RFPs: ", nestedRFPs);
 
     const transformedData = [];
 
@@ -141,7 +130,6 @@ exports.postAllRFPs = async (req, res) => {
 exports.getRecommendedAndSavedRFPs = async (req, res) => {
   try {
     let userEmail = req.user.email;
-    console.log("Email: ", userEmail);
 
     if (req.user.role === "employee") {
       const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
@@ -152,7 +140,6 @@ exports.getRecommendedAndSavedRFPs = async (req, res) => {
     const recommendedRFPs = await MatchedRFP.find({ email: userEmail, match: { $gte: 60 } })
       .sort({ createdAt: -1 })
       .lean();
-    console.log("Recommended RFP's : ", recommendedRFPs);
 
     // Saved: from SavedRFPs
     const savedRFPs_1 = await SavedRFP.find({ userEmail }).lean();
@@ -183,7 +170,6 @@ exports.getOtherRFPs = async (req, res) => {
 
     const industries = req.body.industries;
     const otherRFPs = await RFP.find({ organizationType: { $in: industries } }).lean();
-    console.log("Other RFP's : ", otherRFPs);
 
     res.status(200).json({ otherRFPs });
   } catch (err) {
@@ -591,8 +577,6 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
 
     const res_1 = await axios.post(`http://56.228.64.88:5000/run-rfp-discovery`, dataInArray);
 
-    console.log("Response from RFP discovery API: ", res_1.data);
-
     const nestedRFPs = res_1.data.matches;
 
     const transformedData = [];
@@ -631,7 +615,7 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
     );
 
     if (invalidEntry) {
-      console.log("Invalid Entry: ", invalidEntry);
+      // Log invalid entry for debugging but continue processing
     }
 
     const result = await MatchedRFP.insertMany(transformedData);
@@ -668,71 +652,33 @@ exports.handleFileUploadAndSendForRFPExtraction = [
     });
   },
   async (req, res) => {
-    const startTime = Date.now();
     try {
-      // Log the start of the process
-      console.log('=== RFP File Upload Started ===');
-      console.log('User ID:', req.user._id);
-      console.log('User Role:', req.user.role);
-      console.log('User Email:', req.user.email);
-      console.log('Request Headers:', req.headers);
-      console.log('Request Body Keys:', Object.keys(req.body || {}));
-      console.log('Request Files:', req.files);
-      console.log('Request File:', req.file);
-
       if (!req.file) {
-        console.log('Error: No file uploaded');
-        console.log('Request body:', req.body);
-        console.log('Request headers content-type:', req.headers['content-type']);
         return res.status(400).json({
-          error: 'No file uploaded',
-          debug: {
-            headers: req.headers,
-            body: req.body,
-            files: req.files
-          }
+          error: 'No file uploaded'
         });
       }
-
-      // Log file details
-      console.log('File Details:', {
-        originalName: req.file.originalname,
-        mimetype: req.file.mimetype,
-        size: formatFileSize(req.file.size),
-        fieldname: req.file.fieldname
-      });
 
       // File validation using utility function
       const validation = validateFile(req.file);
       if (!validation.isValid) {
-        console.log('File validation failed:', validation.errors);
         return res.status(400).json({
           error: 'File validation failed',
           details: validation.errors
         });
       }
 
-      console.log('File validation passed');
-
       // Get user email
       let userEmail = req.user.email;
       if (req.user.role === "employee") {
-        console.log('User is employee, fetching employee profile');
         const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
         if (!employeeProfile) {
-          console.log('Error: Employee profile not found for user:', req.user._id);
           return res.status(404).json({ error: 'Employee profile not found' });
         }
         userEmail = employeeProfile.companyMail;
-        console.log('Employee company email:', userEmail);
       }
 
-      console.log('Sending file to RFP extraction API...');
-      console.log('API URL: http://56.228.64.88:5000/extract-structured-rfp');
-      console.log('File size being sent:', req.file.size, 'bytes');
-
       // Retrieve file from GridFS since req.file.buffer is undefined with GridFS storage
-      console.log('Retrieving file from GridFS...');
       const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
         bucketName: 'uploads'
       });
@@ -748,11 +694,9 @@ exports.handleFileUploadAndSendForRFPExtraction = [
         });
         downloadStream.on('end', () => {
           const buffer = Buffer.concat(chunks);
-          console.log('File retrieved from GridFS, buffer size:', buffer.length, 'bytes');
           resolve(buffer);
         });
         downloadStream.on('error', (error) => {
-          console.error('Error reading file from GridFS:', error);
           reject(error);
         });
       });
@@ -765,12 +709,6 @@ exports.handleFileUploadAndSendForRFPExtraction = [
         contentType: req.file.mimetype
       });
 
-      console.log('FormData created with file:', {
-        filename: req.file.originalname,
-        contentType: req.file.mimetype,
-        size: fileBuffer.length
-      });
-
       // Send file to external API with retry mechanism
       let apiResponse;
       let retryCount = 0;
@@ -778,7 +716,6 @@ exports.handleFileUploadAndSendForRFPExtraction = [
 
       while (retryCount <= maxRetries) {
         try {
-          console.log(`Attempt ${retryCount + 1} to call external API...`);
           apiResponse = await axios.post(`http://56.228.64.88:5000/extract-structured-rfp`, formData, {
             headers: {
               ...formData.getHeaders(),
@@ -788,41 +725,49 @@ exports.handleFileUploadAndSendForRFPExtraction = [
           break; // Success, exit retry loop
         } catch (error) {
           retryCount++;
-          console.error(`API call attempt ${retryCount} failed:`, error.message);
-
           if (retryCount > maxRetries) {
             throw error; // Re-throw the error if all retries failed
           }
-
           // Wait before retrying (exponential backoff)
           const waitTime = Math.pow(2, retryCount) * 1000;
-          console.log(`Waiting ${waitTime}ms before retry...`);
           await new Promise(resolve => setTimeout(resolve, waitTime));
         }
       }
 
-      console.log('API Response received');
-      console.log('API Response Status:', apiResponse.status);
-      console.log('API Response Data:', JSON.stringify(apiResponse.data, null, 2));
+      // Extract RFP data from API response
+      let rfp = null;
+      if (apiResponse.data && typeof apiResponse.data === 'object') {
+        const uuidKeys = Object.keys(apiResponse.data);
+        if (uuidKeys.length > 0) {
+          const firstKey = uuidKeys[0];
+          const structuredData = apiResponse.data[firstKey];
 
-      let rfp = apiResponse.data;
+          if (structuredData && structuredData.structured_fields) {
+            const fields = structuredData.structured_fields;
 
-      // Check if the API returned the expected structure
-      if (apiResponse.data && apiResponse.data.result) {
-        console.log('API returned result structure, using result field');
-        rfp = apiResponse.data.result;
+            rfp = {
+              title: fields['RFP Title'] || req.file.originalname.replace('.pdf', '').replace('.txt', ''),
+              description: fields['RFP Description'] || `RFP extracted from uploaded file: ${req.file.originalname}`,
+              organization: fields['Issuing Organization'] || 'Unknown',
+              organizationType: fields['Industry'] || 'Unknown',
+              link: fields['url'] || '',
+              budget: fields['Budget or Funding Limit'] || 'Not specified',
+              deadline: fields['Submission Deadline'] || 'Not specified',
+              contact: fields['Contact Information'] || '',
+              timeline: fields['Timeline / Project Schedule'] || '',
+              proposalInstructions: fields['Proposal Submission Instructions'] || '',
+              projectGoals: fields['Project Goals and Objectives'] || '',
+              scopeOfWork: fields['Scope of Work'] || ''
+            };
+          }
+        }
       }
 
-      // Validate RFP data from API
-      if (!rfp || !rfp.title || !rfp.description) {
-        console.log('Error: Invalid RFP data received from API');
-        console.log('Received data:', rfp);
-
-        // Fallback: Create a basic RFP structure from the file name
-        console.log('Creating fallback RFP structure from file name');
-        const fallbackRfp = {
-          title: req.file.originalname.replace('.pdf', '').replace('.txt', ''),
-          description: `RFP extracted from uploaded file: ${req.file.originalname}`,
+      // Create fallback RFP if API data extraction failed
+      if (!rfp) {
+        rfp = {
+          title: "No RFP Title found in the uploaded file",
+          description: "No RFP Description found in the uploaded file",
           organization: 'Unknown',
           organizationType: 'Unknown',
           link: '',
@@ -831,16 +776,23 @@ exports.handleFileUploadAndSendForRFPExtraction = [
           contact: '',
           timeline: ''
         };
-
-        console.log('Using fallback RFP data:', fallbackRfp);
-        rfp = fallbackRfp;
       }
 
-      console.log('Creating new RFP record in database...');
+      // Enhance description with additional extracted information
+      let enhancedDescription = rfp.description;
+      if (rfp.projectGoals) {
+        enhancedDescription += `\n\nProject Goals: ${rfp.projectGoals}`;
+      }
+      if (rfp.scopeOfWork) {
+        enhancedDescription += `\n\nScope of Work: ${rfp.scopeOfWork}`;
+      }
+      if (rfp.proposalInstructions) {
+        enhancedDescription += `\n\nSubmission Instructions: ${rfp.proposalInstructions}`;
+      }
 
       const newRFP = new MatchedRFP({
         title: rfp.title,
-        description: rfp.description,
+        description: enhancedDescription,
         organization: rfp.organization || '',
         organizationType: rfp.organizationType || '',
         link: rfp.link || '',
@@ -849,15 +801,12 @@ exports.handleFileUploadAndSendForRFPExtraction = [
         deadline: rfp.deadline || '',
         contact: rfp.contact || '',
         timeline: rfp.timeline || '',
-        match: 100.00, // Fixed match score for uploaded files
+        match: 100.00,
         logo: 'None',
         type: 'Uploaded',
       });
 
       await newRFP.save();
-      console.log('RFP saved successfully. RFP ID:', newRFP._id);
-
-      console.log('=== RFP File Upload Completed Successfully ===');
 
       res.status(200).json({
         message: 'RFP extracted and saved successfully',
@@ -865,24 +814,13 @@ exports.handleFileUploadAndSendForRFPExtraction = [
         fileInfo: {
           originalName: req.file.originalname,
           size: formatFileSize(req.file.size),
-          type: req.file.mimetype,
-          extension: req.file.originalname.toLowerCase().substring(req.file.originalname.lastIndexOf('.'))
-        },
-        processingInfo: {
-          uploadTime: new Date().toISOString(),
-          processingDuration: Date.now() - startTime + 'ms'
+          type: req.file.mimetype
         }
       });
 
     } catch (err) {
-      console.error('=== RFP File Upload Error ===');
-      console.error('Error Type:', err.constructor.name);
-      console.error('Error Message:', err.message);
-      console.error('Error Stack:', err.stack);
-
       // Handle specific error types
       if (err.response?.status === 422) {
-        console.error('API Validation Error:', err.response.data);
         return res.status(422).json({
           error: 'File format not supported or invalid content',
           details: err.response.data
@@ -890,104 +828,20 @@ exports.handleFileUploadAndSendForRFPExtraction = [
       }
 
       if (err.response?.status === 400) {
-        console.error('API Bad Request Error:', err.response.data);
-        console.error('Full error response:', {
-          status: err.response.status,
-          statusText: err.response.statusText,
-          data: err.response.data,
-          headers: err.response.headers
-        });
         return res.status(400).json({
           error: 'Invalid request to RFP extraction service',
-          details: err.response.data,
-          message: 'The file could not be processed by the extraction service'
+          details: err.response.data
         });
       }
 
-      if (err.code === 'ECONNREFUSED') {
-        console.error('Connection refused to RFP extraction service');
+      if (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'ENOTFOUND') {
         return res.status(503).json({ error: 'RFP extraction service is unavailable' });
       }
 
-      if (err.code === 'ETIMEDOUT') {
-        console.error('Request timeout to RFP extraction service');
-        return res.status(504).json({ error: 'RFP extraction service timeout' });
-      }
-
-      if (err.code === 'ENOTFOUND') {
-        console.error('RFP extraction service not found');
-        return res.status(503).json({ error: 'RFP extraction service not available' });
-      }
-
-      // If we get here, it's a generic error but we can still create a fallback RFP
-      console.log('Creating fallback RFP due to API error...');
-
-      try {
-        // Get user email
-        let userEmail = req.user.email;
-        if (req.user.role === "employee") {
-          const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
-          if (employeeProfile) {
-            userEmail = employeeProfile.companyMail;
-          }
-        }
-
-        // Create fallback RFP
-        const fallbackRfp = {
-          title: req.file.originalname.replace('.pdf', '').replace('.txt', ''),
-          description: `RFP extracted from uploaded file: ${req.file.originalname}`,
-          organization: 'Unknown',
-          organizationType: 'Unknown',
-          link: '',
-          budget: 'Not specified',
-          deadline: 'Not specified',
-          contact: '',
-          timeline: ''
-        };
-
-        const newRFP = new MatchedRFP({
-          title: fallbackRfp.title,
-          description: fallbackRfp.description,
-          organization: fallbackRfp.organization,
-          organizationType: fallbackRfp.organizationType,
-          link: fallbackRfp.link,
-          email: userEmail,
-          budget: fallbackRfp.budget,
-          deadline: fallbackRfp.deadline,
-          contact: fallbackRfp.contact,
-          timeline: fallbackRfp.timeline,
-          match: 100.00,
-          logo: 'None',
-          type: 'Uploaded',
-        });
-
-        await newRFP.save();
-        console.log('Fallback RFP saved successfully. RFP ID:', newRFP._id);
-
-        return res.status(200).json({
-          message: 'RFP saved successfully (fallback mode due to API error)',
-          rfp: newRFP,
-          fileInfo: {
-            originalName: req.file.originalname,
-            size: formatFileSize(req.file.size),
-            type: req.file.mimetype,
-            extension: req.file.originalname.toLowerCase().substring(req.file.originalname.lastIndexOf('.'))
-          },
-          processingInfo: {
-            uploadTime: new Date().toISOString(),
-            processingDuration: Date.now() - startTime + 'ms',
-            note: 'Created using fallback mode due to external API error'
-          }
-        });
-
-      } catch (fallbackError) {
-        console.error('Fallback RFP creation also failed:', fallbackError);
-        // If even the fallback fails, return the original error
-        res.status(500).json({
-          error: 'Failed to handle file upload and send for RFP extraction',
-          details: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
-        });
-      }
+      // Generic error response
+      res.status(500).json({
+        error: 'Failed to handle file upload and send for RFP extraction'
+      });
     }
   }
 ];
@@ -1073,7 +927,6 @@ exports.matchedRFPData = async (req, res) => {
 
       const user = await Proposal.findById(userId);
       if (!user || !user.email) {
-        console.warn(`Skipping user ID ${userId}: Proposal not found or missing email.`);
         continue;
       }
 
