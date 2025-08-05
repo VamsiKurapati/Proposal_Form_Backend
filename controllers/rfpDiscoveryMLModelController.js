@@ -731,10 +731,36 @@ exports.handleFileUploadAndSendForRFPExtraction = [
       console.log('API URL: http://56.228.64.88:5000/extract-structured-rfp');
       console.log('File size being sent:', req.file.size, 'bytes');
 
+      // Retrieve file from GridFS since req.file.buffer is undefined with GridFS storage
+      console.log('Retrieving file from GridFS...');
+      const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+        bucketName: 'uploads'
+      });
+
+      // Get the file stream from GridFS
+      const downloadStream = bucket.openDownloadStream(req.file.id);
+
+      // Convert stream to buffer
+      const chunks = [];
+      const fileBuffer = await new Promise((resolve, reject) => {
+        downloadStream.on('data', (chunk) => {
+          chunks.push(chunk);
+        });
+        downloadStream.on('end', () => {
+          const buffer = Buffer.concat(chunks);
+          console.log('File retrieved from GridFS, buffer size:', buffer.length, 'bytes');
+          resolve(buffer);
+        });
+        downloadStream.on('error', (error) => {
+          console.error('Error reading file from GridFS:', error);
+          reject(error);
+        });
+      });
+
       // Create FormData for the external API
       const FormData = require('form-data');
       const formData = new FormData();
-      formData.append('file', req.file.buffer, {
+      formData.append('file', fileBuffer, {
         filename: req.file.originalname,
         contentType: req.file.mimetype
       });
@@ -742,7 +768,7 @@ exports.handleFileUploadAndSendForRFPExtraction = [
       console.log('FormData created with file:', {
         filename: req.file.originalname,
         contentType: req.file.mimetype,
-        size: req.file.buffer.length
+        size: fileBuffer.length
       });
 
       // Send file to external API with retry mechanism
