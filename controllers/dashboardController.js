@@ -78,7 +78,7 @@ exports.getDashboardData = async (req, res) => {
                 return res.status(404).json({ message: "Company profile not found" });
             }
             console.log("Company Profile", companyProfile);
-            const proposals = await Proposal.find({ email: employeeProfile.companyMail });
+            const proposals = await Proposal.find({ companyMail: companyProfile.email }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 });
             const totalProposals = proposals.length;
             const inProgressProposals = proposals.filter(proposal => proposal.status === "In Progress").length;
             const submittedProposals = proposals.filter(proposal => proposal.status === "Submitted").length;
