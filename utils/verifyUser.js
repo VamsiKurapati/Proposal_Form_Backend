@@ -30,8 +30,6 @@ const verifyUser = (roles) => async (req, res, next) => {
             console.log(user);
 
             const userRole = user.role;
-            const employeeProfile = await EmployeeProfile.findOne({ userId: user._id });
-            const accessLevel = employeeProfile.accessLevel || "viewer";
 
             // If user's role is allowed directly
             if (roles.includes(userRole)) {
@@ -39,8 +37,13 @@ const verifyUser = (roles) => async (req, res, next) => {
             }
 
             // If user is employee, and accessLevel matches allowed roles
-            if (userRole === "employee" && roles.includes(accessLevel)) {
-                return next();
+            if (userRole === "employee") {
+                const employeeProfile = await EmployeeProfile.findOne({ userId: user._id });
+                const accessLevel = employeeProfile.accessLevel || "viewer";
+                if (roles.includes(accessLevel)) {
+                    return next();
+                }
+                return next(errorHandler(403, "Forbidden: Role or access level not permitted"));
             }
 
             return next(errorHandler(403, "Forbidden: Role or access level not permitted"));
