@@ -9,6 +9,7 @@ const multer = require('multer');
 const { GridFsStorage } = require('multer-gridfs-storage');
 const crypto = require('crypto');
 const path = require('path');
+const axios = require('axios');
 require('dotenv').config();
 
 // GridFS Storage - FIXED VERSION
@@ -278,6 +279,29 @@ exports.getImage = async (req, res) => {
     const downloadStream = bucket.openDownloadStream(fileId);
     downloadStream.on('error', () => res.status(404).send('File not found'));
     downloadStream.pipe(res);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.basicComplianceCheck = async (req, res) => {
+  try {
+    const rfp = [
+      {
+        "Cover Page": "Proposal Title: SmartEd Enhancement Project\nSubmitted by: EduTech Solutions Pvt. Ltd.\nDate: June 15, 2025",
+        "Executive Summary": "This proposal outlines EduTech's plan to enhance the SmartEd e-learning platform with improved AI-based assessment tools, localization support, and mobile-first experience to cater to rural learners. The goal is to boost accessibility and student engagement across government institutions.",
+        "Scope": "1. Redesign frontend to support local languages\n2. Integrate AI-based test generators\n3. Implement analytics dashboards for teachers\n4. Mobile-optimized UI/UX overhaul\n5. Pilot deployment across 50 public schools in Rajasthan",
+        "Budget": "Total Budget Requested: $87,000\nBreakdown: Design - $12k, Dev - $55k, QA - $10k, Deployment - $10k",
+        "Timeline": "Phase 1: July–Aug 2025 (Design & Planning)\nPhase 2: Sep–Dec 2025 (Development)\nPhase 3: Jan 2026 (Pilot Launch)",
+        "Contact Info": "name: Ravi Mehra\nEmail: ravi.m@edutechsol.com\nPhone: +91-9876543210\nCompany Address: 17 Ashok Nagar, Jaipur, India"
+      }
+    ];
+
+    const resProposal = await axios.post('http://56.228.64.88:5000/basic-compliance-check', rfp);
+
+    console.log("Response: ", resProposal);
+
+    res.status(200).json(resProposal.data);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

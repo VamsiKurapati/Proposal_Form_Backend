@@ -740,11 +740,11 @@ exports.handleFileUploadAndSendForRFPExtraction = [
 
       // Extract RFP data from API response
       let rfp = null;
-      if (apiResponse.data && typeof apiResponse.data === 'object') {
-        const uuidKeys = Object.keys(apiResponse.data);
-        if (uuidKeys.length > 0) {
-          const firstKey = uuidKeys[0];
-          const structuredData = apiResponse.data[firstKey];
+      if (apiResponse.data && apiResponse.data.result && typeof apiResponse.data.result === 'object') {
+        const resultKeys = Object.keys(apiResponse.data.result);
+        if (resultKeys.length > 0) {
+          const firstKey = resultKeys[0];
+          const structuredData = apiResponse.data.result[firstKey];
 
           if (structuredData && structuredData.structured_fields) {
             const fields = structuredData.structured_fields;
