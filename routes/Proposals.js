@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 
-const { create, readAll, read, serve, update, delete_1, sendProposalPDF, uploadImage, getImage, basicComplianceCheck } = require('../controllers/proposalController');
+const { create, readAll, read, serve, update, delete_1, sendProposalPDF, uploadImage, getImage, basicComplianceCheck, advancedComplianceCheck } = require('../controllers/proposalController');
 
 router.post('/createProposal', create);
 router.post('/', readAll);
 router.get('/basicComplianceCheck', basicComplianceCheck);
+router.get('/advancedComplianceCheck', advancedComplianceCheck);
 router.get('/file/:id', serve);
 router.get('/getProposal/:id', sendProposalPDF);
 router.get('/getImage/:imageId', getImage);

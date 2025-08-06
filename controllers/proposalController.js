@@ -314,7 +314,7 @@ exports.basicComplianceCheck = async (req, res) => {
     const proposal_in_array = [initialProposal_1];
     console.log("Proposal in array: ", proposal_in_array);
 
-    const resProposal = await axios.post('http://56.228.64.88:5000/basic-compliance', { proposal_in_array });
+    const resProposal = await axios.post('http://56.228.64.88:5000/basic-compliance', proposal_in_array);
 
     console.log("Response: ", resProposal);
 
@@ -330,6 +330,78 @@ exports.basicComplianceCheck = async (req, res) => {
     res.status(200).json(compliance_data);
   } catch (error) {
     console.error('Error in basicComplianceCheck:', error);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.advancedComplianceCheck = async (req, res) => {
+  try {
+    const userEmail = "draconx@draconx.com";
+    console.log("User email: ", userEmail);
+
+    // const proposals = await Proposal.find({ companyMail: userEmail }).sort({ createdAt: -1 }).limit(1);
+
+    // if (!proposals || proposals.length === 0) {
+    //   return res.status(404).json({ message: "No proposals found for this user" });
+    // }
+
+    // const proposal = proposals[0];
+    // const initialProposal_1 = proposal.initialProposal;
+
+    // if (!initialProposal_1) {
+    //   return res.status(404).json({ message: "No initial proposal found" });
+    // }
+
+    const initialProposal_1 = {
+      "rfp": {
+        "RFP Title": "24F A-10 Thunderbolt, 26F F-16 Aircraft, 36F Cruise Missile; 39A Patriot Missile; 5995015563032 2VN FMS Australian MH60R; 5995015643224 06F Aircraft, Hercules C-130; 5995016785401 GMA; 5995015328903",
+        "RFP Description": "The solicitation aims to establish an Indefinite Quantity Contract (IQC) for various aircraft components under NAICS 334419. The contract will have a 5-year base period and will involve stock delivery to any facility in the Continental United States. Export control applies, and eligibility for award is limited to suppliers qualified through JCP certification or licensed by the Departments of State or Commerce.",
+        "Issuing Organization": "Defense Logistics Agency (DLA)",
+        "Industry": "Aerospace",
+        "Proposal Submission Instructions": "Electronic (DIBBS) Proposals are to be submitted in accordance with FAR 15.208 and notify/cc the Acquisition Specialist. A copy of the solicitation will be available via the BSM Internet Bid Board System (DIBBS) Homepage (https://www.dibbs.bsm.dla.mil).",
+        "Submission Deadline": "Jul 22, 2025 02:00 pm EDT",
+        "Contact Information": "LaDonna Groven LaDonna.Groven@dla.mil Phone Number 8042792370",
+        "Project Goals and Objectives": "Not found",
+        "Scope of Work": "The contract involves the delivery of various aircraft components with specified part numbers and delivery timelines. The components are to be delivered to any facility in the Continental United States.",
+        "Timeline / Project Schedule": "The solicitation scheduled release date is tentatively 22 Jul 2025.",
+        "Budget or Funding Limit": "Not found",
+        "Evaluation Criteria": "Pricing will be evaluated on the Estimated Annual Demand (EAD).",
+        "Proposal Format/Structure": "Not found",
+        "Eligibility Requirements": "Eligibility for award is limited to suppliers qualified through JCP certification, or licensed by the Departments of State or Commerce.",
+        "Appendices or Annexures": "Not found",
+        "Requested Proposal Information": "- JCP Certification or license by the Departments of State or Commerce, or qualification through international agreements for export-control compliance.\n- DD Form 2345, Military Critical Technical Data Agreement, for access to unclassified data.\n- Electronic proposals submitted in accordance with FAR 15.208.\n- Notification/cc to the Acquisition Specialist upon proposal submission.\n\nAdditional specific documents or forms are not explicitly listed in the provided RFP content."
+      },
+      "proposal": {
+        "Cover Letter": "LaDonna Groven\nDefense Logistics Agency\n804-279-2370\nLaDonna.Groven@dla.mil\n\nDear Ms. Groven,\n\nI am writing to express AeroTech Dynamics Inc.'s keen interest in responding to the RFP titled '24F A-10 Thunderbolt, 26F F-16 Aircraft, 36F Cruise Missile; 39A Patriot Missile; 5995015563032 2VN FMS Australian MH60R; 5995015643224 06F Aircraft, Hercules C-130; 5995016785401 GMA; 5995015328903.' We are excited about the opportunity to collaborate with the Defense Logistics Agency in establishing an Indefinite Quantity Contract for mission-critical aircraft components.\n\nAeroTech Dynamics, established in 2005, is a trusted partner in aerospace and defense technology, specializing in precision-engineered systems that enhance global defense operations. Our mission is to support and secure defense readiness through innovative aerospace solutions, and we are fully committed to meeting the goals outlined in your solicitation.\n\nWe look forward to the possibility of working together and are confident that our expertise and proven track record make us an ideal partner for this project.\n\nSincerely,\n\nJohn Mitchell\nDirector of Defense Programs\nAeroTech Dynamics Inc.\njohn.mitchell@aerotechdynamics.com\n",
+        "Executive Summary": "AeroTech Dynamics Inc. understands the Defense Logistics Agency's need for a reliable supplier of high-quality aircraft components under NAICS 334419. Our company is uniquely positioned to address these needs through our extensive experience and capabilities in aerospace component manufacturing and export compliance.\n\nWe propose to:\n- Deliver precision-engineered components for the A-10, F-16, and C-130 platforms, ensuring seamless integration and performance.\n- Utilize our advanced manufacturing technologies to meet and exceed quality standards, reducing lead times and ensuring timely delivery.\n- Leverage our secure document exchange systems to maintain compliance with export control regulations, safeguarding sensitive information.\n- Provide a dedicated team of experts, including our Lead Aerospace Engineer and Export Compliance Officer, to oversee project execution and ensure adherence to all contractual requirements.\n\nOur approach is designed to provide the DLA with a dependable partner capable of enhancing defense readiness through innovative and compliant solutions.",
+        "Project Plan": "Phase 1: Project Initiation\n- Timeline: Weeks 1-2\n- Deliverables: Kick-off meeting, project charter, and detailed project plan\n- Team Roles: John Mitchell (Project Lead), Lisa Chen (Technical Lead)\n\nPhase 2: Design and Engineering\n- Timeline: Weeks 3-8\n- Deliverables: CAD designs, engineering specifications, and compliance documentation\n- Team Roles: Lisa Chen (Lead Engineer), Carlos Rivera (Compliance Officer)\n\nPhase 3: Manufacturing and Testing\n- Timeline: Weeks 9-20\n- Deliverables: Prototype components, quality assurance reports, and testing results\n- Team Roles: Manufacturing Team, Quality Assurance Team\n\nPhase 4: Delivery and Support\n- Timeline: Weeks 21-24\n- Deliverables: Final components, delivery to specified locations, and ongoing support plan\n- Team Roles: Logistics Team, Customer Support Team\n\nEach phase is designed to ensure timely delivery of high-quality components, with a focus on compliance and performance.",
+        "Partnership Overview": "Pricing Structure:\n- Competitive pricing based on volume and component complexity\n- Optional add-ons: Expedited shipping, extended warranty, and technical support packages\n\nCommunication Plan:\n- Regular updates via email and scheduled conference calls\n- Primary Point of Contact: John Mitchell (john.mitchell@aerotechdynamics.com)\n\nOur partnership approach is scalable, allowing for adjustments based on evolving project needs and priorities. We are committed to maintaining open lines of communication and providing exceptional service throughout the contract duration.",
+        "References & Proven Results": "Defense        Logistics Agency (DLA):\n- Supplied avionics and connectors for F-16 and A-10 Thunderbolt contracts, achieving a 98% on-time delivery rate and receiving the 2022 DLA Exceptional Performance Supplier Award.\n\nU.S. Air Force Logistics Center:\n- Participated in a multi-year IDIQ for the Hercules C-130 program, resulting in a 15% reduction in component lead times and enhanced operational readiness.\n\nThese successful collaborations demonstrate our ability to deliver high-quality solutions that meet the rigorous demands of defense agencies.",
+        "email": "john.mitchell@aerotechdynamics.com",
+        "rfpTitle": "24F A-10 Thunderbolt, 26F F-16 Aircraft, 36F Cruise Missile; 39A Patriot Missile; 5995015563032 2VN FMS Australian MH60R; 5995015643224 06F Aircraft, Hercules C-130; 5995016785401 GMA; 5995015328903"
+      }
+    };
+
+    const proposal_in_array = [initialProposal_1];
+    console.log("Proposal in array: ", proposal_in_array);
+
+    const resProposal = await axios.post('http://56.228.64.88:5000/advanced-compliance', initialProposal_1);
+
+    console.log("Response: ", resProposal);
+
+    const data = resProposal.data.report;
+
+    const firstKey = Object.keys(data)[0];
+    const firstValue = data[firstKey];
+
+    const compliance_data = firstValue["compliance_flags"];
+
+    console.log("Compliance data: ", compliance_data);
+
+    res.status(200).json(compliance_data);
+  } catch (error) {
+    console.error('Error in advancedComplianceCheck:', error);
     console.error('Error stack:', error.stack);
     res.status(500).json({ message: error.message });
   }
