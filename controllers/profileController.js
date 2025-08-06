@@ -111,6 +111,7 @@ exports.getProfile = async (req, res) => {
             activeProposals: Proposals.filter(proposal => proposal.status === "In Progress").length,
             wonProposals,
             successRate,
+            proposals: Proposals
         };
         res.status(200).json(data_1);
     } catch (error) {
