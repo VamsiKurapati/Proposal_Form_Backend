@@ -314,7 +314,7 @@ exports.basicComplianceCheck = async (req, res) => {
     const proposal_in_array = [initialProposal_1];
     console.log("Proposal in array: ", proposal_in_array);
 
-    const resProposal = await axios.post('http://56.228.64.88:5000/basic-compliance', proposal_in_array);
+    const resProposal = await axios.post('http://56.228.64.88:5000/basic-compliance', initialProposal_1);
 
     console.log("Response: ", resProposal);
 
