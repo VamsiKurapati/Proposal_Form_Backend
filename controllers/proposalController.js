@@ -311,19 +311,10 @@ exports.basicComplianceCheck = async (req, res) => {
       return res.status(404).json({ message: "No initial proposal found" });
     }
 
-    const data_1 = {
-      "Cover Page": initialProposal_1["Cover Letter"] || "",
-      "Executive Summary": initialProposal_1["Executive Summary"] || "",
-      "Scope": initialProposal_1["Scope"] || "",
-      "Budget": initialProposal_1["Budget"] || "",
-      "Timeline": initialProposal_1["Project Plan"] || "",
-      "Contact Information": initialProposal_1["Contact Information"] || ""
-    };
-
     // const proposal_in_array = [initialProposal_1];
     // console.log("Proposal in array: ", proposal_in_array);
 
-    const resProposal = await axios.post('http://56.228.64.88:5000/basic-compliance', data_1);
+    const resProposal = await axios.post('http://56.228.64.88:5000/basic-compliance', initialProposal_1);
 
     console.log("Response: ", resProposal);
 
@@ -403,10 +394,12 @@ exports.advancedComplianceCheck = async (req, res) => {
 
     const present_data = data.present_information;
     const missing_data = data.missing_information;
+    const requested_data = data.requested_information;
     console.log("Present data: ", present_data);
     console.log("Missing data: ", missing_data);
+    console.log("Requested data: ", requested_data);
 
-    res.status(200).json({ present_data, missing_data });
+    res.status(200).json({ present_data, missing_data, requested_data });
   } catch (error) {
     console.error('Error in advancedComplianceCheck:', error);
     console.error('Error stack:', error.stack);
