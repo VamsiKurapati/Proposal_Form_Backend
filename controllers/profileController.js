@@ -101,7 +101,7 @@ exports.getProfile = async (req, res) => {
             clients: companyProfile.clients,
             preferredIndustries: companyProfile.preferredIndustries,
         };
-        const Proposals = await Proposal.find({ companyId: req.user._id });
+        const Proposals = await Proposal.find({ companyMail: companyProfile.email });
         const totalProposals = Proposals.length;
         const wonProposals = Proposals.filter(proposal => proposal.status === "Won").length;
         const successRate = totalProposals === 0 ? "0.00" : ((wonProposals / totalProposals) * 100).toFixed(2);
