@@ -392,14 +392,12 @@ exports.advancedComplianceCheck = async (req, res) => {
 
     const data = resProposal.data.report;
 
-    const firstKey = Object.keys(data)[0];
-    const firstValue = data[firstKey];
+    const present_data = data.present_information;
+    const missing_data = data.missing_information;
+    console.log("Present data: ", present_data);
+    console.log("Missing data: ", missing_data);
 
-    const compliance_data = firstValue["compliance_flags"];
-
-    console.log("Compliance data: ", compliance_data);
-
-    res.status(200).json(compliance_data);
+    res.status(200).json({ present_data, missing_data });
   } catch (error) {
     console.error('Error in advancedComplianceCheck:', error);
     console.error('Error stack:', error.stack);
