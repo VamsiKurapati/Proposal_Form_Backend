@@ -314,9 +314,9 @@ exports.basicComplianceCheck = async (req, res) => {
     const data_1 = {
       "Cover Page": initialProposal_1["Cover Letter"] || "",
       "Executive Summary": initialProposal_1["Executive Summary"] || "",
-      "Scope": initialProposal_1["Project Plan"] || "",
+      "Scope": initialProposal_1["Scope"] || "",
       "Budget": initialProposal_1["Budget"] || "",
-      "Timeline": initialProposal_1["Scope"] || "",
+      "Timeline": initialProposal_1["Project Plan"] || "",
       "Contact Information": initialProposal_1["Contact Information"] || ""
     };
 
