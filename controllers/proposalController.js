@@ -311,10 +311,19 @@ exports.basicComplianceCheck = async (req, res) => {
       return res.status(404).json({ message: "No initial proposal found" });
     }
 
-    const proposal_in_array = [initialProposal_1];
-    console.log("Proposal in array: ", proposal_in_array);
+    const data_1 = {
+      "Cover Page": initialProposal_1["Cover Letter"] || "",
+      "Executive Summary": initialProposal_1["Executive Summary"] || "",
+      "Scope": initialProposal_1["Project Plan"] || "",
+      "Budget": initialProposal_1["Budget"] || "",
+      "Timeline": initialProposal_1["Scope"] || "",
+      "Contact Information": initialProposal_1["Contact Information"] || ""
+    };
 
-    const resProposal = await axios.post('http://56.228.64.88:5000/basic-compliance', initialProposal_1);
+    // const proposal_in_array = [initialProposal_1];
+    // console.log("Proposal in array: ", proposal_in_array);
+
+    const resProposal = await axios.post('http://56.228.64.88:5000/basic-compliance', data_1);
 
     console.log("Response: ", resProposal);
 
