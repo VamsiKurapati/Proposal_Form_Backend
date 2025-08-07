@@ -10,6 +10,7 @@ const rfpDiscovery = require('./routes/rfpDiscoveryMLModel.js');
 const profileRoute = require('./routes/Profile.js');
 const sampleRoute = require('./routes/Sample.js');
 const dashboardRoute = require('./routes/Dashboard.js');
+const superAdminRoute = require('./routes/superAdmin.js');
 
 const dbConnect = require('./utils/dbConnect.js');
 
@@ -34,6 +35,8 @@ app.use('/api/profile', profileRoute);
 app.use('/api/sample', sampleRoute);
 
 app.use('/api/dashboard', dashboardRoute);
+
+app.use('/api/superadmin', superAdminRoute);
 
 app.get('/', (req, res) => {
   res.send('Welcome to the Proposal API');
