@@ -30,7 +30,7 @@ const paymentSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['succeeded', 'failed', 'pending', 'refunded'],
+    enum: ['succeeded', 'failed', 'pending', 'refunded, pending refund'],
     required: true
   },
   paid_at: {

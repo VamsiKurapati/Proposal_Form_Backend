@@ -11,6 +11,7 @@ const supportSchema = new mongoose.Schema({
     enum: ['Open', 'In progress', 'Resolved', 'Closed'],
     default: 'Open'
   },
+  
   priority: { 
     type: String, 
     required: true, 
