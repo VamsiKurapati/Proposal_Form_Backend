@@ -13,6 +13,7 @@ const dashboardRoute = require('./routes/Dashboard.js');
 const superAdminRoute = require('./routes/SuperAdmin.js');
 
 const dbConnect = require('./utils/dbConnect.js');
+require('./utils/cronJob.js');
 
 app.use(express.json());
 

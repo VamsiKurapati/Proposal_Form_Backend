@@ -11,6 +11,7 @@ const crypto = require("crypto");
 const { randomInt } = require("crypto");
 const path = require("path");
 const multer = require("multer");
+const nodemailer = require("nodemailer");
 
 const storage = new GridFsStorage({
     url: process.env.MONGO_URI,
@@ -28,6 +29,50 @@ const storage = new GridFsStorage({
         });
     },
 });
+
+
+// Utility function to send email and await until mail is sent
+async function sendEmail(email, password) {
+    return new Promise((resolve, reject) => {
+        const transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 465,
+            secure: true,
+            auth: {
+              user: process.env.MAIL_USER,
+              pass: process.env.MAIL_PASS
+            }
+          });
+          
+        //   transporter.verify((error, success) => {
+        //       if (error) {
+        //         console.error("SMTP connection error:", error);
+        //       } else {
+        //         console.log("SMTP server is ready to take messages");
+        //       }
+        //     });
+
+        const mailOptions = {
+            from: process.env.EMAIL,
+            to: email,
+            subject: "Welcome to the team",
+            text: `Your password is: ${password}`
+        };
+          
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.log(error);
+                reject(error);
+            } else {
+                console.log("Email sent: " + info.response);
+                resolve(info);
+            }
+        });
+    });
+}
+
+
+
 
 const upload = multer({ storage });
 const multiUpload = upload.fields([
@@ -380,6 +425,7 @@ exports.addEmployee = async (req, res) => {
                 console.log("User created");
                 const employeeProfile = new EmployeeProfile({ userId: user_2._id, name, email, phone, about: shortDesc, highestQualification, skills, jobTitle, accessLevel, companyMail: user.email });
                 await employeeProfile.save();
+                await sendEmail(email, password);
                 console.log("Employee profile created");
             } else {
                 console.log("User found");
@@ -388,6 +434,9 @@ exports.addEmployee = async (req, res) => {
                     console.log("Employee profile found");
                     employeeProfile.name = name;
                     employeeProfile.email = email;
+                //     const password = generateStrongPassword();
+                //     console.log("Password generated: ", password);
+                // const hashedPassword = await bcrypt.hash(password, 10);
                     employeeProfile.phone = phone;
                     employeeProfile.about = shortDesc;
                     employeeProfile.jobTitle = jobTitle;
@@ -396,11 +445,17 @@ exports.addEmployee = async (req, res) => {
                     employeeProfile.accessLevel = accessLevel;
                     employeeProfile.companyMail = user.email;
                     await employeeProfile.save();
+                    // await sendEmail(email, hashedPassword);
                     console.log("Employee profile updated");
                 } else {
                     console.log("Employee profile not found");
-                    const employeeProfile = new EmployeeProfile({ userId: user_1._id, name, email, phone, about: shortDesc, highestQualification, skills, jobTitle, accessLevel, companyMail: user.email });
+                    const password = generateStrongPassword();
+                    console.log("Password generated: ", password);
+                    const hashedPassword = await bcrypt.hash(password, 10);
+                    const user_2 = await User.create({ fullName: name, email, mobile: phone, password: hashedPassword, role: "employee" });
+                    const employeeProfile = new EmployeeProfile({ userId: user_2._id, name, email, phone, about: shortDesc, highestQualification, skills, jobTitle, accessLevel, companyMail: user.email });
                     await employeeProfile.save();
+                    await sendEmail(email, password);
                     console.log("Employee profile created");
                 }
             }
