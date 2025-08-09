@@ -16,9 +16,11 @@ exports.getCompanyStatsAndData = async (req, res) => {
 
     res.json({
       stats: {
-      totalCompanies,
-      totalProposals
-    },
+        "Total Proposals": totalProposals,
+        "Total Users": totalCompanies,
+        "Active Users": 0,
+        "Inactive Users": 0
+      },
       CompanyData: companies
     });
   } catch (err) {
@@ -98,7 +100,16 @@ exports.getSupportStatsAndData = async (req, res) => {
         }
       }
     ]);
-    const typeCounts = {};
+
+    const typeCounts = {
+      "Billing & Payments": 0,
+      "Proposal issues": 0,
+      "Account & Access": 0,
+      "Technical Errors": 0,
+      "Feature Requests": 0,
+      "Others": 0
+    };
+
     counts.forEach(item => {
       typeCounts[item._id] = item.count;
     });
@@ -164,6 +175,7 @@ exports.getSubscriptionPlans = async (req, res) => {
     res.status(500).json({ message: "Error fetching subscription plans", error: err.message });
   }
 };
+
 exports.updateSubscriptionPlan = async (req, res) => {
   try {
     const { id } = req.params;
@@ -187,6 +199,7 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
     let revenueThisMonth = 0;
     let totalRefunds = 0;
     let pendingRefunds = 0;
+    let activeUsers = 0;
 
     const now = new Date();
     const currentMonth = now.getMonth();
@@ -232,12 +245,13 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
 
     res.json({
       PaymentStats: {
-        totalRevenue,
-        successfulPayments,
-        failedPayments,
-        revenueThisMonth,
-        totalRefunds,
-        pendingRefunds
+        "Total Revenue": totalRevenue,
+        "Successful Payments": successfulPayments,
+        "Failed Payments": failedPayments,
+        "Active Subscriptions": activeUsers,
+        "Total Refunds": totalRefunds,
+        "Pending Refunds": pendingRefunds,
+        "Revenue This Month": revenueThisMonth
       },
       PaymentData: payments
     });
