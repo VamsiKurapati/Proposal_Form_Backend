@@ -9,7 +9,7 @@ const { getNotificationData, getSupportStatsAndData, updateSupportTicket, create
 router.get('/getCompanyStatsAndData', getCompanyStatsAndData);
 
 
-router.get('/getnotificationData', getNotificationData);
+router.get('/getnotificationsData', getNotificationData);
 router.post('/createNotification', createNotification);
 
 
@@ -24,7 +24,7 @@ router.put('/updateSubscriptionPlan/:id', updateSubscriptionPlan);
 
 
 //payment
-router.get('/getPaymentStatandData', getPaymentsSummaryAndData);
+router.get('/getPaymentStatsandData', getPaymentsSummaryAndData);
 // router.get('/payment/getPaymentSummary', getPaymentSummary);
 
 

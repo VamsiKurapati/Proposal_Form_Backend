@@ -100,7 +100,16 @@ exports.getSupportStatsAndData = async (req, res) => {
         }
       }
     ]);
-    const typeCounts = {};
+
+    const typeCounts = {
+      "Billing & Payments": 0,
+      "Proposal issues": 0,
+      "Account & Access": 0,
+      "Technical Errors": 0,
+      "Feature Requests": 0,
+      "Others": 0
+    };
+
     counts.forEach(item => {
       typeCounts[item._id] = item.count;
     });
