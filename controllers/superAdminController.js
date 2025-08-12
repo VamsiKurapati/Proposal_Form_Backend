@@ -32,8 +32,6 @@ exports.updateCompanyStatus = async (req, res) => {
   try {
     const id = req.params.id;
     const status = req.body.status;
-    console.log("id", id);
-    console.log("status", status);
     const updatedCompany = await CompanyProfile.findByIdAndUpdate(
       id,
       { $set: { status } },
@@ -123,16 +121,15 @@ exports.getSupportStatsAndData = async (req, res) => {
 // Controller to update (edit) a support ticket
 exports.updateSupportTicket = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { status, priority, type } = req.body;
-
-    if (!status && !priority && !type) {
-      return res.status(400).json({ message: "Status, priority, and type are required" });
+    const id = req.params.id;
+    const { status, priority } = req.body;
+    if (!status && !priority) {
+      return res.status(400).json({ message: "Status and priority are required" });
     }
 
     const updatedSupport = await Support.findByIdAndUpdate(
       id,
-      { $set: { status, priority, type } },
+      { $set: { status, priority } },
       { new: true, runValidators: true }
     );
 
@@ -168,7 +165,7 @@ exports.getSubscriptionPlans = async (req, res) => {
 
 exports.updateSubscriptionPlan = async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id;
     const { name, description, price, billing_cycle, features } = req.body;
   } catch (err) {
     res.status(500).json({ message: "Error updating subscription plan", error: err.message });
@@ -252,8 +249,8 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
 
 exports.updatePaymentStatus = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { status } = req.body;
+    const id = req.params.id;
+    const status = req.body.status;
     const updatedPayment = await Payment.findByIdAndUpdate(
       id,
       { $set: { status } },
