@@ -71,6 +71,18 @@ async function sendEmail(email, password) {
     });
 }
 
+const passwordValidator = (password) => {
+    const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+    const digits = '0123456789';
+    const special = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+    if (password.length < 8) return false;
+    if (!uppercase.includes(password)) return false;
+    if (!lowercase.includes(password)) return false;
+    if (!digits.includes(password)) return false;
+    if (!special.includes(password)) return false;
+    return true;
+}
 
 const upload = multer({ storage });
 const multiUpload = upload.fields([
@@ -640,6 +652,9 @@ exports.changePassword = async (req, res) => {
         const isPasswordCorrect = await bcrypt.compare(oldPassword, user.password);
         if (!isPasswordCorrect) {
             return res.status(400).json({ message: "Invalid old password" });
+        }
+        if (!passwordValidator(newPassword)) {
+            return res.status(400).json({ message: "Invalid new password" });
         }
         user.password = await bcrypt.hash(newPassword, 10);
         await user.save();
