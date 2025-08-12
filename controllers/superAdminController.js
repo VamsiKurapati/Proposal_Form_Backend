@@ -31,10 +31,10 @@ exports.getCompanyStatsAndData = async (req, res) => {
 exports.updateCompanyStatus = async (req, res) => {
   try {
     const id = req.params.id;
-    const status = req.body.status;
+    const blocked = req.body.blocked === "Blocked" ? true : false;
     const updatedCompany = await CompanyProfile.findByIdAndUpdate(
       id,
-      { $set: { status } },
+      { $set: { blocked } },
       { new: true, runValidators: true }
     );
     res.json(updatedCompany);
@@ -122,9 +122,9 @@ exports.getSupportStatsAndData = async (req, res) => {
 exports.updateSupportTicket = async (req, res) => {
   try {
     const id = req.params.id;
-    const { status, priority } = req.body;
-    if (!status && !priority) {
-      return res.status(400).json({ message: "Status and priority are required" });
+    const { status } = req.body;
+    if (!status) {
+      return res.status(400).json({ message: "Status is required" });
     }
 
     const updatedSupport = await Support.findByIdAndUpdate(
@@ -244,21 +244,6 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ message: "Error fetching payment summary and data", error: err.message });
-  }
-};
-
-exports.updatePaymentStatus = async (req, res) => {
-  try {
-    const id = req.params.id;
-    const status = req.body.status;
-    const updatedPayment = await Payment.findByIdAndUpdate(
-      id,
-      { $set: { status } },
-      { new: true, runValidators: true }
-    );
-    res.json(updatedPayment);
-  } catch (err) {
-    res.status(500).json({ message: "Error updating payment", error: err.message });
   }
 };
 
