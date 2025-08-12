@@ -30,8 +30,10 @@ exports.getCompanyStatsAndData = async (req, res) => {
 
 exports.updateCompanyStatus = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { status } = req.body;
+    const id = req.params.id;
+    const status = req.body.status;
+    console.log("id", id);
+    console.log("status", status);
     const updatedCompany = await CompanyProfile.findByIdAndUpdate(
       id,
       { $set: { status } },
