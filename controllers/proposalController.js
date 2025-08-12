@@ -10,6 +10,8 @@ const { GridFsStorage } = require('multer-gridfs-storage');
 const crypto = require('crypto');
 const path = require('path');
 const axios = require('axios');
+const cron = require('node-cron');
+
 require('dotenv').config();
 
 // GridFS Storage - FIXED VERSION
@@ -404,5 +406,62 @@ exports.advancedComplianceCheck = async (req, res) => {
     console.error('Error in advancedComplianceCheck:', error);
     console.error('Error stack:', error.stack);
     res.status(500).json({ message: error.message });
+  }
+};
+
+
+// Service to delete expired proposals and their associated files from GridFS
+
+//CRON Service
+exports.deleteExpiredProposals = async () => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to start of today
+
+    // Find all proposals where restore_by is less than today and isDeleted is true
+    const expiredProposals = await Proposal.find({
+      isDeleted: true,
+      $and: [
+        { restoreBy: { $lt: today } },
+        { restoreBy: { $ne: null } }
+      ]
+    });
+
+    if (expiredProposals.length === 0) {
+      console.log('No expired proposals found to delete.');
+      return;
+    }
+
+    console.log(`Found ${expiredProposals.length} expired proposals to delete.`);
+
+    // Delete each expired proposal and its associated files
+    for (const proposal of expiredProposals) {
+      try {
+        // Delete associated files from GridFS
+        if (proposal.uploadedDocuments && proposal.uploadedDocuments.length > 0) {
+          const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+            bucketName: 'uploads',
+          });
+
+          for (const file of proposal.uploadedDocuments) {
+            try {
+              await bucket.delete(new mongoose.Types.ObjectId(file.fileId));
+              console.log(`Deleted file: ${file.fileId}`);
+            } catch (err) {
+              console.error(`Failed to delete file ${file.fileId}:`, err.message);
+            }
+          }
+        }
+
+        // Delete the proposal from database
+        await Proposal.findByIdAndDelete(proposal._id);
+        console.log(`Deleted proposal: ${proposal._id} - ${proposal.title}`);
+
+      } catch (err) {
+        console.error(`Failed to delete proposal ${proposal._id}:`, err.message);
+      }
+    }
+  } catch (error) {
+    console.error('Error in deleteExpiredProposals service:', error);
   }
 };
