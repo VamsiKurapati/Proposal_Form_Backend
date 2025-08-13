@@ -132,7 +132,7 @@ exports.updateSupportTicket = async (req, res) => {
   try {
     const { id } = req.params;
     // Only allow updating certain fields
-    const allowedUpdates = ['subject', 'desc', 'status', 'priority', 'type'];
+    const allowedUpdates = ['desc', 'status','type','subCategory'];
     const updates = {};
     allowedUpdates.forEach(field => {
       if (req.body[field] !== undefined) {

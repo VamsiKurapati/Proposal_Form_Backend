@@ -13,6 +13,7 @@ router.get('/getnotificationsData', getNotificationData);
 router.post('/createNotification', createNotification);
 
 
+
 router.get('/getsupportStatsAndData', getSupportStatsAndData);
 router.put('/updateSupportTicket/:id', updateSupportTicket);
 
