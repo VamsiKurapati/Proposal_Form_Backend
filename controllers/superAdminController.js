@@ -28,29 +28,20 @@ exports.getCompanyStatsAndData = async (req, res) => {
   }
 };
 
-// exports.getStats = async (req, res) => {
-//   try {
-//     const totalProposals = await Proposal.countDocuments();
-//     const totalCompanies = await CompanyProfile.countDocuments();
-
-//     res.json({
-//       totalProposals,
-//       totalCompanies
-//     });
-//   } catch (err) {
-//     res.status(500).json({ message: "Error fetching stats", error: err.message });
-//   }
-// };
-
-// exports.getCompanyData = async (req, res) => {
-//   try {
-//     const companies = await CompanyProfile.find();
-//     res.json(companies);
-//   } catch (err) {
-//     res.status(500).json({ message: "Error fetching company data", error: err.message });
-//   }
-// };
-
+exports.updateCompanyStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    const updatedCompany = await CompanyProfile.findByIdAndUpdate(
+      id,
+      { $set: { status } },
+      { new: true, runValidators: true }
+    );
+    res.json(updatedCompany);
+  } catch (err) {
+    res.status(500).json({ message: "Error updating company status", error: err.message });
+  }
+};
 
 // POST request to create a new notification
 exports.createNotification = async (req, res) => {
@@ -131,6 +122,7 @@ exports.getSupportStatsAndData = async (req, res) => {
 exports.updateSupportTicket = async (req, res) => {
   try {
     const { id } = req.params;
+<<<<<<< HEAD
     // Only allow updating certain fields
     const allowedUpdates = ['desc', 'status','type','subCategory'];
     const updates = {};
@@ -139,10 +131,17 @@ exports.updateSupportTicket = async (req, res) => {
         updates[field] = req.body[field];
       }
     });
+=======
+    const { status, priority, type } = req.body;
+
+    if (!status && !priority && !type) {
+      return res.status(400).json({ message: "Status, priority, and type are required" });
+    }
+>>>>>>> origin/Staging
 
     const updatedSupport = await Support.findByIdAndUpdate(
       id,
-      { $set: updates },
+      { $set: { status, priority, type } },
       { new: true, runValidators: true }
     );
 
@@ -260,18 +259,20 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
   }
 };
 
-//payment
-
-
-// exports.getPaymentData = async (req, res) => {
-//   try {
-//     const paymentData = await Payment.find();
-//     res.json(paymentData);
-//   } catch (err) {
-//     res.status(500).json({ message: "Error fetching payment data", error: err.message });
-//   }
-// };
-
+exports.updatePaymentStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    const updatedPayment = await Payment.findByIdAndUpdate(
+      id,
+      { $set: { status } },
+      { new: true, runValidators: true }
+    );
+    res.json(updatedPayment);
+  } catch (err) {
+    res.status(500).json({ message: "Error updating payment", error: err.message });
+  }
+};
 
 //subscription
 exports.getSubscriptionData = async (req, res) => {
@@ -282,6 +283,3 @@ exports.getSubscriptionData = async (req, res) => {
     res.status(500).json({ message: "Error fetching subscription data", error: err.message });
   }
 };
-
-
-
