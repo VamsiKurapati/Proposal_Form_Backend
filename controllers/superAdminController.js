@@ -86,7 +86,7 @@ exports.getSupportStatsAndData = async (req, res) => {
     const counts = await Support.aggregate([
       {
         $group: {
-          _id: "$type",
+          _id: "$category",
           count: { $sum: 1 }
         }
       }
@@ -129,7 +129,7 @@ exports.updateSupportTicket = async (req, res) => {
 
     const updatedSupport = await Support.findByIdAndUpdate(
       id,
-      { $set: { status, priority } },
+      { $set: { status } },
       { new: true, runValidators: true }
     );
 
