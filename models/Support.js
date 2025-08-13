@@ -8,7 +8,7 @@ const supportSchema = new mongoose.Schema({
   status: {
     type: String,
     required: true,
-    enum: ['Pending', 'In progress', 'Resolved'],
+    enum: ['Pending', 'In Progress', 'Resolved'],
     default: 'Pending'
   },
   priority: {
