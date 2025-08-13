@@ -8,10 +8,9 @@ const supportSchema = new mongoose.Schema({
   status: {
     type: String,
     required: true,
-    enum: ['Open', 'In progress', 'Completed'],
-    default: 'Open'
+    enum: ['Pending', 'In progress', 'Resolved'],
+    default: 'Pending'
   },
-
   priority: {
     type: String,
     required: true,
@@ -24,6 +23,7 @@ const supportSchema = new mongoose.Schema({
     enum: ['Billing & Payments', 'Proposal issues', 'Account & Access', 'Technical Errors', 'Feature Requests', 'Others'],
     default: 'Others'
   },
+  resolutionMessage: { type: String, default: "" },
   created_at: { type: Date, default: Date.now }
 }, { timestamps: true });
 

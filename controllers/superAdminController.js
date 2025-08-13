@@ -123,13 +123,15 @@ exports.updateSupportTicket = async (req, res) => {
   try {
     const id = req.params.id;
     const { status } = req.body;
+    const { resolutionMessage } = req.body.resolutionMessage || "";
+
     if (!status) {
       return res.status(400).json({ message: "Status is required" });
     }
 
     const updatedSupport = await Support.findByIdAndUpdate(
       id,
-      { $set: { status } },
+      { $set: { status, resolutionMessage } },
       { new: true, runValidators: true }
     );
 
