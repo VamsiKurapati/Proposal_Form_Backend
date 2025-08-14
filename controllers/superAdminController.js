@@ -109,7 +109,7 @@ exports.getSupportStatsAndData = async (req, res) => {
     });
 
     // Get all support tickets, sorted by creation date descending
-    const supports = await Support.find({ status: { $ne: 'Withdrawn' } }).sort({ createdAt: -1 });
+    const supports = await Support.find({ status: { $ne: 'Withdrawn' } }).sort({ createdAt: -1 }).lean();
 
     const modifiedSupports = supports.map(support => {
       return {
