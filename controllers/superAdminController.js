@@ -109,11 +109,18 @@ exports.getSupportStatsAndData = async (req, res) => {
     });
 
     // Get all support tickets, sorted by creation date descending
-    const supports = await Support.find().sort({ createdAt: -1 });
+    const supports = await Support.find({ status: { $ne: 'Withdrawn' } }).sort({ createdAt: -1 });
+
+    const modifiedSupports = supports.map(support => {
+      return {
+        ...support,
+        status: support.status === 'Created' ? 'Pending' : support.status,
+      }
+    });
 
     res.json({
       TicketStats: typeCounts,
-      TicketData: supports
+      TicketData: modifiedSupports
     });
   } catch (err) {
     res.status(500).json({ message: "Error fetching support stats and data", error: err.message });

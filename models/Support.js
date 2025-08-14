@@ -5,7 +5,7 @@ const supportSchema = new mongoose.Schema({
   status: {
     type: String,
     required: true,
-    enum: ['Created', 'Re-Opened', 'In Progress', 'Completed'],
+    enum: ['Created', 'Re-Opened', 'In Progress', 'Completed', 'Withdrawn'],
     default: 'Created'
   },
   priority: {
