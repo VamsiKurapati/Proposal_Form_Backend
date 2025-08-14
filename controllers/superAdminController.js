@@ -103,8 +103,8 @@ exports.getSupportStatsAndData = async (req, res) => {
 
     counts.forEach(item => {
       // Normalize category key to match the schema's enum (case-sensitive)
-      if (categoryCounts.hasOwnProperty(item._id)) {
-        categoryCounts[item._id] = item.count;
+      if (typeCounts.hasOwnProperty(item._id)) {
+        typeCounts[item._id] = item.count;
       }
     });
 
