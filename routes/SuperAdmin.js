@@ -14,14 +14,8 @@ router.get('/getnotificationsData', verifyUser(["SuperAdmin"]), getNotificationD
 // router.post('/createNotification', verifyUser(["SuperAdmin"]), createNotification);
 
 
-<<<<<<< HEAD
-
-router.get('/getsupportStatsAndData', getSupportStatsAndData);
-router.put('/updateSupportTicket/:id', updateSupportTicket);
-=======
 router.get('/getsupportStatsAndData', verifyUser(["SuperAdmin"]), getSupportStatsAndData);
 router.put('/updateSupportTicket/:id', verifyUser(["SuperAdmin"]), updateSupportTicket);
->>>>>>> origin/Staging
 
 
 

@@ -1,15 +1,8 @@
 const multer = require('multer');
 const path = require('path');
 
-// Store files in "uploads/" folder with original extension
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // make sure "uploads" folder exists
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname); 
-  }
-});
+// Use memory storage for GridFS integration
+const storage = multer.memoryStorage();
 
 // File filter (optional)
 const fileFilter = (req, file, cb) => {

@@ -82,19 +82,20 @@ exports.getNotificationData = async (req, res) => {
 // Controller to get support ticket type counts and all support tickets in one API call
 exports.getSupportStatsAndData = async (req, res) => {
   try {
-    // Get counts by type
+    // Get counts by category (case-sensitive to match schema)
     const counts = await Support.aggregate([
       {
         $group: {
-          _id: "$type",
+          _id: "$category",
           count: { $sum: 1 }
         }
       }
     ]);
 
-    const typeCounts = {
+    // Categories as per Support.js schema
+    const categoryCounts = {
       "Billing & Payments": 0,
-      "Proposal issues": 0,
+      "Proposal Issues": 0,
       "Account & Access": 0,
       "Technical Errors": 0,
       "Feature Requests": 0,
@@ -102,14 +103,17 @@ exports.getSupportStatsAndData = async (req, res) => {
     };
 
     counts.forEach(item => {
-      typeCounts[item._id] = item.count;
+      // Normalize category key to match the schema's enum (case-sensitive)
+      if (categoryCounts.hasOwnProperty(item._id)) {
+        categoryCounts[item._id] = item.count;
+      }
     });
 
-    // Get all support tickets
-    const supports = await Support.find();
+    // Get all support tickets, sorted by creation date descending
+    const supports = await Support.find().sort({ createdAt: -1 });
 
     res.json({
-      TicketStats: typeCounts,
+      TicketStats: categoryCounts,
       TicketData: supports
     });
   } catch (err) {
@@ -117,31 +121,33 @@ exports.getSupportStatsAndData = async (req, res) => {
   }
 };
 
-
-// Controller to update (edit) a support ticket
+// Controller to update (edit) a support ticket according to Support.js schema
 exports.updateSupportTicket = async (req, res) => {
   try {
     const { id } = req.params;
-<<<<<<< HEAD
-    // Only allow updating certain fields
-    const allowedUpdates = ['desc', 'status','type','subCategory'];
-    const updates = {};
-    allowedUpdates.forEach(field => {
-      if (req.body[field] !== undefined) {
-        updates[field] = req.body[field];
-      }
-    });
-=======
-    const { status, priority, type } = req.body;
+    // Accept all updatable fields as per Support.js schema
+    const {
+      status,
+      category,
+      subCategory,
+      description
+      // Note: priority is not present in the current Support.js schema
+    } = req.body;
 
-    if (!status && !priority && !type) {
-      return res.status(400).json({ message: "Status, priority, and type are required" });
+    // Build update object dynamically
+    const updateFields = {};
+    if (status) updateFields.status = status;
+    if (category) updateFields.category = category;
+    if (subCategory !== undefined) updateFields.subCategory = subCategory;
+    if (description !== undefined) updateFields.description = description;
+
+    if (Object.keys(updateFields).length === 0) {
+      return res.status(400).json({ message: "At least one field (status, category, subCategory, description) must be provided to update." });
     }
->>>>>>> origin/Staging
 
     const updatedSupport = await Support.findByIdAndUpdate(
       id,
-      { $set: { status, priority, type } },
+      { $set: updateFields },
       { new: true, runValidators: true }
     );
 
@@ -154,6 +160,7 @@ exports.updateSupportTicket = async (req, res) => {
     res.status(500).json({ message: "Error updating support ticket", error: err.message });
   }
 };
+
 
 
 
