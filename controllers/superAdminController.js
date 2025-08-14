@@ -94,7 +94,7 @@ exports.getSupportStatsAndData = async (req, res) => {
 
     const typeCounts = {
       "Billing & Payments": 0,
-      "Proposal issues": 0,
+      "Proposal Issues": 0,
       "Account & Access": 0,
       "Technical Errors": 0,
       "Feature Requests": 0,
@@ -102,11 +102,14 @@ exports.getSupportStatsAndData = async (req, res) => {
     };
 
     counts.forEach(item => {
-      typeCounts[item._id] = item.count;
+      // Normalize category key to match the schema's enum (case-sensitive)
+      if (categoryCounts.hasOwnProperty(item._id)) {
+        categoryCounts[item._id] = item.count;
+      }
     });
 
-    // Get all support tickets
-    const supports = await Support.find();
+    // Get all support tickets, sorted by creation date descending
+    const supports = await Support.find().sort({ createdAt: -1 });
 
     res.json({
       TicketStats: typeCounts,
@@ -123,7 +126,7 @@ exports.updateSupportTicket = async (req, res) => {
   try {
     const id = req.params.id;
     const { status } = req.body;
-    const { resolutionMessage } = req.body.resolutionMessage || "";
+    const { Resolved_Description } = req.body.Resolved_Description || "";
 
     if (!status) {
       return res.status(400).json({ message: "Status is required" });
@@ -131,8 +134,8 @@ exports.updateSupportTicket = async (req, res) => {
 
     const updatedSupport = await Support.findByIdAndUpdate(
       id,
-      { $set: { status, resolutionMessage } },
-      { new: true, runValidators: true }
+      { $set: { status, Resolved_Description } },
+      { new: true }
     );
 
     if (!updatedSupport) {
