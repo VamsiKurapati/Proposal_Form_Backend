@@ -39,6 +39,7 @@ async function sendEmail(email, password) {
             port: 465,
             secure: true,
             auth: {
+
                 user: process.env.MAIL_USER,
                 pass: process.env.MAIL_PASS
             }
@@ -71,6 +72,7 @@ async function sendEmail(email, password) {
     });
 }
 
+
 const passwordValidator = (password) => {
     const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const lowercase = 'abcdefghijklmnopqrstuvwxyz';
@@ -83,6 +85,7 @@ const passwordValidator = (password) => {
     if (!special.includes(password)) return false;
     return true;
 }
+
 
 const upload = multer({ storage });
 const multiUpload = upload.fields([
@@ -443,6 +446,9 @@ exports.addEmployee = async (req, res) => {
                     console.log("Employee profile found");
                     employeeProfile.name = name;
                     employeeProfile.email = email;
+                //     const password = generateStrongPassword();
+                //     console.log("Password generated: ", password);
+                // const hashedPassword = await bcrypt.hash(password, 10);
                     employeeProfile.phone = phone;
                     employeeProfile.about = shortDesc;
                     employeeProfile.jobTitle = jobTitle;
@@ -451,6 +457,7 @@ exports.addEmployee = async (req, res) => {
                     employeeProfile.accessLevel = accessLevel;
                     employeeProfile.companyMail = user.email;
                     await employeeProfile.save();
+                    // await sendEmail(email, hashedPassword);
                     console.log("Employee profile updated");
                 } else {
                     console.log("Employee profile not found");

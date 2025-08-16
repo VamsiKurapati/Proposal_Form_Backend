@@ -2,25 +2,30 @@ const mongoose = require("mongoose");
 
 const supportSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  status: {
-    type: String,
-    required: true,
-    enum: ['Created', 'Re-Opened', 'In Progress', 'Completed', 'Withdrawn'],
-    default: 'Created'
-  },
-  priority: {
-    type: String,
-    enum: ['Low', 'Medium', 'High'],
-    default: 'Low'
-  },
-  category: {
-    type: String,
-    enum: ['Billing & Payments', 'Proposal issues', 'Account & Access', 'Technical Errors', 'Feature Requests', 'Others'],
+
+  category: { 
+    type: String, 
+    enum: [
+      'Billing & Payments',
+      'Proposal Issues',
+      'Account & Access',
+      'Technical Errors',
+      'Feature Requests',
+      'Others'
+    ],
     default: 'Others'
   },
-  subCategory: { type: String },
+  subCategory: { type: String }, 
   description: { type: String, required: true },
-  Resolved_Description: { type: String, default: "" },
+  Resolved_Description: { type: String, required: false , default:"Admin will contact you soon"},
+  status: { 
+    type: String, 
+    enum: ['Created','In Progress', 'Completed','Withdrawn'],
+    default: 'Created'
+  },  
+  
+  isOpen: { type: Boolean, default: false },
+
   attachments: [
     {
       fileName: { type: String, required: true },
@@ -41,6 +46,11 @@ const supportSchema = new mongoose.Schema({
     }
   ],
   isOpen: { type: Boolean, default: true }
+
+  ]
+
 }, { timestamps: true });
+
+
 
 module.exports = mongoose.model("Support", supportSchema);

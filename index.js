@@ -11,6 +11,7 @@ const profileRoute = require('./routes/Profile.js');
 const sampleRoute = require('./routes/Sample.js');
 const dashboardRoute = require('./routes/Dashboard.js');
 const superAdminRoute = require('./routes/SuperAdmin.js');
+const supportRoute = require('./routes/SupportTicket.js');
 
 const dbConnect = require('./utils/dbConnect.js');
 require('./utils/cronJob.js');
@@ -38,6 +39,8 @@ app.use('/api/sample', sampleRoute);
 app.use('/api/dashboard', dashboardRoute);
 
 app.use('/api/admin', superAdminRoute);
+
+app.use('/api/support', supportRoute);
 
 app.get('/', (req, res) => {
   res.send('Welcome to the Proposal API');

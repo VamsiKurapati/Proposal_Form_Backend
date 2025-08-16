@@ -414,6 +414,7 @@ exports.advancedComplianceCheck = async (req, res) => {
 
 //CRON Service
 exports.deleteExpiredProposals = async () => {
+
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Set to start of today
@@ -465,3 +466,4 @@ exports.deleteExpiredProposals = async () => {
     console.error('Error in deleteExpiredProposals service:', error);
   }
 };
+

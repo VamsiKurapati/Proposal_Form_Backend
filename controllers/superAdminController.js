@@ -82,7 +82,7 @@ exports.getNotificationData = async (req, res) => {
 // Controller to get support ticket type counts and all support tickets in one API call
 exports.getSupportStatsAndData = async (req, res) => {
   try {
-    // Get counts by type
+    // Get counts by category (case-sensitive to match schema)
     const counts = await Support.aggregate([
       {
         $group: {
@@ -92,7 +92,8 @@ exports.getSupportStatsAndData = async (req, res) => {
       }
     ]);
 
-    const typeCounts = {
+    // Categories as per Support.js schema
+    const categoryCounts = {
       "Billing & Payments": 0,
       "Proposal Issues": 0,
       "Account & Access": 0,
@@ -103,40 +104,50 @@ exports.getSupportStatsAndData = async (req, res) => {
 
     counts.forEach(item => {
       // Normalize category key to match the schema's enum (case-sensitive)
-      if (typeCounts.hasOwnProperty(item._id)) {
-        typeCounts[item._id] = item.count;
+
+      if (categoryCounts.hasOwnProperty(item._id)) {
+        categoryCounts[item._id] = item.count;
+
       }
     });
 
     // Get all support tickets, sorted by creation date descending
-    const supports = await Support.find({ status: { $ne: 'Withdrawn' } }).sort({ createdAt: -1 }).lean();
 
-    const modifiedSupports = supports.map(support => {
-      return {
-        ...support,
-        status: support.status === 'Created' ? 'Pending' : support.status,
-      }
-    });
+    const supports = await Support.find().sort({ createdAt: -1 });
 
     res.json({
-      TicketStats: typeCounts,
-      TicketData: modifiedSupports
+      TicketStats: categoryCounts,
+      TicketData: supports
     });
   } catch (err) {
     res.status(500).json({ message: "Error fetching support stats and data", error: err.message });
   }
 };
 
-
-// Controller to update (edit) a support ticket
+// Controller to update (edit) a support ticket according to Support.js schema
 exports.updateSupportTicket = async (req, res) => {
   try {
-    const id = req.params.id;
-    const { status } = req.body;
-    const { Resolved_Description } = req.body.Resolved_Description || "";
 
-    if (!status) {
-      return res.status(400).json({ message: "Status is required" });
+    const { id } = req.params;
+    // Accept all updatable fields as per Support.js schema
+    const {
+      status,
+      category,
+      subCategory,
+      description
+      // Note: priority is not present in the current Support.js schema
+    } = req.body;
+
+    // Build update object dynamically
+    const updateFields = {};
+    if (status) updateFields.status = status;
+    if (category) updateFields.category = category;
+    if (subCategory !== undefined) updateFields.subCategory = subCategory;
+    if (description !== undefined) updateFields.description = description;
+
+    if (Object.keys(updateFields).length === 0) {
+      return res.status(400).json({ message: "At least one field (status, category, subCategory, description) must be provided to update." });
+
     }
 
     const updatedSupport = await Support.findByIdAndUpdate(
@@ -169,6 +180,7 @@ exports.addAdminMessage = async (req, res) => {
     res.status(500).json({ message: "Error adding admin message", error: err.message });
   }
 };
+
 
 
 //Subscription Plans
