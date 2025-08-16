@@ -30,11 +30,11 @@ exports.getCompanyStatsAndData = async (req, res) => {
 
 exports.updateCompanyStatus = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { status } = req.body;
+    const id = req.params.id;
+    const blocked = req.body.blocked === "Blocked" ? true : false;
     const updatedCompany = await CompanyProfile.findByIdAndUpdate(
       id,
-      { $set: { status } },
+      { $set: { blocked } },
       { new: true, runValidators: true }
     );
     res.json(updatedCompany);
@@ -104,12 +104,15 @@ exports.getSupportStatsAndData = async (req, res) => {
 
     counts.forEach(item => {
       // Normalize category key to match the schema's enum (case-sensitive)
+
       if (categoryCounts.hasOwnProperty(item._id)) {
         categoryCounts[item._id] = item.count;
+
       }
     });
 
     // Get all support tickets, sorted by creation date descending
+
     const supports = await Support.find().sort({ createdAt: -1 });
 
     res.json({
@@ -124,6 +127,7 @@ exports.getSupportStatsAndData = async (req, res) => {
 // Controller to update (edit) a support ticket according to Support.js schema
 exports.updateSupportTicket = async (req, res) => {
   try {
+
     const { id } = req.params;
     // Accept all updatable fields as per Support.js schema
     const {
@@ -143,12 +147,13 @@ exports.updateSupportTicket = async (req, res) => {
 
     if (Object.keys(updateFields).length === 0) {
       return res.status(400).json({ message: "At least one field (status, category, subCategory, description) must be provided to update." });
+
     }
 
     const updatedSupport = await Support.findByIdAndUpdate(
       id,
-      { $set: updateFields },
-      { new: true, runValidators: true }
+      { $set: { status, Resolved_Description } },
+      { new: true }
     );
 
     if (!updatedSupport) {
@@ -161,6 +166,20 @@ exports.updateSupportTicket = async (req, res) => {
   }
 };
 
+exports.addAdminMessage = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { message } = req.body;
+    const updatedSupport = await Support.findByIdAndUpdate(
+      id,
+      { $push: { adminMessages: { message } } },
+      { new: true }
+    );
+    res.json(updatedSupport);
+  } catch (err) {
+    res.status(500).json({ message: "Error adding admin message", error: err.message });
+  }
+};
 
 
 
@@ -184,7 +203,7 @@ exports.getSubscriptionPlans = async (req, res) => {
 
 exports.updateSubscriptionPlan = async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id;
     const { name, description, price, billing_cycle, features } = req.body;
   } catch (err) {
     res.status(500).json({ message: "Error updating subscription plan", error: err.message });
@@ -263,21 +282,6 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ message: "Error fetching payment summary and data", error: err.message });
-  }
-};
-
-exports.updatePaymentStatus = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { status } = req.body;
-    const updatedPayment = await Payment.findByIdAndUpdate(
-      id,
-      { $set: { status } },
-      { new: true, runValidators: true }
-    );
-    res.json(updatedPayment);
-  } catch (err) {
-    res.status(500).json({ message: "Error updating payment", error: err.message });
   }
 };
 

@@ -39,11 +39,12 @@ async function sendEmail(email, password) {
             port: 465,
             secure: true,
             auth: {
-              user: process.env.MAIL_USER,
-              pass: process.env.MAIL_PASS
+
+                user: process.env.MAIL_USER,
+                pass: process.env.MAIL_PASS
             }
-          });
-          
+        });
+
         //   transporter.verify((error, success) => {
         //       if (error) {
         //         console.error("SMTP connection error:", error);
@@ -58,7 +59,7 @@ async function sendEmail(email, password) {
             subject: "Welcome to the team",
             text: `Your password is: ${password}`
         };
-          
+
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
                 console.log(error);
@@ -72,6 +73,18 @@ async function sendEmail(email, password) {
 }
 
 
+const passwordValidator = (password) => {
+    const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+    const digits = '0123456789';
+    const special = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+    if (password.length < 8) return false;
+    if (!uppercase.includes(password)) return false;
+    if (!lowercase.includes(password)) return false;
+    if (!digits.includes(password)) return false;
+    if (!special.includes(password)) return false;
+    return true;
+}
 
 
 const upload = multer({ storage });
@@ -417,7 +430,6 @@ exports.addEmployee = async (req, res) => {
             const user_1 = await User.findOne({ email });
             if (!user_1) {
                 console.log("User not found");
-                // const password = crypto.randomBytes(16).toString("hex");
                 const password = generateStrongPassword();
                 console.log("Password generated: ", password);
                 const hashedPassword = await bcrypt.hash(password, 10);
@@ -632,6 +644,28 @@ exports.getDocument = async (req, res) => {
         const downloadStream = bucket.openDownloadStream(fileId);
         downloadStream.on("error", () => res.status(404).send("File not found"));
         downloadStream.pipe(res);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.changePassword = async (req, res) => {
+    try {
+        const { oldPassword, newPassword } = req.body;
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        const isPasswordCorrect = await bcrypt.compare(oldPassword, user.password);
+        if (!isPasswordCorrect) {
+            return res.status(400).json({ message: "Invalid old password" });
+        }
+        if (!passwordValidator(newPassword)) {
+            return res.status(400).json({ message: "Invalid new password" });
+        }
+        user.password = await bcrypt.hash(newPassword, 10);
+        await user.save();
+        res.status(200).json({ message: "Password changed successfully" });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

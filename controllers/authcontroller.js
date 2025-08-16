@@ -89,7 +89,7 @@ exports.login = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    if (user.role === "company") {
+    if (user.role === "SuperAdmin" || user.role === "company") {
       return res.status(200).json({ token, user: userWithoutPassword });
     } else if (user.role === "employee") {
       const employeeProfile = await EmployeeProfile.findOne({ userId: user._id });

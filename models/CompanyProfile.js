@@ -86,6 +86,7 @@ const companyProfileSchema = new mongoose.Schema({
   ],
   logoUrl: { type: String }, // URL to the company profile image/logo
   status: { type: String, default: "Inactive" },
+  blocked: { type: Boolean, default: false },
 }, { timestamps: true });
 
 module.exports = mongoose.model("CompanyProfile", companyProfileSchema);
