@@ -216,6 +216,23 @@ exports.getEmployeeProfile = async (req, res) => {
     }
 };
 
+exports.getCompanyProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+        const companyProfile = await CompanyProfile.findOne({ email: employeeProfile.companyMail });
+        if (!companyProfile) {
+            return res.status(404).json({ message: "Company profile not found" });
+        }
+        res.status(200).json(companyProfile);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 exports.getProposals = async (req, res) => {
     try {
         let userEmail = req.user.email;
@@ -446,9 +463,9 @@ exports.addEmployee = async (req, res) => {
                     console.log("Employee profile found");
                     employeeProfile.name = name;
                     employeeProfile.email = email;
-                //     const password = generateStrongPassword();
-                //     console.log("Password generated: ", password);
-                // const hashedPassword = await bcrypt.hash(password, 10);
+                    //     const password = generateStrongPassword();
+                    //     console.log("Password generated: ", password);
+                    // const hashedPassword = await bcrypt.hash(password, 10);
                     employeeProfile.phone = phone;
                     employeeProfile.about = shortDesc;
                     employeeProfile.jobTitle = jobTitle;
