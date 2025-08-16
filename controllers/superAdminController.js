@@ -112,7 +112,7 @@ exports.getSupportStatsAndData = async (req, res) => {
 
     // Get all support tickets, sorted by creation date descending
 
-    const supports = await Support.find().sort({ createdAt: -1 });
+    const supports = await Support.find().sort({ createdAt: -1 }).lean();
 
     const support_data = supports.map(item => {
       return {
