@@ -138,13 +138,15 @@ exports.updateSupportTicket = async (req, res) => {
     // Accept all updatable fields as per Support.js schema
     const { status } = req.body;
 
+    const { Resolved_Description } = req.body || "";
+
     if (!status) {
       return res.status(400).json({ message: "Status is required" });
     }
 
     const updatedSupport = await Support.findByIdAndUpdate(
       id,
-      { $set: { status } },
+      { $set: { status, Resolved_Description } },
       { new: true }
     );
 
