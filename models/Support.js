@@ -28,6 +28,19 @@ const supportSchema = new mongoose.Schema({
       uploadedAt: { type: Date, default: Date.now }
     }
   ],
+  adminMessages: [
+    {
+      message: { type: String, required: true },
+      createdAt: { type: Date, default: Date.now }
+    }
+  ],
+  userMessages: [
+    {
+      message: { type: String, required: true },
+      createdAt: { type: Date, default: Date.now }
+    }
+  ],
+  isOpen: { type: Boolean, default: true }
 }, { timestamps: true });
 
 module.exports = mongoose.model("Support", supportSchema);

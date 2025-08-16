@@ -155,6 +155,20 @@ exports.updateSupportTicket = async (req, res) => {
   }
 };
 
+exports.addAdminMessage = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { message } = req.body;
+    const updatedSupport = await Support.findByIdAndUpdate(
+      id,
+      { $push: { adminMessages: { message } } },
+      { new: true }
+    );
+    res.json(updatedSupport);
+  } catch (err) {
+    res.status(500).json({ message: "Error adding admin message", error: err.message });
+  }
+};
 
 
 //Subscription Plans
