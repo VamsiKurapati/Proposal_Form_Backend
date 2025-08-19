@@ -85,13 +85,16 @@ exports.serveImageById = async (req, res) => {
 
 exports.serveImageByFilename = async (req, res) => {
     try {
+        console.log(req.params.filename);
         const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
             bucketName: "uploads",
         });
         const file = await bucket.find({ filename: req.params.filename }).toArray();
+        console.log(file);
         if (!file) {
             return res.status(404).json({ message: "File not found" });
         }
+        console.log(file[0]._id);
         const downloadStream = bucket.openDownloadStream(file[0]._id);
         downloadStream.on("error", () => res.status(404).send("File not found"));
         downloadStream.pipe(res);
