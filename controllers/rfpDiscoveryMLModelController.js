@@ -10,6 +10,11 @@ const DraftRFP = require('../models/DraftRFP');
 const EmployeeProfile = require('../models/EmployeeProfile');
 const CompanyProfile = require('../models/CompanyProfile');
 const axios = require('axios');
+const fs = require('fs');
+
+const { replaceTextInJson } = require('./json_replacer');
+const template_json = require('./template.json');
+const output_json = require('./output.json');
 
 const { GridFsStorage } = require("multer-gridfs-storage");
 const multer = require("multer");
@@ -432,11 +437,15 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     const res_1 = await axios.post(`http://56.228.64.88:5000/run-proposal-generation`, data);
 
     const proposalData = res_1.data.proposal;
+
+    replaceTextInJson(template_json, output_json, proposalData, userData);
+
     const new_Proposal = new Proposal({
       rfpId: proposal._id,
       title: proposal.title,
       client: proposal.organization || "Not found",
       initialProposal: proposalData,
+      generatedProposal: output_json,
       companyMail: userEmail,
       deadline: proposal.deadline,
       status: "In Progress",
@@ -459,6 +468,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       userEmail: userEmail,
       rfpId: proposal._id,
       rfp: { ...proposal },
+      generatedProposal: output_json,
     });
     await new_Draft.save();
 
