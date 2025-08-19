@@ -13,8 +13,9 @@ const axios = require('axios');
 const fs = require('fs');
 
 const { replaceTextInJson } = require('./json_replacer');
-const template_json = "./template.json";
-const output_json = "./final.json";
+const path = require('path');
+const template_json = path.join(__dirname, "template.json");
+const output_json = path.join(__dirname, "final.json");
 
 const { GridFsStorage } = require("multer-gridfs-storage");
 const multer = require("multer");
