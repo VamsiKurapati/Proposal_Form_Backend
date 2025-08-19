@@ -9,7 +9,7 @@ router.get("/get_image/:fileId", serveImageById);
 router.get("/get_image_by_name/:filename", serveImageByFilename);
 router.get("/get_template_image/:filename", serveTemplateImage);
 
-router.post("/upload_image", verifyUser(["company", "employee"]), uploadImage);
+router.post("/upload_image", verifyUser(["company", "employee", "SuperAdmin"]), uploadImage);
 router.post("/upload_template_image", verifyUser(["SuperAdmin"]), uploadTemplateImage);
 
 router.delete("/delete_image/:fileId", verifyUser(["company", "employee"]), deleteImage);
