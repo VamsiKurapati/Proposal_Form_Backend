@@ -33,18 +33,39 @@ exports.serveTemplateImage = async (req, res) => {
         });
         console.log(req.params.filename);
         const file = await bucket.find({ filename: req.params.filename }).toArray();
-        if (!file) {
+        if (!file || file.length === 0) {
             return res.status(404).json({ message: "File not found" });
         }
         console.log(file[0]);
         const fileId = file[0]._id;
         console.log(fileId);
+
+        // Set appropriate headers for image serving
+        res.set({
+            'Content-Type': file[0].contentType || 'application/octet-stream',
+            'Content-Length': file[0].length,
+            'Cache-Control': 'public, max-age=31536000' // Cache for 1 year
+        });
+
         const downloadStream = bucket.openDownloadStream(fileId);
-        downloadStream.on("error", () => res.status(404).send("File not found"));
+
+        downloadStream.on("error", (error) => {
+            console.error("Download stream error:", error);
+            if (!res.headersSent) {
+                res.status(500).json({ message: "Error streaming file", error: error.message });
+            }
+        });
+
+        downloadStream.on("end", () => {
+            console.log("File stream completed successfully");
+        });
+
         downloadStream.pipe(res);
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: error.message });
+        if (!res.headersSent) {
+            res.status(500).json({ message: error.message });
+        }
     }
 };
 
@@ -75,6 +96,9 @@ exports.uploadImage = [
 exports.serveImageById = async (req, res) => {
     try {
         const fileId = new mongoose.Types.ObjectId(req.params.fileId);
+        const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+            bucketName: "uploads",
+        });
         const downloadStream = bucket.openDownloadStream(fileId);
         downloadStream.on("error", () => res.status(404).send("File not found"));
         downloadStream.pipe(res);
