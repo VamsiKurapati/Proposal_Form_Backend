@@ -10,34 +10,34 @@ const fs = require('fs');
  */
 
 function replaceTextInJson(inputFile, outputFile, proposalData, userData) {
-// Load JSON
+  // Load JSON
   const jsonData = JSON.parse(fs.readFileSync(inputFile, 'utf8'));
 
-// string builders
+  // string builders
   let employee_String = userData.employees_information
-  .slice(0, 5)
-  .map(emp => {
-    const topSkills = emp.skills.slice(0, 3).join(", ");
-    return `${emp.name}\t${emp.jobTitle}\t${topSkills}`;
-  }).join("\n");
+    .slice(0, 5)
+    .map(emp => {
+      const topSkills = emp.skills.slice(0, 3).join(", ");
+      return `${emp.name}\t${emp.jobTitle}\t${topSkills}`;
+    }).join("\n");
 
   let cert_Name_String = userData.certifications
-  .map(cert => cert.name)
-  .join("\n\n");
+    .map(cert => cert.name)
+    .join("\n\n");
 
   let cert_issued_String = userData.certifications
-   .map(cert => cert.issuer)
-  .join("\n\n\n\n");
+    .map(cert => cert.issuer)
+    .join("\n\n\n\n");
 
-   let cert_issued_date_String = userData.certifications
-   .map(cert => cert.validTill)
-  .join("\n\n\n\n");
+  let cert_issued_date_String = userData.certifications
+    .map(cert => cert.validTill)
+    .join("\n\n\n\n");
 
-   const awards_firstHalf = userData.awards.slice(0, 3).join("\n\n\n");
-   const awards_secondHalf = userData.awards.length > 3 ? userData.awards.slice(3).join("\n\n\n") : "";
+  const awards_firstHalf = userData.awards.slice(0, 3).join("\n\n\n");
+  const awards_secondHalf = userData.awards.length > 3 ? userData.awards.slice(3).join("\n\n\n") : "";
 
-   let projectsString = userData.pastProjects.map(p => p.name).join("\n");
-   let caseStudiesString = userData.caseStudies.map(c => c.Title).join("\n");
+  let projectsString = userData.pastProjects.map(p => p.name).join("\n");
+  let caseStudiesString = userData.caseStudies.map(c => c.Title).join("\n");
 
   // Define text to update by element ID
   const idTextMap = {
@@ -142,3 +142,5 @@ function replaceTextInJson(inputFile, outputFile, proposalData, userData) {
   console.log(`Updated JSON written to ${outputFile}`);
 
 }
+
+module.exports = { replaceTextInJson };
