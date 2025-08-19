@@ -4,12 +4,12 @@ const fs = require('fs');
  * Replace text elements in JSON using proposalData & userData
  *
  * @param {string} inputFile   Path to input JSON file
- * @param {string} outputFile  Path to output JSON file
  * @param {Object} proposalData  Data source for replacements
  * @param {Object} userData      Data source for replacements
+ * @returns {Object} The processed JSON data
  */
 
-function replaceTextInJson(inputFile, outputFile, proposalData, userData) {
+function replaceTextInJson(inputFile, proposalData, userData) {
   // Load JSON
   const jsonData = JSON.parse(fs.readFileSync(inputFile, 'utf8'));
 
@@ -137,10 +137,9 @@ function replaceTextInJson(inputFile, outputFile, proposalData, userData) {
   // Apply replacements
   const updatedJson = replaceTextById(jsonData, idTextMap);
 
-  // Save modified file
-  fs.writeFileSync(outputFile, JSON.stringify(updatedJson, null, 2), 'utf8');
-  console.log(`Updated JSON written to ${outputFile}`);
-
+  // Return the processed data instead of writing to file
+  console.log(`JSON processing completed successfully`);
+  return updatedJson;
 }
 
 module.exports = { replaceTextInJson };
