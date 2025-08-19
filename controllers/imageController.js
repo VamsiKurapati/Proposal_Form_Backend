@@ -31,15 +31,19 @@ exports.serveTemplateImage = async (req, res) => {
         const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
             bucketName: "template_images",
         });
+        console.log(req.params.filename);
         const file = await bucket.find({ filename: req.params.filename }).toArray();
         if (!file) {
             return res.status(404).json({ message: "File not found" });
         }
+        console.log(file[0]);
         const fileId = file[0]._id;
+        console.log(fileId);
         const downloadStream = bucket.openDownloadStream(fileId);
         downloadStream.on("error", () => res.status(404).send("File not found"));
         downloadStream.pipe(res);
     } catch (error) {
+        console.log(error);
         res.status(500).json({ message: error.message });
     }
 };
