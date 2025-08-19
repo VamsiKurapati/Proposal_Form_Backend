@@ -8,10 +8,10 @@ const proposalRoute = require('./routes/Proposals.js');
 const authRoute = require("./routes/Auth.js");
 const rfpDiscovery = require('./routes/rfpDiscoveryMLModel.js');
 const profileRoute = require('./routes/Profile.js');
-const sampleRoute = require('./routes/Sample.js');
 const dashboardRoute = require('./routes/Dashboard.js');
 const superAdminRoute = require('./routes/SuperAdmin.js');
 const supportRoute = require('./routes/SupportTicket.js');
+const imageRoute = require('./routes/Image.js');
 
 const dbConnect = require('./utils/dbConnect.js');
 require('./utils/cronJob.js');
@@ -34,13 +34,13 @@ app.use('/api/rfp', rfpDiscovery);
 
 app.use('/api/profile', profileRoute);
 
-app.use('/api/sample', sampleRoute);
-
 app.use('/api/dashboard', dashboardRoute);
 
 app.use('/api/admin', superAdminRoute);
 
 app.use('/api/support', supportRoute);
+
+app.use('/api/image', imageRoute);
 
 app.get('/', (req, res) => {
   res.send('Welcome to the Proposal API');

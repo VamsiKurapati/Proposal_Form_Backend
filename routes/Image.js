@@ -2,6 +2,15 @@ const express = require("express");
 
 const router = express.Router();
 
-const { serveImage } = require("../controllers/imageController");
+const verifyUser = require('../utils/verifyUser');
 
-router.get("/getFile/:filename", serveImage);
+const { serveTemplateImage, uploadTemplateImage, uploadImage, serveImageById, serveImageByFilename, deleteImage } = require("../controllers/imageController");
+
+router.get("/get_image/:fileId", serveImageById);
+router.get("/get_image_by_name/:filename", serveImageByFilename);
+router.get("/get_template_image/:fileId", serveTemplateImage);
+
+router.post("/upload_image", verifyUser(["company", "employee"]), uploadImage);
+router.post("/upload_template_image", verifyUser(["SuperAdmin"]), uploadTemplateImage);
+
+router.delete("/delete_image/:fileId", verifyUser(["company", "employee"]), deleteImage);

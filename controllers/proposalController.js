@@ -26,13 +26,13 @@ const storage = new GridFsStorage({
         }
 
         try {
-          const filename = buf.toString('hex') + path.extname(file.originalname);
+          // const filename = buf.toString('hex') + path.extname(file.originalname);
 
-          console.log('Preparing to upload file:', filename);
+          console.log('Preparing to upload file:', file.originalname);
 
           // FIXED: Remove the custom _id, let GridFS generate it
           resolve({
-            filename,
+            filename: file.originalname,
             bucketName: 'uploads',
             metadata: { originalname: file.originalname }
           });
