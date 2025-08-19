@@ -227,7 +227,20 @@ exports.getCompanyProfile = async (req, res) => {
         if (!companyProfile) {
             return res.status(404).json({ message: "Company profile not found" });
         }
-        res.status(200).json(companyProfile);
+
+        const Proposals = await Proposal.find({ companyMail: companyProfile.email });
+
+        const requiredData = {
+            companyName: companyProfile.companyName,
+            adminName: companyProfile.adminName,
+            industry: companyProfile.industry,
+            bio: companyProfile.bio,
+            employees: companyProfile.employees,
+            proposals: Proposals,
+            caseStudies: companyProfile.caseStudies,
+        };
+
+        res.status(200).json(requiredData);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
