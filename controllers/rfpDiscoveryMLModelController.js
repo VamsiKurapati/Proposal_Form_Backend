@@ -472,7 +472,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     });
     await new_Draft.save();
 
-    res.status(200).json(proposalData);
+    res.status(200).json(processedProposal);
   } catch (err) {
     console.error('Error in /sendDataForProposalGeneration:', err);
     res.status(500).json({ error: 'Failed to send data for proposal generation' });
