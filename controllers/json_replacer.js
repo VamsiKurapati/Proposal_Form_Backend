@@ -146,6 +146,66 @@ function replaceTextInJson(inputFile, proposalData, userData) {
     return data;
   }
 
+  // Function to replace text by ID with safety checks 
+  function replaceTextById(data, idTextMap) {
+    if (!data || typeof data !== 'object') {
+      console.warn('replaceTextById: Invalid data parameter');
+      return data;
+    }
+
+    if (!idTextMap || typeof idTextMap !== 'object') {
+      console.warn('replaceTextById: Invalid idTextMap parameter');
+      return data;
+    }
+
+    data.pages?.forEach((page, pageIndex) => {
+      // Check if page is valid
+      if (!page || typeof page !== 'object') {
+        console.warn(`replaceTextById: Invalid page at index ${pageIndex}`);
+        return;
+      }
+      page.elements?.forEach((element, elementIndex) => {
+        // Comprehensive element validation
+        if (!element || typeof element !== 'object') {
+          console.warn(`replaceTextById: Invalid element at page ${pageIndex}, element ${elementIndex}`);
+          return;
+        }
+
+        // Check if element is text type and has valid ID
+        if (element.type === "text" && element.id && idTextMap.hasOwnProperty(element.id)) {
+          try {
+            // Ensure properties object exists
+            element.properties = element.properties || {};
+
+            // Get the replacement text
+            const replacementText = idTextMap[element.id];
+
+            // Validate replacement text and handle different cases
+            if (replacementText === null || replacementText === undefined) {
+              element.properties.text = "Text not found";
+              console.warn(`replaceTextById: Replacement text for ID ${element.id} is null/undefined, showing warning message`);
+            } else if (replacementText === "") {
+              element.properties.text = "Empty text";
+              console.warn(`replaceTextById: Replacement text for ID ${element.id} is empty, showing warning message`);
+            } else {
+              // Convert to string to ensure it's always a string
+              element.properties.text = String(replacementText);
+            }
+
+            console.log(`replaceTextById: Successfully processed text for ID ${element.id}`);
+
+          } catch (error) {
+            console.error(`replaceTextById: Error processing element with ID ${element.id}:`, error);
+            // Set user-friendly error message
+            element.properties = element.properties || {};
+            element.properties.text = "Loading error";
+          }
+        }
+      });
+    });
+    return data;
+  }
+
   // Apply replacements
   const updatedJson = replaceTextById(jsonData, idTextMap);
 
