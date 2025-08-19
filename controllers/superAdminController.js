@@ -115,6 +115,7 @@ exports.getSupportStatsAndData = async (req, res) => {
     const supports = await Support.find().sort({ createdAt: -1 }).lean();
 
     const support_data = supports.map(item => {
+      console.log(item.subCategory, item.status);
       return {
         ...item,
         status: item.isOpen && (item.status !== "In Progress" || item.status !== "Completed" || item.status !== "Withdrawn") ? "Re-Opened" : item.status
