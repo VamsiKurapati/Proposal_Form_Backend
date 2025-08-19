@@ -164,10 +164,10 @@ exports.updateSupportTicket = async (req, res) => {
 exports.addAdminMessage = async (req, res) => {
   try {
     const id = req.params.id;
-    const { message } = req.body;
+    const { newAdminMessage } = req.body;
     const updatedSupport = await Support.findByIdAndUpdate(
       id,
-      { $push: { adminMessages: { message } } },
+      { $push: { adminMessages: { message: newAdminMessage, createdAt: new Date() } } },
       { new: true }
     );
     res.json(updatedSupport);

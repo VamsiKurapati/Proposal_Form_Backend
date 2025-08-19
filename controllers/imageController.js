@@ -1,16 +1,17 @@
 require('dotenv').config();
 
 const mongoose = require("mongoose");
-const gridfsBucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-    bucketName: "uploads"
-});
 
 exports.serveImage = async (req, res) => {
-    const { filename } = req.params;
-    const file = await mongoose.connection.db.collection("uploads.files").findOne({ filename });
-    if (!file) {
-        return res.status(404).json({ message: "File not found" });
+    try {
+        const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+            bucketName: "uploads",
+        });
+        const fileId = new mongoose.Types.ObjectId(req.params.filename);
+        const downloadStream = bucket.openDownloadStream(fileId);
+        downloadStream.on("error", () => res.status(404).send("File not found"));
+        downloadStream.pipe(res);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-    const readStream = gridfsBucket.openDownloadStream(file._id);
-    readStream.pipe(res);
 };
