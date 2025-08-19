@@ -1,5 +1,4 @@
 const express = require("express");
-
 const router = express.Router();
 
 const verifyUser = require('../utils/verifyUser');
@@ -14,3 +13,5 @@ router.post("/upload_image", verifyUser(["company", "employee"]), uploadImage);
 router.post("/upload_template_image", verifyUser(["SuperAdmin"]), uploadTemplateImage);
 
 router.delete("/delete_image/:fileId", verifyUser(["company", "employee"]), deleteImage);
+
+module.exports = router;
