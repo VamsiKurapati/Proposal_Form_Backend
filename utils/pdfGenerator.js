@@ -1260,21 +1260,21 @@ async function generatePDF(req, res) {
         // Try multiple PDF generation methods
         let pdfBuffer;
 
-        // Method 1: Try standard puppeteer first
+        // Method 1: Try standard puppeteer with default browser
         try {
-            console.log('Trying standard puppeteer...');
+            console.log('Trying standard puppeteer with default browser...');
             pdfBuffer = await generatePDFWithStandardPuppeteer(htmlContent, processedProject);
             console.log('PDF generated successfully with standard puppeteer');
         } catch (error1) {
             console.log('Standard puppeteer failed:', error1.message);
-            console.log('Trying chromium fallback...');
+            console.log('Trying puppeteer with bundled chromium...');
 
-            // Method 2: Try chromium fallback
+            // Method 2: Try puppeteer with bundled chromium
             try {
-                pdfBuffer = await generatePDFWithChromiumFallback(htmlContent, processedProject);
-                console.log('PDF generated successfully with chromium fallback');
+                pdfBuffer = await generatePDFWithBundledChromium(htmlContent, processedProject);
+                console.log('PDF generated successfully with bundled chromium');
             } catch (error2) {
-                console.log('Chromium fallback failed:', error2.message);
+                console.log('Bundled chromium failed:', error2.message);
                 console.log('Trying minimal puppeteer configuration...');
 
                 // Method 3: Try minimal puppeteer configuration
@@ -1292,7 +1292,7 @@ async function generatePDF(req, res) {
                     } catch (error4) {
                         console.error('All PDF generation methods failed:');
                         console.error('1. standard puppeteer:', error1.message);
-                        console.error('2. chromium fallback:', error2.message);
+                        console.error('2. bundled chromium:', error2.message);
                         console.error('3. minimal puppeteer:', error3.message);
                         console.error('4. system browser:', error4.message);
 
@@ -1316,6 +1316,56 @@ async function generatePDF(req, res) {
     } catch (error) {
         console.error('Error during PDF generation:', error);
         res.status(500).json({ message: 'Error during PDF generation', error: error.message });
+    }
+}
+
+/**
+ * Generate PDF using puppeteer with bundled chromium
+ */
+async function generatePDFWithBundledChromium(htmlContent, processedProject) {
+    console.log('Launching puppeteer with bundled chromium...');
+
+    // Use puppeteer with its bundled chromium
+    const browser = await puppeteer.launch({
+        headless: true,
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu',
+            '--single-process',
+            '--no-zygote',
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor'
+        ]
+    });
+
+    try {
+        console.log('Creating new page...');
+        const page = await browser.newPage();
+
+        console.log('Setting page content...');
+        await page.setContent(htmlContent, { waitUntil: 'networkidle0', timeout: 60000 });
+
+        const firstPageSettings = processedProject.pages?.[0]?.pageSettings || { width: 800, height: 600 };
+        console.log('Generating PDF with bundled chromium...');
+
+        const pdfBuffer = await page.pdf({
+            width: `${firstPageSettings.width}px`,
+            height: `${firstPageSettings.height}px`,
+            printBackground: true,
+            margin: { top: 0, right: 0, bottom: 0, left: 0 },
+            preferCSSPageSize: true
+        });
+
+        console.log('PDF generated successfully with bundled chromium');
+        return pdfBuffer;
+    } catch (error) {
+        console.error('Error in bundled chromium:', error.message);
+        throw error;
+    } finally {
+        console.log('Closing bundled chromium browser...');
+        await browser.close();
     }
 }
 
@@ -1647,7 +1697,7 @@ module.exports = {
     downloadImageToBase64,
     healthCheck,
     generatePDFWithStandardPuppeteer,
-    generatePDFWithChromiumFallback,
+    generatePDFWithBundledChromium,
     generatePDFWithMinimalPuppeteer,
     generatePDFWithSystemBrowser
 };
