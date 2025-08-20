@@ -1,145 +1,131 @@
-# PDF Generation Setup Guide
+# PDF Generation Setup for Vercel Deployment
 
 ## Overview
-This application uses Puppeteer for PDF generation, with different configurations for local development and serverless deployment (Vercel).
+This document explains the PDF generation setup and troubleshooting for the RFP app backend deployed on Vercel.
 
-## Dependencies
-- `puppeteer`: For local development (includes Chrome)
-- `puppeteer-core`: For serverless deployment (Chrome not included)
-- `chrome-aws-lambda`: Serverless-compatible Chrome binary
+## Problem
+The original PDF generation was failing in Vercel's serverless environment due to missing system libraries (`libnss3.so`) required by Chromium.
 
-## Local Development
-For local development, the application automatically uses regular Puppeteer which includes Chrome.
+## Solution Implemented
 
-### Prerequisites
-- Node.js 16+ 
-- npm or yarn
+### 1. Multiple PDF Generation Methods
+The system now tries three different approaches in sequence:
 
-### Installation
+1. **puppeteer-extra with stealth plugin** - Most compatible with serverless environments
+2. **Standard puppeteer** - Fallback option
+3. **Chromium fallback** - Original method as last resort
+
+### 2. Enhanced Vercel Configuration
+Updated `vercel.json` with:
+- Function timeout increased to 120 seconds
+- Environment variables for Puppeteer
+- Build environment configuration
+
+### 3. Improved Error Handling
+- Comprehensive logging for debugging
+- Fallback mechanisms
+- Environment detection
+- Health check endpoint
+
+## Files Modified
+
+### vercel.json
+- Added function configuration for PDF generation
+- Increased timeout to 120 seconds
+- Added environment variables
+
+### utils/pdfGenerator.js
+- Added multiple PDF generation methods
+- Enhanced error handling and logging
+- Added health check function
+- Improved serverless environment detection
+
+### routes/Proposals.js
+- Added health check endpoint (`/api/proposals/health`)
+
+## Dependencies Added
 ```bash
-npm install
+npm install puppeteer-extra puppeteer-extra-plugin-stealth
 ```
 
-## Serverless Deployment (Vercel)
+## Testing
 
-### Configuration
-The `vercel.json` file is configured with:
-- Build configuration for Node.js
-- Environment variable: `PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true`
-- Region: `iad1` (US East - N. Virginia)
-
-**Note**: Function timeout and memory settings are now configured through the Vercel dashboard or CLI, not in `vercel.json`.
-
-### Environment Variables
-Set these in your Vercel dashboard:
-```
-PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-NODE_ENV=production
-SKIP_FAILED_IMAGES=true
-```
-
-### Image Handling Configuration
-- **`SKIP_FAILED_IMAGES=true`**: When images fail to download (404, network errors), the system will generate placeholder SVGs instead of failing the entire PDF generation
-- **`SKIP_FAILED_IMAGES=false`**: (default) PDF generation will fail if any image cannot be downloaded
-
-### Function Configuration
-For PDF generation functions, configure these settings in your Vercel dashboard:
-- **Timeout**: 60 seconds (recommended)
-- **Memory**: 1024 MB (recommended)
-
-### Deployment
+### 1. Health Check
+Test the PDF generation setup:
 ```bash
-vercel --prod
+GET /api/proposals/health
 ```
 
-## How It Works
-
-### Environment Detection
-The application automatically detects the environment:
-- **Local**: Uses `puppeteer` with system Chrome
-- **Serverless**: Uses `puppeteer-core` with `chrome-aws-lambda`
-
-### Browser Launch Options
-```javascript
-// Local development
-{
-    headless: true,
-    args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-web-security',
-        '--disable-features=VizDisplayCompositor'
-    ]
-}
-
-// Serverless deployment
-{
-    args: chromium.args,
-    defaultViewport: chromium.defaultViewport,
-    executablePath: await chromium.executablePath,
-    headless: chromium.headless,
-    ignoreHTTPSErrors: true,
-}
+### 2. PDF Generation
+Test actual PDF generation:
+```bash
+POST /api/proposals/generatePDF
 ```
 
-### Image Processing
-1. **Template Images**: `template://image.jpg` → Downloads from `/image/get_template_image/image.jpg`
-2. **Cloud Images**: `cloud://image.jpg` → Downloads from `/image/get_image_by_name/image.jpg`
-3. **Failed Images**: If `SKIP_FAILED_IMAGES=true`, generates placeholder SVGs with "Image not found" text
-4. **Base64 Conversion**: All images are converted to base64 data URLs for PDF embedding
+## Deployment Steps
+
+1. **Commit and push changes**:
+   ```bash
+   git add .
+   git commit -m "Fix PDF generation for Vercel deployment"
+   git push
+   ```
+
+2. **Deploy to Vercel**:
+   ```bash
+   vercel --prod
+   ```
+
+3. **Test health endpoint**:
+   ```bash
+   curl https://your-app.vercel.app/api/proposals/health
+   ```
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Chrome not found locally**
-   - Ensure Puppeteer is installed: `npm install puppeteer`
-   - Chrome will be downloaded automatically
+1. **Function timeout**: Increase `maxDuration` in vercel.json
+2. **Memory issues**: Check Vercel function logs for memory usage
+3. **Library dependencies**: Ensure all required packages are installed
 
-2. **Serverless deployment fails**
-   - Check Vercel function logs
-   - Ensure `chrome-aws-lambda` is installed
-   - Verify function timeout is sufficient (60s)
-   - Check function memory allocation (1024 MB recommended)
+### Debugging
 
-3. **Image download failures**
-   - Set `SKIP_FAILED_IMAGES=true` to use placeholders
-   - Check image endpoint URLs in your backend
-   - Verify image files exist in your storage
+1. **Check Vercel function logs** for detailed error messages
+2. **Use health check endpoint** to verify setup
+3. **Monitor environment variables** in Vercel dashboard
 
-4. **Memory issues**
-   - Increase Vercel function memory allocation if needed
-   - Consider optimizing HTML content size
-   - Use `SKIP_FAILED_IMAGES=true` to reduce memory usage
+### Environment Variables
 
-### Performance Optimization
+Ensure these are set in Vercel:
+- `PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true`
+- `PUPPETEER_EXECUTABLE_PATH=/tmp/chromium`
+- `NODE_ENV=production`
 
-1. **Image processing**: Images are converted to base64 for embedding
-2. **Browser cleanup**: Browser instances are always closed after use
-3. **Timeout handling**: 60-second timeout for PDF generation
-4. **Error handling**: Comprehensive error logging and response handling
-5. **Image fallbacks**: Placeholder generation for failed image downloads
+## Performance Considerations
 
-## Security Considerations
+- **Function timeout**: Set to 120 seconds for complex PDFs
+- **Memory usage**: Monitor function memory consumption
+- **Cold starts**: Consider using Vercel's edge functions for better performance
 
-- Browser runs in headless mode
-- Sandbox disabled for serverless compatibility
-- Web security disabled for PDF generation
-- No file system access beyond temporary files
-- Image URLs are validated before processing
+## Alternative Solutions
+
+If PDF generation continues to fail, consider:
+
+1. **External PDF service** (e.g., Puppeteer-as-a-service)
+2. **Server-side rendering** with different libraries
+3. **Client-side PDF generation** using libraries like jsPDF
 
 ## Monitoring
 
-Monitor your Vercel function logs for:
-- PDF generation success/failure rates
-- Execution time
-- Memory usage
-- Error patterns
-- Image download success/failure rates
+- Use Vercel Analytics to monitor function performance
+- Set up alerts for function failures
+- Monitor function execution times and memory usage
 
 ## Support
 
-For issues related to:
-- **Puppeteer**: Check [Puppeteer troubleshooting](https://pptr.dev/troubleshooting)
-- **Chrome AWS Lambda**: Check [chrome-aws-lambda](https://github.com/alixaxel/chrome-aws-lambda)
-- **Vercel**: Check [Vercel documentation](https://vercel.com/docs)
+For additional help:
+1. Check Vercel function logs
+2. Review this documentation
+3. Test with health check endpoint
+4. Check package.json for dependency versions

@@ -1,9 +1,14 @@
 const puppeteer = require('puppeteer');
 const puppeteerCore = require('puppeteer-core');
 const chromium = require('@sparticuz/chromium');
+const puppeteerExtra = require('puppeteer-extra');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const axios = require('axios');
-const fs = require('fs').promises;
+const fs = require('fs');
 const path = require('path');
+
+// Apply stealth plugin
+puppeteerExtra.use(StealthPlugin());
 
 // Configuration for API endpoints
 const API_CONFIG = {
@@ -1124,21 +1129,77 @@ async function getBrowserOptions() {
             const executablePath = await chromium.executablePath();
             console.log('Chromium executable path:', executablePath);
 
+            // Check if executable exists and is accessible
+            try {
+                if (!fs.existsSync(executablePath)) {
+                    throw new Error(`Chromium executable not found at ${executablePath}`);
+                }
+                console.log('Chromium executable exists and is accessible');
+            } catch (fsError) {
+                console.warn('File system check failed:', fsError.message);
+            }
+
+            // Enhanced serverless configuration for Vercel
+            const serverlessArgs = [
+                ...chromium.args,
+                '--allow-pre-commit-input',
+                '--disable-background-networking',
+                '--disable-background-timer-throttling',
+                '--disable-backgrounding-occluded-windows',
+                '--disable-breakpad',
+                '--disable-client-side-phishing-detection',
+                '--disable-component-extensions-with-background-pages',
+                '--disable-component-update',
+                '--disable-default-apps',
+                '--disable-dev-shm-usage',
+                '--disable-extensions',
+                '--disable-hang-monitor',
+                '--disable-ipc-flooding-protection',
+                '--disable-popup-blocking',
+                '--disable-prompt-on-repost',
+                '--disable-renderer-backgrounding',
+                '--disable-sync',
+                '--enable-automation',
+                '--enable-blink-features=IdleDetection',
+                '--export-tagged-pdf',
+                '--force-color-profile=srgb',
+                '--metrics-recording-only',
+                '--no-first-run',
+                '--password-store=basic',
+                '--use-mock-keychain',
+                '--disable-domain-reliability',
+                '--disable-print-preview',
+                '--disable-speech-api',
+                '--disk-cache-size=33554432',
+                '--mute-audio',
+                '--no-default-browser-check',
+                '--no-pings',
+                '--single-process',
+                '--font-render-hinting=none',
+                '--disable-features=Translate,BackForwardCache,AcceptCHFrame,MediaRouter,OptimizationHints,AudioServiceOutOfProcess,IsolateOrigins,site-per-process',
+                '--enable-features=NetworkServiceInProcess2,SharedArrayBuffer',
+                '--hide-scrollbars',
+                '--ignore-gpu-blocklist',
+                '--in-process-gpu',
+                '--window-size=1920,1080',
+                '--use-gl=angle',
+                '--use-angle=swiftshader',
+                '--allow-running-insecure-content',
+                '--disable-setuid-sandbox',
+                '--disable-site-isolation-trials',
+                '--disable-web-security',
+                '--no-sandbox',
+                '--no-zygote',
+                '--headless=shell'
+            ];
+
             return {
                 puppeteer: puppeteerCore,
                 options: {
-                    args: [
-                        ...chromium.args,
-                        '--no-sandbox',
-                        '--disable-setuid-sandbox',
-                        '--disable-dev-shm-usage',
-                        '--disable-gpu',
-                        '--single-process',
-                        '--no-zygote'
-                    ],
+                    args: serverlessArgs,
                     defaultViewport: chromium.defaultViewport,
                     executablePath: executablePath,
-                    headless: chromium.headless,
+                    headless: 'shell',
                     ignoreHTTPSErrors: true,
                 }
             };
@@ -1155,7 +1216,11 @@ async function getBrowserOptions() {
                         '--no-sandbox',
                         '--disable-setuid-sandbox',
                         '--disable-web-security',
-                        '--disable-features=VizDisplayCompositor'
+                        '--disable-features=VizDisplayCompositor',
+                        '--disable-dev-shm-usage',
+                        '--disable-gpu',
+                        '--single-process',
+                        '--no-zygote'
                     ]
                 }
             };
@@ -1184,8 +1249,6 @@ async function getBrowserOptions() {
  * @returns {Promise<Buffer>} PDF buffer
  */
 async function generatePDF(req, res) {
-    let browser;
-
     const { project } = req.body;
     console.log("Project: ", project);
     try {
@@ -1199,33 +1262,86 @@ async function generatePDF(req, res) {
         console.log('Generating HTML content...');
         const htmlContent = generateHTMLFromProject(processedProject);
 
-        // Launch puppeteer with appropriate configuration
-        console.log('Launching browser...');
-        const { puppeteer: puppeteerInstance, options: browserOptions } = await getBrowserOptions();
+        // Try multiple PDF generation methods
+        let pdfBuffer;
 
-        console.log('Browser options:', JSON.stringify(browserOptions, null, 2));
-        console.log('Using puppeteer instance:', puppeteerInstance.constructor.name);
-
+        // Method 1: Try puppeteer-extra with stealth plugin
         try {
-            browser = await puppeteerInstance.launch(browserOptions);
-            console.log('Browser launched successfully');
-        } catch (launchError) {
-            console.error('Failed to launch browser:', launchError);
-            console.error('Browser options used:', browserOptions);
-            throw new Error(`Browser launch failed: ${launchError.message}`);
+            console.log('Trying puppeteer-extra with stealth plugin...');
+            pdfBuffer = await generatePDFWithPuppeteerExtra(htmlContent, processedProject);
+            console.log('PDF generated successfully with puppeteer-extra');
+        } catch (error1) {
+            console.log('puppeteer-extra failed:', error1.message);
+            console.log('Trying standard puppeteer...');
+
+            // Method 2: Try standard puppeteer
+            try {
+                pdfBuffer = await generatePDFWithStandardPuppeteer(htmlContent, processedProject);
+                console.log('PDF generated successfully with standard puppeteer');
+            } catch (error2) {
+                console.log('Standard puppeteer failed:', error2.message);
+                console.log('Trying chromium fallback...');
+
+                // Method 3: Try chromium fallback
+                try {
+                    pdfBuffer = await generatePDFWithChromiumFallback(htmlContent, processedProject);
+                    console.log('PDF generated successfully with chromium fallback');
+                } catch (error3) {
+                    console.error('All PDF generation methods failed:');
+                    console.error('1. puppeteer-extra:', error1.message);
+                    console.error('2. standard puppeteer:', error2.message);
+                    console.error('3. chromium fallback:', error3.message);
+
+                    // Log additional debugging information
+                    console.error('Environment details:');
+                    console.error('- VERCEL:', process.env.VERCEL);
+                    console.error('- NODE_ENV:', process.env.NODE_ENV);
+                    console.error('- Platform:', process.platform);
+                    console.error('- Architecture:', process.arch);
+                    console.error('- Node version:', process.version);
+
+                    throw new Error(`All PDF generation methods failed. Environment: ${process.env.VERCEL ? 'Vercel' : 'Local'}, Platform: ${process.platform}, Arch: ${process.arch}. Check server logs for detailed error information.`);
+                }
+            }
         }
 
+        console.log('PDF generated successfully');
+        res.status(200).json({ pdfBuffer });
+
+    } catch (error) {
+        console.error('Error during PDF generation:', error);
+        res.status(500).json({ message: 'Error during PDF generation', error: error.message });
+    }
+}
+
+/**
+ * Generate PDF using puppeteer-extra with stealth plugin
+ */
+async function generatePDFWithPuppeteerExtra(htmlContent, processedProject) {
+    console.log('Launching puppeteer-extra...');
+    const browser = await puppeteerExtra.launch({
+        headless: true,
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu',
+            '--single-process',
+            '--no-zygote',
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor'
+        ]
+    });
+
+    try {
+        console.log('Creating new page...');
         const page = await browser.newPage();
 
-        // Set content
-        await page.setContent(htmlContent, {
-            waitUntil: 'networkidle0',
-            timeout: 60000
-        });
+        console.log('Setting page content...');
+        await page.setContent(htmlContent, { waitUntil: 'networkidle0', timeout: 60000 });
 
-        // Generate PDF
-        console.log('Generating PDF...');
         const firstPageSettings = processedProject.pages?.[0]?.pageSettings || { width: 800, height: 600 };
+        console.log('Generating PDF with puppeteer-extra...');
 
         const pdfBuffer = await page.pdf({
             width: `${firstPageSettings.width}px`,
@@ -1235,30 +1351,139 @@ async function generatePDF(req, res) {
             preferCSSPageSize: true
         });
 
-        console.log('PDF generated successfully');
-        res.status(200).json({ pdfBuffer });
+        console.log('PDF generated successfully with puppeteer-extra');
+        return pdfBuffer;
+    } catch (error) {
+        console.error('Error in puppeteer-extra:', error.message);
+        throw error;
+    } finally {
+        console.log('Closing puppeteer-extra browser...');
+        await browser.close();
+    }
+}
+
+/**
+ * Generate PDF using standard puppeteer
+ */
+async function generatePDFWithStandardPuppeteer(htmlContent, processedProject) {
+    const browser = await puppeteer.launch({
+        headless: true,
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu',
+            '--single-process',
+            '--no-zygote'
+        ]
+    });
+
+    try {
+        const page = await browser.newPage();
+        await page.setContent(htmlContent, { waitUntil: 'networkidle0', timeout: 60000 });
+
+        const firstPageSettings = processedProject.pages?.[0]?.pageSettings || { width: 800, height: 600 };
+        const pdfBuffer = await page.pdf({
+            width: `${firstPageSettings.width}px`,
+            height: `${firstPageSettings.height}px`,
+            printBackground: true,
+            margin: { top: 0, right: 0, bottom: 0, left: 0 },
+            preferCSSPageSize: true
+        });
+
+        return pdfBuffer;
+    } finally {
+        await browser.close();
+    }
+}
+
+/**
+ * Generate PDF using chromium fallback
+ */
+async function generatePDFWithChromiumFallback(htmlContent, processedProject) {
+    const { puppeteer: puppeteerInstance, options: browserOptions } = await getBrowserOptions();
+
+    const browser = await puppeteerInstance.launch(browserOptions);
+
+    try {
+        const page = await browser.newPage();
+        await page.setContent(htmlContent, { waitUntil: 'networkidle0', timeout: 60000 });
+
+        const firstPageSettings = processedProject.pages?.[0]?.pageSettings || { width: 800, height: 600 };
+        const pdfBuffer = await page.pdf({
+            width: `${firstPageSettings.width}px`,
+            height: `${firstPageSettings.height}px`,
+            printBackground: true,
+            margin: { top: 0, right: 0, bottom: 0, left: 0 },
+            preferCSSPageSize: true
+        });
+
+        return pdfBuffer;
+    } finally {
+        await browser.close();
+    }
+}
+
+/**
+ * Health check function to test PDF generation setup
+ */
+async function healthCheck(req, res) {
+    try {
+        console.log('Running PDF generation health check...');
+
+        // Test basic HTML generation
+        const testProject = {
+            pages: [{
+                id: 1,
+                pageSettings: { width: 800, height: 600 },
+                elements: [{
+                    type: 'text',
+                    properties: {
+                        text: 'Test PDF Generation',
+                        fontSize: 24,
+                        fontWeight: 'bold',
+                        color: '#000000',
+                        x: 100,
+                        y: 100
+                    }
+                }]
+            }]
+        };
+
+        const htmlContent = generateHTMLFromProject(testProject);
+        console.log('HTML generation test passed');
+
+        // Test image processing
+        const processedProject = await processProjectImages(testProject);
+        console.log('Image processing test passed');
+
+        res.status(200).json({
+            status: 'healthy',
+            message: 'PDF generation setup is working correctly',
+            tests: ['HTML generation', 'Image processing'],
+            environment: {
+                vercel: !!process.env.VERCEL,
+                nodeEnv: process.env.NODE_ENV,
+                platform: process.platform,
+                architecture: process.arch
+            }
+        });
 
     } catch (error) {
-        console.error('Error during PDF generation:', error);
-        res.status(500).json({ message: 'Error during PDF generation', error: error.message });
-    } finally {
-        // Ensure browser is always closed
-        if (browser) {
-            try {
-                console.log('Closing browser...');
-                await browser.close();
-                console.log('Browser closed successfully');
-            } catch (closeError) {
-                console.error('Error closing browser:', closeError);
-            }
-        }
+        console.error('Health check failed:', error);
+        res.status(500).json({
+            status: 'unhealthy',
+            message: 'PDF generation setup has issues',
+            error: error.message
+        });
     }
-};
+}
 
 module.exports = {
     generatePDF,
     processProjectImages,
     generateHTMLFromProject,
     processImageElement,
-    downloadImageToBase64
+    downloadImageToBase64,
+    healthCheck
 };

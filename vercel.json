@@ -9,6 +9,11 @@
             }
         }
     ],
+    "functions": {
+        "api/proposals/generatePDF": {
+            "maxDuration": 120
+        }
+    },
     "routes": [
         {
             "src": "/(.*)",
@@ -17,5 +22,15 @@
     ],
     "regions": [
         "iad1"
-    ]
+    ],
+    "env": {
+        "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true",
+        "PUPPETEER_EXECUTABLE_PATH": "/tmp/chromium",
+        "NODE_ENV": "production"
+    },
+    "build": {
+        "env": {
+            "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true"
+        }
+    }
 }
