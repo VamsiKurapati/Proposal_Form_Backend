@@ -1,6 +1,6 @@
 const puppeteer = require('puppeteer');
 const puppeteerCore = require('puppeteer-core');
-const chromium = require('chrome-aws-lambda');
+const chromium = require('@sparticuz/chromium');
 const axios = require('axios');
 const fs = require('fs').promises;
 const path = require('path');
@@ -1110,19 +1110,56 @@ async function getBrowserOptions() {
     // Check if we're in a serverless environment
     const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NODE_ENV === 'production';
 
+    console.log('Environment detection:');
+    console.log('- VERCEL:', process.env.VERCEL);
+    console.log('- AWS_LAMBDA_FUNCTION_NAME:', process.env.AWS_LAMBDA_FUNCTION_NAME);
+    console.log('- NODE_ENV:', process.env.NODE_ENV);
+    console.log('- isServerless:', isServerless);
+
     if (isServerless) {
         // Use serverless-compatible Chrome with puppeteer-core
         console.log('Using serverless Chrome configuration...');
-        return {
-            puppeteer: puppeteerCore,
-            options: {
-                args: chromium.args,
-                defaultViewport: chromium.defaultViewport,
-                executablePath: await chromium.executablePath,
-                headless: chromium.headless,
-                ignoreHTTPSErrors: true,
-            }
-        };
+
+        try {
+            const executablePath = await chromium.executablePath();
+            console.log('Chromium executable path:', executablePath);
+
+            return {
+                puppeteer: puppeteerCore,
+                options: {
+                    args: [
+                        ...chromium.args,
+                        '--no-sandbox',
+                        '--disable-setuid-sandbox',
+                        '--disable-dev-shm-usage',
+                        '--disable-gpu',
+                        '--single-process',
+                        '--no-zygote'
+                    ],
+                    defaultViewport: chromium.defaultViewport,
+                    executablePath: executablePath,
+                    headless: chromium.headless,
+                    ignoreHTTPSErrors: true,
+                }
+            };
+        } catch (chromiumError) {
+            console.error('Error getting chromium executable path:', chromiumError);
+            console.log('Falling back to regular puppeteer...');
+
+            // Fallback to regular puppeteer if chromium fails
+            return {
+                puppeteer: puppeteer,
+                options: {
+                    headless: true,
+                    args: [
+                        '--no-sandbox',
+                        '--disable-setuid-sandbox',
+                        '--disable-web-security',
+                        '--disable-features=VizDisplayCompositor'
+                    ]
+                }
+            };
+        }
     } else {
         // For local development, use regular puppeteer
         console.log('Using local Puppeteer configuration...');
@@ -1165,7 +1202,18 @@ async function generatePDF(req, res) {
         // Launch puppeteer with appropriate configuration
         console.log('Launching browser...');
         const { puppeteer: puppeteerInstance, options: browserOptions } = await getBrowserOptions();
-        browser = await puppeteerInstance.launch(browserOptions);
+
+        console.log('Browser options:', JSON.stringify(browserOptions, null, 2));
+        console.log('Using puppeteer instance:', puppeteerInstance.constructor.name);
+
+        try {
+            browser = await puppeteerInstance.launch(browserOptions);
+            console.log('Browser launched successfully');
+        } catch (launchError) {
+            console.error('Failed to launch browser:', launchError);
+            console.error('Browser options used:', browserOptions);
+            throw new Error(`Browser launch failed: ${launchError.message}`);
+        }
 
         const page = await browser.newPage();
 
