@@ -10,9 +10,8 @@ const DraftRFP = require('../models/DraftRFP');
 const EmployeeProfile = require('../models/EmployeeProfile');
 const CompanyProfile = require('../models/CompanyProfile');
 const axios = require('axios');
-const fs = require('fs');
 
-const { replaceTextInJson } = require('./json_replacer');
+const { replaceTextInJson } = require('../utils/json_replacer');
 const path = require('path');
 const template_json = path.join(__dirname, "template.json");
 
