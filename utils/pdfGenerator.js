@@ -1,4 +1,6 @@
 const puppeteer = require('puppeteer');
+const puppeteerCore = require('puppeteer-core');
+const chromium = require('@sparticuz/chromium');
 const axios = require('axios');
 const fs = require('fs').promises;
 const path = require('path');
@@ -6,11 +8,11 @@ const path = require('path');
 // Configuration for API endpoints
 const API_CONFIG = {
     template: {
-        baseUrl: process.env.IMAGE_API_URL,
+        baseUrl: process.env.BACKEND_URL + '/image',
         endpoint: '/get_template_image'
     },
     cloud: {
-        baseUrl: process.env.IMAGE_API_URL,
+        baseUrl: process.env.BACKEND_URL + '/image',
         endpoint: '/get_image_by_name'
     }
 };
@@ -1101,6 +1103,45 @@ function generateHTMLFromProject(project) {
 }
 
 /**
+ * Get browser launch options based on environment
+ * @returns {Object} Browser launch options and puppeteer instance
+ */
+async function getBrowserOptions() {
+    // Check if we're in a serverless environment
+    const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NODE_ENV === 'production';
+
+    if (isServerless) {
+        // Use serverless-compatible Chrome with puppeteer-core
+        console.log('Using serverless Chrome configuration...');
+        return {
+            puppeteer: puppeteerCore,
+            options: {
+                args: chromium.args,
+                defaultViewport: chromium.defaultViewport,
+                executablePath: await chromium.executablePath(),
+                headless: chromium.headless,
+                ignoreHTTPSErrors: true,
+            }
+        };
+    } else {
+        // For local development, use regular puppeteer
+        console.log('Using local Puppeteer configuration...');
+        return {
+            puppeteer: puppeteerCore,
+            options: {
+                headless: true,
+                args: [
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--disable-web-security',
+                    '--disable-features=VizDisplayCompositor'
+                ]
+            }
+        };
+    }
+}
+
+/**
  * Generate PDF from project JSON
  * @param {Object} project - Project JSON
  * @returns {Promise<Buffer>} PDF buffer
@@ -1121,17 +1162,10 @@ async function generatePDF(req, res) {
         console.log('Generating HTML content...');
         const htmlContent = generateHTMLFromProject(processedProject);
 
-        // Launch puppeteer
+        // Launch puppeteer with appropriate configuration
         console.log('Launching browser...');
-        browser = await puppeteer.launch({
-            headless: true,
-            args: [
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-web-security',
-                '--disable-features=VizDisplayCompositor'
-            ]
-        });
+        const { puppeteer: puppeteerInstance, options: browserOptions } = await getBrowserOptions();
+        browser = await puppeteerInstance.launch(browserOptions);
 
         const page = await browser.newPage();
 

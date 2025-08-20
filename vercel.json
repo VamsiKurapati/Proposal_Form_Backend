@@ -2,14 +2,28 @@
     "version": 2,
     "builds": [
         {
-        "src": "./index.js",
-        "use": "@vercel/node"
+            "src": "./index.js",
+            "use": "@vercel/node",
+            "config": {
+                "installCommand": "npm install"
+            }
         }
     ],
     "routes": [
         {
-        "src": "/(.*)",
-        "dest": "/"
+            "src": "/(.*)",
+            "dest": "/"
         }
+    ],
+    "functions": {
+        "utils/pdfGenerator.js": {
+            "maxDuration": 60
+        }
+    },
+    "env": {
+        "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true"
+    },
+    "regions": [
+        "iad1"
     ]
 }
