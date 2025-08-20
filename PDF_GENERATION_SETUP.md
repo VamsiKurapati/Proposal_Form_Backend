@@ -20,18 +20,15 @@ For local development, the application automatically uses regular Puppeteer whic
 npm install
 ```
 
-### Testing
-```bash
-node test-pdf.js
-```
-
 ## Serverless Deployment (Vercel)
 
 ### Configuration
 The `vercel.json` file is configured with:
-- Function timeout: 60 seconds
+- Build configuration for Node.js
 - Environment variable: `PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true`
 - Region: `iad1` (US East - N. Virginia)
+
+**Note**: Function timeout and memory settings are now configured through the Vercel dashboard or CLI, not in `vercel.json`.
 
 ### Environment Variables
 Set these in your Vercel dashboard:
@@ -39,6 +36,11 @@ Set these in your Vercel dashboard:
 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 NODE_ENV=production
 ```
+
+### Function Configuration
+For PDF generation functions, configure these settings in your Vercel dashboard:
+- **Timeout**: 60 seconds (recommended)
+- **Memory**: 1024 MB (recommended)
 
 ### Deployment
 ```bash
@@ -87,6 +89,7 @@ The application automatically detects the environment:
    - Check Vercel function logs
    - Ensure `@sparticuz/chromium` is installed
    - Verify function timeout is sufficient (60s)
+   - Check function memory allocation (1024 MB recommended)
 
 3. **Memory issues**
    - Increase Vercel function memory allocation if needed

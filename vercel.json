@@ -15,11 +15,6 @@
             "dest": "/"
         }
     ],
-    "functions": {
-        "utils/pdfGenerator.js": {
-            "maxDuration": 60
-        }
-    },
     "env": {
         "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true"
     },

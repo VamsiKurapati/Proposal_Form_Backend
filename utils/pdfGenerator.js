@@ -1127,7 +1127,7 @@ async function getBrowserOptions() {
         // For local development, use regular puppeteer
         console.log('Using local Puppeteer configuration...');
         return {
-            puppeteer: puppeteerCore,
+            puppeteer: puppeteer,
             options: {
                 headless: true,
                 args: [
