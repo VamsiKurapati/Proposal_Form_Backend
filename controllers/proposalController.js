@@ -39,7 +39,7 @@ exports.advancedComplianceCheck = async (req, res) => {
     const rfp = await MatchedRFP.find({ title: proposal.rfpTitle });
 
     const initialProposal_1 = [{
-      "rfp": rfp,
+      "rfp": rfp[0],
       "proposal": proposal
     }];
 
