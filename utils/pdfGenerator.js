@@ -1,6 +1,6 @@
 const puppeteer = require('puppeteer');
 const puppeteerCore = require('puppeteer-core');
-const chromium = require('@sparticuz/chromium');
+const chromium = require('chrome-aws-lambda');
 const axios = require('axios');
 const fs = require('fs').promises;
 const path = require('path');
@@ -1118,7 +1118,7 @@ async function getBrowserOptions() {
             options: {
                 args: chromium.args,
                 defaultViewport: chromium.defaultViewport,
-                executablePath: await chromium.executablePath(),
+                executablePath: await chromium.executablePath,
                 headless: chromium.headless,
                 ignoreHTTPSErrors: true,
             }

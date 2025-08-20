@@ -6,7 +6,7 @@ This application uses Puppeteer for PDF generation, with different configuration
 ## Dependencies
 - `puppeteer`: For local development (includes Chrome)
 - `puppeteer-core`: For serverless deployment (Chrome not included)
-- `@sparticuz/chromium`: Serverless-compatible Chrome binary
+- `chrome-aws-lambda`: Serverless-compatible Chrome binary
 
 ## Local Development
 For local development, the application automatically uses regular Puppeteer which includes Chrome.
@@ -35,7 +35,12 @@ Set these in your Vercel dashboard:
 ```
 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 NODE_ENV=production
+SKIP_FAILED_IMAGES=true
 ```
+
+### Image Handling Configuration
+- **`SKIP_FAILED_IMAGES=true`**: When images fail to download (404, network errors), the system will generate placeholder SVGs instead of failing the entire PDF generation
+- **`SKIP_FAILED_IMAGES=false`**: (default) PDF generation will fail if any image cannot be downloaded
 
 ### Function Configuration
 For PDF generation functions, configure these settings in your Vercel dashboard:
@@ -52,7 +57,7 @@ vercel --prod
 ### Environment Detection
 The application automatically detects the environment:
 - **Local**: Uses `puppeteer` with system Chrome
-- **Serverless**: Uses `puppeteer-core` with `@sparticuz/chromium`
+- **Serverless**: Uses `puppeteer-core` with `chrome-aws-lambda`
 
 ### Browser Launch Options
 ```javascript
@@ -71,11 +76,17 @@ The application automatically detects the environment:
 {
     args: chromium.args,
     defaultViewport: chromium.defaultViewport,
-    executablePath: await chromium.executablePath(),
+    executablePath: await chromium.executablePath,
     headless: chromium.headless,
     ignoreHTTPSErrors: true,
 }
 ```
+
+### Image Processing
+1. **Template Images**: `template://image.jpg` → Downloads from `/image/get_template_image/image.jpg`
+2. **Cloud Images**: `cloud://image.jpg` → Downloads from `/image/get_image_by_name/image.jpg`
+3. **Failed Images**: If `SKIP_FAILED_IMAGES=true`, generates placeholder SVGs with "Image not found" text
+4. **Base64 Conversion**: All images are converted to base64 data URLs for PDF embedding
 
 ## Troubleshooting
 
@@ -87,13 +98,19 @@ The application automatically detects the environment:
 
 2. **Serverless deployment fails**
    - Check Vercel function logs
-   - Ensure `@sparticuz/chromium` is installed
+   - Ensure `chrome-aws-lambda` is installed
    - Verify function timeout is sufficient (60s)
    - Check function memory allocation (1024 MB recommended)
 
-3. **Memory issues**
+3. **Image download failures**
+   - Set `SKIP_FAILED_IMAGES=true` to use placeholders
+   - Check image endpoint URLs in your backend
+   - Verify image files exist in your storage
+
+4. **Memory issues**
    - Increase Vercel function memory allocation if needed
    - Consider optimizing HTML content size
+   - Use `SKIP_FAILED_IMAGES=true` to reduce memory usage
 
 ### Performance Optimization
 
@@ -101,6 +118,7 @@ The application automatically detects the environment:
 2. **Browser cleanup**: Browser instances are always closed after use
 3. **Timeout handling**: 60-second timeout for PDF generation
 4. **Error handling**: Comprehensive error logging and response handling
+5. **Image fallbacks**: Placeholder generation for failed image downloads
 
 ## Security Considerations
 
@@ -108,6 +126,7 @@ The application automatically detects the environment:
 - Sandbox disabled for serverless compatibility
 - Web security disabled for PDF generation
 - No file system access beyond temporary files
+- Image URLs are validated before processing
 
 ## Monitoring
 
@@ -116,10 +135,11 @@ Monitor your Vercel function logs for:
 - Execution time
 - Memory usage
 - Error patterns
+- Image download success/failure rates
 
 ## Support
 
 For issues related to:
 - **Puppeteer**: Check [Puppeteer troubleshooting](https://pptr.dev/troubleshooting)
-- **Chrome AWS Lambda**: Check [@sparticuz/chromium](https://github.com/Sparticuz/chromium)
+- **Chrome AWS Lambda**: Check [chrome-aws-lambda](https://github.com/alixaxel/chrome-aws-lambda)
 - **Vercel**: Check [Vercel documentation](https://vercel.com/docs)
