@@ -1,6 +1,7 @@
 const puppeteer = require('puppeteer');
 const puppeteerCore = require('puppeteer-core');
 const chromium = require('@sparticuz/chromium');
+const chrome = require('chrome-aws-lambda');
 const axios = require('axios');
 const fs = require('fs').promises;
 const path = require('path');
@@ -1260,13 +1261,13 @@ async function generatePDF(req, res) {
         // Try multiple PDF generation methods
         let pdfBuffer;
 
-        // Method 1: Try standard puppeteer with default browser
+        // Method 1: Try puppeteer with @sparticuz/chromium (serverless optimized)
         try {
-            console.log('Trying standard puppeteer with default browser...');
-            pdfBuffer = await generatePDFWithStandardPuppeteer(htmlContent, processedProject);
-            console.log('PDF generated successfully with standard puppeteer');
+            console.log('Trying puppeteer with @sparticuz/chromium...');
+            pdfBuffer = await generatePDFWithSparticuzChromium(htmlContent, processedProject);
+            console.log('PDF generated successfully with @sparticuz/chromium');
         } catch (error1) {
-            console.log('Standard puppeteer failed:', error1.message);
+            console.log('@sparticuz/chromium failed:', error1.message);
             console.log('Trying puppeteer with bundled chromium...');
 
             // Method 2: Try puppeteer with bundled chromium
@@ -1290,21 +1291,29 @@ async function generatePDF(req, res) {
                         pdfBuffer = await generatePDFWithSystemBrowser(htmlContent, processedProject);
                         console.log('PDF generated successfully with system browser');
                     } catch (error4) {
-                        console.error('All PDF generation methods failed:');
-                        console.error('1. standard puppeteer:', error1.message);
-                        console.error('2. bundled chromium:', error2.message);
-                        console.error('3. minimal puppeteer:', error3.message);
-                        console.error('4. system browser:', error4.message);
+                        console.log('System browser failed:', error4.message);
+                        console.log('Trying puppeteer with chrome-aws-lambda...');
+                        try {
+                            pdfBuffer = await generatePDFWithChromeAwsLambda(htmlContent, processedProject);
+                            console.log('PDF generated successfully with chrome-aws-lambda');
+                        } catch (error5) {
+                            console.log('chrome-aws-lambda failed:', error5.message);
+                            console.error('All PDF generation methods failed:');
+                            console.error('1. @sparticuz/chromium:', error1.message);
+                            console.error('2. bundled chromium:', error2.message);
+                            console.error('3. minimal puppeteer:', error3.message);
+                            console.error('4. system browser:', error4.message);
 
-                        // Log additional debugging information
-                        console.error('Environment details:');
-                        console.error('- VERCEL:', process.env.VERCEL);
-                        console.error('- NODE_ENV:', process.env.NODE_ENV);
-                        console.error('- Platform:', process.platform);
-                        console.error('- Architecture:', process.arch);
-                        console.error('- Node version:', process.version);
+                            // Log additional debugging information
+                            console.error('Environment details:');
+                            console.error('- VERCEL:', process.env.VERCEL);
+                            console.error('- NODE_ENV:', process.env.NODE_ENV);
+                            console.error('- Platform:', process.platform);
+                            console.error('- Architecture:', process.arch);
+                            console.error('- Node version:', process.version);
 
-                        throw new Error(`All PDF generation methods failed. Environment: ${process.env.VERCEL ? 'Vercel' : 'Local'}, Platform: ${process.platform}, Arch: ${process.arch}. Check server logs for detailed error information.`);
+                            throw new Error(`All PDF generation methods failed. Environment: ${process.env.VERCEL ? 'Vercel' : 'Local'}, Platform: ${process.platform}, Arch: ${process.arch}. Check server logs for detailed error information.`);
+                        }
                     }
                 }
             }
@@ -1316,6 +1325,64 @@ async function generatePDF(req, res) {
     } catch (error) {
         console.error('Error during PDF generation:', error);
         res.status(500).json({ message: 'Error during PDF generation', error: error.message });
+    }
+}
+
+/**
+ * Generate PDF using puppeteer with @sparticuz/chromium (serverless optimized)
+ */
+async function generatePDFWithSparticuzChromium(htmlContent, processedProject) {
+    console.log('Launching puppeteer with @sparticuz/chromium...');
+
+    try {
+        // Get the chromium executable path
+        const executablePath = await chromium.executablePath();
+        console.log('Chromium executable path:', executablePath);
+
+        // Use puppeteer-core with @sparticuz/chromium
+        const browser = await puppeteerCore.launch({
+            headless: true,
+            executablePath: executablePath,
+            args: [
+                ...chromium.args,
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-gpu',
+                '--single-process',
+                '--no-zygote',
+                '--disable-web-security',
+                '--disable-features=VizDisplayCompositor'
+            ]
+        });
+
+        try {
+            console.log('Creating new page...');
+            const page = await browser.newPage();
+
+            console.log('Setting page content...');
+            await page.setContent(htmlContent, { waitUntil: 'networkidle0', timeout: 60000 });
+
+            const firstPageSettings = processedProject.pages?.[0]?.pageSettings || { width: 800, height: 600 };
+            console.log('Generating PDF with @sparticuz/chromium...');
+
+            const pdfBuffer = await page.pdf({
+                width: `${firstPageSettings.width}px`,
+                height: `${firstPageSettings.height}px`,
+                printBackground: true,
+                margin: { top: 0, right: 0, bottom: 0, left: 0 },
+                preferCSSPageSize: true
+            });
+
+            console.log('PDF generated successfully with @sparticuz/chromium');
+            return pdfBuffer;
+        } finally {
+            console.log('Closing @sparticuz/chromium browser...');
+            await browser.close();
+        }
+    } catch (error) {
+        console.error('Error in @sparticuz/chromium:', error.message);
+        throw error;
     }
 }
 
@@ -1696,7 +1763,7 @@ module.exports = {
     processImageElement,
     downloadImageToBase64,
     healthCheck,
-    generatePDFWithStandardPuppeteer,
+    generatePDFWithSparticuzChromium,
     generatePDFWithBundledChromium,
     generatePDFWithMinimalPuppeteer,
     generatePDFWithSystemBrowser
