@@ -8,11 +8,11 @@ const path = require('path');
 // Configuration for API endpoints
 const API_CONFIG = {
     template: {
-        baseUrl: process.env.BACKEND_URL + '/image',
+        baseUrl: process.env.BACKEND_URL + '/api/image',
         endpoint: '/get_template_image'
     },
     cloud: {
-        baseUrl: process.env.BACKEND_URL + '/image',
+        baseUrl: process.env.BACKEND_URL + '/api/image',
         endpoint: '/get_image_by_name'
     }
 };
