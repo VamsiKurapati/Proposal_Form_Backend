@@ -5,10 +5,15 @@ const Proposal = require('../models/Proposal');
 const MatchedRFP = require('../models/MatchedRFP');
 const RFP = require('../models/RFP');
 const SavedRFP = require('../models/SavedRFP');
-const GeneratedProposal = require('../models/GeneratedProposal');
 const DraftRFP = require('../models/DraftRFP');
 const EmployeeProfile = require('../models/EmployeeProfile');
 const CompanyProfile = require('../models/CompanyProfile');
+const Grant = require('../models/Grant');
+
+const SavedGrant = require('../models/SavedGrant');
+const DraftGrant = require('../models/DraftGrant');
+const GrantProposal = require('../models/GrantProposal');
+
 const axios = require('axios');
 
 const { replaceTextInJson } = require('../utils/json_replacer');
@@ -880,170 +885,173 @@ exports.handleFileUploadAndSendForRFPExtraction = [
   }
 ];
 
-
-
-
-
-
-
-exports.getUsersData = async (req, res) => {
+exports.postAllGrants = async (req, res) => {
   try {
-    const db = mongoose.connection.db;
-
-    // Step 1: Fetch all proposals
-    const proposals = await Proposal.find({ email: "test@draconx.com" }).lean();
-
-    // Step 2: Gather all unique fileIds from proposals
-    const allFileIds = proposals
-      .flatMap(proposal => proposal.uploadedDocuments?.map(doc => doc.fileId) || [])
-      .filter(Boolean);
-
-    // Step 3: Fetch file metadata from GridFS
-    const files = await db.collection('uploads.files')
-      .find({ _id: { $in: allFileIds } })
-      .toArray();
-
-    // Step 4: Fetch file chunks and convert to base64
-    const filesWithBase64 = await Promise.all(
-      files.map(async (file) => {
-        const chunks = await db.collection('uploads.chunks')
-          .find({ files_id: file._id })
-          .sort({ n: 1 })
-          .toArray();
-
-        const fileBuffer = Buffer.concat(chunks.map(chunk => chunk.data.buffer));
-        return {
-          ...file,
-          base64: fileBuffer.toString('base64'),
-        };
-      })
-    );
-
-    // Step 5: Map fileId to its full metadata + base64
-    const filesMap = filesWithBase64.reduce((acc, file) => {
-      acc[file._id.toString()] = file;
-      return acc;
-    }, {});
-
-    // Step 6: Attach enriched fileInfo to each uploadedDocument
-    const enrichedProposals = proposals.map(proposal => {
-      const enrichedDocs = (proposal.uploadedDocuments || []).map(doc => ({
-        ...doc,
-        fileInfo: filesMap[doc.fileId.toString()] || null,
-      }));
-
-      return {
-        ...proposal,
-        uploadedDocuments: enrichedDocs,
-      };
-    });
-
-    // Step 7: Send full enriched data
-    res.status(200).json(enrichedProposals);
+    const { grants } = req.body;
+    const result = await Grant.insertMany(grants);
+    res.status(200).json({ "message": "Grants saved successfully", "data": result });
   } catch (err) {
-    console.error('Error in /getUsersData:', err);
-    res.status(500).json({ error: 'Failed to fetch data' });
+    console.error('Error in /postAllGrants:', err);
+    res.status(500).json({ error: 'Failed to load Grants' });
   }
 };
 
-exports.matchedRFPData = async (req, res) => {
+exports.saveGrant = async (req, res) => {
   try {
-    const nestedRFPs = req.body;
-
-    // if (!nestedRFPs || typeof nestedRFPs !== 'object' || Object.keys(nestedRFPs).length === 0) {
-    //   return res.status(400).json({ error: 'Request body must be a non-empty object' });
-    // }
-
-    const transformedData = [];
-
-    for (const [userId, rfpArray] of Object.entries(nestedRFPs)) {
-      if (!Array.isArray(rfpArray)) continue;
-
-      const user = await Proposal.findById(userId);
-      if (!user || !user.email) {
-        continue;
-      }
-
-      for (const rfp of rfpArray) {
-        transformedData.push({
-          title: rfp['RFP Title'] || '',
-          description: rfp['RFP Description'] || '',
-          logo: 'None',
-          match: rfp['Match Score'] || 0,
-          budget: rfp['Budget'] || 'Not found',
-          deadline: rfp['Deadline'] || '',
-          organization: rfp['Organization'] || rfp['Issuing Organization'] || '',
-          fundingType: 'Government',
-          organizationType: rfp['Industry'] || '',
-          link: rfp['URL'] || '',
-          type: 'Matched',
-          contact: rfp['Contact Information'] || '',
-          timeline: rfp['Timeline'] || '',
-          email: user.email
-        });
-      }
-    }
-
-    // Validate all required fields
-    const requiredFields = [
-      'title', 'description', 'logo', 'match', 'budget', 'deadline',
-      'organization', 'fundingType', 'organizationType', 'link', 'type', 'contact', 'timeline', 'email'
-    ];
-
-    const invalidEntry = transformedData.find(rfp =>
-      requiredFields.some(field => rfp[field] === undefined || rfp[field] === null)
-    );
-
-    if (invalidEntry) {
-      return res.status(400).json({ error: 'Each RFP must include all required fields' });
-    }
-
-    const result = await MatchedRFP.insertMany(transformedData);
-
-    return res.status(201).json({
-      message: 'Bulk RFP data saved successfully',
-      insertedCount: result.length,
-      data: result
-    });
-
-  } catch (err) {
-    console.error('Error in /matchedRFPdata:', err);
-    res.status(500).json({ error: 'Failed to save matched RFP data' });
-  }
-};
-
-exports.getUserandRFPData = async (req, res) => {
-  try {
-    let email = "test@draconx.com";
+    let userEmail = req.user.email;
     if (req.user.role === "employee") {
       const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
-      email = employeeProfile.companyMail;
+      userEmail = employeeProfile.companyMail;
     }
 
-    // Step 1: Fetch all proposals and limit to 1
+    const { grantId } = req.body;
+
+    if (!grantId) {
+      return res.status(400).json({ message: "Grant ID is required" });
+    }
+
+    const grant = await Grant.findById(grantId);
+    const new_SavedGrant = new SavedGrant({
+      grantId: grant._id,
+      userEmail: userEmail,
+      grant_data: grant,
+    });
+    await new_SavedGrant.save();
+    res.status(200).json({ message: "Grant saved successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.unsaveGrant = async (req, res) => {
+  try {
+    let userEmail = req.user.email;
+    if (req.user.role === "employee") {
+      const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+      userEmail = employeeProfile.companyMail;
+    }
+
+    const { grantId } = req.body;
+    if (!grantId) {
+      return res.status(400).json({ message: "Grant ID is required" });
+    }
+
+    const grant = await SavedGrant.findById(grantId);
+    if (!grant) {
+      return res.status(404).json({ message: "Grant not found" });
+    }
+    await grant.deleteOne();
+    res.status(200).json({ message: "Grant unsaved successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.saveDraftGrant = async (req, res) => {
+  try {
+    let userEmail = req.user.email;
+    if (req.user.role === "employee") {
+      const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+      userEmail = employeeProfile.companyMail;
+    }
+
+    const { grantId, formData } = req.body;
+    const grant = await Grant.findById(grantId);
+    const new_DraftGrant = new DraftGrant({
+      grantId: grant._id,
+      email: userEmail,
+      grant_data: grant,
+      project_inputs: formData,
+      proposal: grant.generatedProposal[0] || null,
+    });
+    await new_DraftGrant.save();
+    res.status(200).json({ message: "Draft grant saved successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.unsaveDraftGrant = async (req, res) => {
+  try {
+    const { draftGrantId } = req.body;
+    const draftGrant = await DraftGrant.findById(draftGrantId);
+    await draftGrant.deleteOne();
+    res.status(200).json({ message: "Draft grant unsaved successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getRecentAndSavedGrants = async (req, res) => {
+  try {
+    let userEmail = req.user.email;
+    if (req.user.role === "employee") {
+      const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+      userEmail = employeeProfile.companyMail;
+    }
+
+    // Get all grants for recommendations
+    const recentGrants = await Grant.find().sort({ createdAt: -1 }).limit(15).lean();
+
+    const savedGrants = await SavedGrant.find({ userEmail: userEmail }).sort({ createdAt: -1 }).lean();
+
+    res.status(200).json({ recentGrants, savedGrants });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getOtherGrants = async (req, res) => {
+  try {
+    const otherGrants = await Grant.find();
+    res.status(200).json(otherGrants);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getSavedAndDraftGrants = async (req, res) => {
+  try {
+    let userEmail = req.user.email;
+    if (req.user.role === "employee") {
+      const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+      userEmail = employeeProfile.companyMail;
+    }
+
+    const savedGrants = await SavedGrant.find({ userEmail: userEmail }).sort({ createdAt: -1 }).lean();
+    const draftGrants = await DraftGrant.find({ userEmail: userEmail }).sort({ createdAt: -1 }).lean();
+    res.status(200).json({ savedGrants, draftGrants });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.sendGrantDataForProposalGeneration = async (req, res) => {
+  try {
+    const { grant, formData } = req.body;
+    let userEmail = req.user.email;
+    let companyProfile_1 = "";
+    if (req.user.role === "employee") {
+      const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+      userEmail = employeeProfile.companyMail;
+      companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
+    } else {
+      companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
+    }
+
     const db = mongoose.connection.db;
 
-    // Step 1: Fetch all proposals
-    const proposals = await Proposal.find({ email: email }).lean();
-
-    // Step 2: Gather all unique fileIds from proposals
-    const allFileIds = proposals
-      .flatMap(proposal => proposal.uploadedDocuments?.map(doc => doc.fileId) || [])
-      .filter(Boolean);
-
-    // Step 3: Fetch file metadata from GridFS
+    //Extract the company Documents from upload.chunks and save them in the companyProfile_1.companyDocuments
     const files = await db.collection('uploads.files')
-      .find({ _id: { $in: allFileIds } })
+      .find({ _id: { $in: companyProfile_1.documents.map(doc => doc.fileId) } })
       .toArray();
 
-    // Step 4: Fetch file chunks and convert to base64
     const filesWithBase64 = await Promise.all(
       files.map(async (file) => {
         const chunks = await db.collection('uploads.chunks')
           .find({ files_id: file._id })
           .sort({ n: 1 })
           .toArray();
-
         const fileBuffer = Buffer.concat(chunks.map(chunk => chunk.data.buffer));
         return {
           ...file,
@@ -1052,96 +1060,114 @@ exports.getUserandRFPData = async (req, res) => {
       })
     );
 
-    // Step 5: Map fileId to its full metadata + base64
     const filesMap = filesWithBase64.reduce((acc, file) => {
       acc[file._id.toString()] = file;
       return acc;
     }, {});
 
-    // Step 6: Attach enriched fileInfo to each uploadedDocument
-    const enrichedProposals = proposals.map(proposal => {
-      const enrichedDocs = (proposal.uploadedDocuments || []).map(doc => ({
-        ...doc,
-        fileInfo: filesMap[doc.fileId.toString()] || null,
-      }));
-
+    const companyDocuments_1 = (companyProfile_1.documents || []).map((doc) => {
       return {
-        ...proposal,
-        uploadedDocuments: enrichedDocs,
+        [doc.name + "." + doc.type]: filesMap[doc.fileId.toString()].base64,
       };
     });
 
-    const RFP = await MatchedRFP.find({ email: email }).sort({ createdAt: -1 });
-
-    const data_1 = {
-      "RFP Title": RFP[0].title,
-      "RFP Description": RFP[0].description,
-      "Match Score": RFP[0].match,
-      "Budget": RFP[0].budget,
-      "Deadline": RFP[0].deadline,
-      "Issuing Organization": RFP[0].organization,
-      "Industry": RFP[0].organizationType,
-      "URL": RFP[0].link,
-      "Contact Information": RFP[0].contact || '',
-      "Timeline": RFP[0].timeline || '',
-    };
-
-    // const User = await Proposal.find({ email: email }).sort({ createdAt: -1 }).limit(1).lean();
-    if (!RFP || RFP.length === 0) {
-      return res.status(404).json({ message: "No proposals found for this user." });
-    }
-
-    const data = {
-      user: enrichedProposals[0], // Get the first user
-      rfp: data_1 // Get the first proposal
-    };
-
-    res.status(200).json(data);
-  } catch (error) {
-    console.error("Error fetching user and RFP data:", error);
-    return res.status(500).json({ message: "Internal server error." });
-  }
-};
-
-exports.generatedProposal = async (req, res) => {
-  try {
-    const {
-      "Cover Letter": coverLetter,
-      "Executive Summary": executiveSummary,
-      "Project Plan": projectPlan,
-      "Partnership Overview": partnershipOverview,
-      "References & Proven Results": referencesAndProvenResults,
-      email,
-      rfpTitle,
-    } = req.body;
-
-    // Manual validation
-    if (
-      !coverLetter ||
-      !executiveSummary ||
-      !projectPlan ||
-      !partnershipOverview ||
-      !referencesAndProvenResults ||
-      !email ||
-      !rfpTitle
-    ) {
-      return res.status(400).json({ error: "All fields are required" });
-    }
-
-    const newProposal = new GeneratedProposal({
-      coverLetter,
-      executiveSummary,
-      projectPlan,
-      partnershipOverview,
-      referencesAndProvenResults,
-      email,
-      rfpTitle,
+    const caseStudies_1 = (companyProfile_1.caseStudies || []).map((study) => {
+      return {
+        [study.title]: study.about,
+      };
     });
 
-    await newProposal.save();
-    res.status(201).json({ message: "Proposal submitted successfully" });
+    const pastProjects_1 = (companyProfile_1.proposals || []).map((project) => {
+      return {
+        name: project.title,
+      };
+    });
+
+    const certifications_1 = (companyProfile_1.licensesAndCertifications || []).map((certification) => {
+      return {
+        name: certification.name,
+        issuer: certification.issuer,
+        validTill: certification.validTill,
+      };
+    });
+
+    const employeeData_1 = (companyProfile_1.employees || []).map((employee) => {
+      return {
+        name: employee.name,
+        jobTitle: employee.jobTitle,
+        highestQualification: employee.highestQualification,
+        skills: employee.skills,
+        email: employee.email,
+      };
+    });
+
+    const userData = {
+      "_id": companyProfile_1._id,
+      "email": companyProfile_1.email,
+      "companyName": companyProfile_1.companyName,
+      "companyOverview": companyProfile_1.bio,
+      "yearOfEstablishment": companyProfile_1.establishedYear,
+      "employeeCount": companyProfile_1.numberOfEmployees,
+      "services": companyProfile_1.services || [],
+      "industry": companyProfile_1.industry,
+      "location": companyProfile_1.location,
+      "website": companyProfile_1.website,
+      "linkedIn": companyProfile_1.linkedIn,
+      "certifications": certifications_1,
+      "documents": companyDocuments_1,
+      "caseStudies": caseStudies_1,
+      "pastProjects": pastProjects_1,
+      "employees_information": employeeData_1,
+      "awards": companyProfile_1.awards || [],
+      "clientPortfolio": companyProfile_1.clients || [],
+      "preferredIndustries": companyProfile_1.preferredIndustries || [],
+      "pointOfContact": {
+        "name": companyProfile_1.adminName,
+        "email": companyProfile_1.email,
+      }
+    };
+
+    const data = {
+      user: userData,
+      grant_data: grant,
+      project_inputs: formData,
+    };
+
+    const res_1 = await axios.post(`http://56.228.64.88:5000/grant_proposal_generation`, data);
+    const proposalData = res_1.data.proposal;
+
+    const new_Proposal = new GrantProposal({
+      grantId: grant._id,
+      proposal: proposalData,
+      companyMail: userEmail,
+      deadline: grant.ESTIMATED_APPLICATION_DUE_DATE || "Not Provided",
+      status: "In Progress",
+      submittedAt: new Date(),
+      currentEditor: req.user._id,
+      isDeleted: false,
+      deletedAt: null,
+      deletedBy: null,
+      isSaved: false,
+      savedAt: null,
+      savedBy: null,
+      restoreBy: null,
+      restoredBy: null,
+      restoredAt: null,
+    });
+
+    await new_Proposal.save();
+
+    const new_Draft = new DraftGrant({
+      grantId: grant._id,
+      email: userEmail,
+      grant_data: grant,
+      project_inputs: formData,
+      proposal: proposalData,
+    });
+
+    res.status(200).json(proposalData);
   } catch (err) {
-    console.error('Error in /generateProposal:', err);
-    res.status(500).json({ error: 'Failed to generate proposal' });
+    console.error('Error in /sendDataForProposalGeneration:', err);
+    res.status(500).json({ error: 'Failed to send data for proposal generation' });
   }
 };
