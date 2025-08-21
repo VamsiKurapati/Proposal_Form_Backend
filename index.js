@@ -6,7 +6,7 @@ const app = express();
 
 const proposalRoute = require('./routes/Proposals.js');
 const authRoute = require("./routes/Auth.js");
-const rfpDiscovery = require('./routes/rfpDiscoveryMLModel.js');
+const rfpDiscovery = require('./routes/mlPipeline.js');
 const profileRoute = require('./routes/Profile.js');
 const dashboardRoute = require('./routes/Dashboard.js');
 const superAdminRoute = require('./routes/SuperAdmin.js');

@@ -11,10 +11,20 @@ const storage = new GridFsStorage({
         return new Promise((resolve, reject) => {
             crypto.randomBytes(16, (err, buf) => {
                 if (err) return reject(err);
+                // Generate unique filename to prevent duplicates
+                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+                const fileExtension = file.originalname.split('.').pop();
+                const fileNameWithoutExt = file.originalname.substring(0, file.originalname.lastIndexOf('.'));
+                const uniqueFilename = `${fileNameWithoutExt}_${uniqueSuffix}.${fileExtension}`;
+
                 resolve({
-                    filename: file.originalname,
+                    filename: uniqueFilename,
                     bucketName: "template_images",
-                    metadata: { originalname: file.originalname },
+                    metadata: {
+                        originalname: file.originalname,
+                        uploadedAt: new Date(),
+                        uniqueId: buf.toString('hex')
+                    },
                 });
             });
         });
@@ -29,10 +39,20 @@ const storage2 = new GridFsStorage({
         return new Promise((resolve, reject) => {
             crypto.randomBytes(16, (err, buf) => {
                 if (err) return reject(err);
+                // Generate unique filename to prevent duplicates
+                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+                const fileExtension = file.originalname.split('.').pop();
+                const fileNameWithoutExt = file.originalname.substring(0, file.originalname.lastIndexOf('.'));
+                const uniqueFilename = `${fileNameWithoutExt}_${uniqueSuffix}.${fileExtension}`;
+
                 resolve({
-                    filename: file.originalname,
+                    filename: uniqueFilename,
                     bucketName: "cloud_images",
-                    metadata: { originalname: file.originalname },
+                    metadata: {
+                        originalname: file.originalname,
+                        uploadedAt: new Date(),
+                        uniqueId: buf.toString('hex')
+                    },
                 });
             });
         });
@@ -45,19 +65,73 @@ const singleTemplateImageUpload = upload.single('image');
 
 const singleImageUpload = upload2.single('image');
 
+exports.uploadTemplateImage = [
+    singleTemplateImageUpload,
+    async (req, res) => {
+        try {
+            // Use _id instead of id for GridFS files
+            const fileId = req.file._id;
+            const filename = req.file.filename;
+            const originalName = req.file.originalname;
+
+            res.status(200).json({
+                message: "Image uploaded successfully",
+                fileId,
+                filename,
+                originalName
+            });
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+];
+
+exports.uploadImage = [
+    singleImageUpload,
+    async (req, res) => {
+        try {
+            // Use _id instead of id for GridFS files
+            const fileId = req.file._id;
+            const filename = req.file.filename;
+            const originalName = req.file.originalname;
+
+            res.status(201).json({
+                message: "Image uploaded successfully",
+                fileId,
+                filename,
+                originalName
+            });
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+];
+
 exports.serveTemplateImage = async (req, res) => {
     try {
         const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
             bucketName: "template_images",
         });
-        console.log(req.params.filename);
-        const file = await bucket.find({ filename: req.params.filename }).toArray();
+
+        const filename = req.params.filename;
+        console.log('Requested filename:', filename);
+
+        // Find file by filename (should be unique now)
+        const file = await bucket.find({ filename: filename }).toArray();
+
         if (!file || file.length === 0) {
             return res.status(404).json({ message: "File not found" });
         }
-        console.log(file[0]);
-        const fileId = file[0]._id;
-        console.log(fileId);
+
+        // If multiple files found (shouldn't happen with unique filenames), log warning
+        if (file.length > 1) {
+            console.warn(`Multiple files found with filename: ${filename}. Using first match.`);
+        }
+
+        const fileDoc = file[0];
+        const fileId = fileDoc._id;
+        console.log('File found:', fileDoc);
+        console.log('File ID:', fileId);
 
         // Check if file chunks are intact
         const chunksCollection = mongoose.connection.db.collection('template_images.chunks');
@@ -78,8 +152,8 @@ exports.serveTemplateImage = async (req, res) => {
 
         // Set appropriate headers for image serving
         res.set({
-            'Content-Type': file[0].contentType || 'application/octet-stream',
-            'Content-Length': file[0].length,
+            'Content-Type': fileDoc.contentType || 'application/octet-stream',
+            'Content-Length': fileDoc.length,
             'Cache-Control': 'public, max-age=31536000' // Cache for 1 year
         });
 
@@ -114,93 +188,42 @@ exports.serveTemplateImage = async (req, res) => {
     }
 };
 
-exports.uploadTemplateImage = [
-    singleTemplateImageUpload,
-    async (req, res) => {
-        try {
-            const fileId = req.file.id;
-            res.status(200).json({ message: "Image uploaded successfully", fileId });
-        } catch (error) {
-            res.status(500).json({ message: error.message });
-        }
-    }
-];
-
-exports.uploadImage = [
-    singleImageUpload,
-    async (req, res) => {
-        try {
-            const fileId = req.file.id;
-            res.status(201).json({ message: "Image uploaded successfully", fileId });
-        } catch (error) {
-            res.status(500).json({ message: error.message });
-        }
-    }
-];
-
-exports.serveImageById = async (req, res) => {
+exports.serveCloudImage = async (req, res) => {
     try {
-        const fileId = new mongoose.Types.ObjectId(req.params.fileId);
+        const filename = req.params.filename;
+        console.log('Requested filename:', filename);
+
         const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
             bucketName: "cloud_images",
         });
 
-        // Check if file exists first
-        const filesCollection = mongoose.connection.db.collection('cloud_images.files');
-        const file = await filesCollection.findOne({ _id: fileId });
+        // Find file by filename (should be unique now)
+        const file = await bucket.find({ filename: filename }).toArray();
 
-        if (!file) {
-            return res.status(404).json({ message: "File not found" });
-        }
-
-        const downloadStream = bucket.openDownloadStream(fileId);
-
-        downloadStream.on("error", (error) => {
-            console.error("Download stream error:", error);
-            if (!res.headersSent) {
-                if (error.message.includes('ChunkIsMissing') || error.message.includes('ChunkIsCorrupted')) {
-                    res.status(500).json({
-                        message: "File is corrupted. Please re-upload the image.",
-                        error: error.message
-                    });
-                } else {
-                    res.status(500).json({ message: "Error streaming file", error: error.message });
-                }
-            }
-        });
-
-        downloadStream.pipe(res);
-    } catch (error) {
-        console.error("Error in serveImageById:", error);
-        if (!res.headersSent) {
-            res.status(500).json({ message: error.message });
-        }
-    }
-};
-
-exports.serveImageByFilename = async (req, res) => {
-    try {
-        console.log(req.params.filename);
-        const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-            bucketName: "cloud_images",
-        });
-        const file = await bucket.find({ filename: req.params.filename }).toArray();
-        console.log(file);
         if (!file || file.length === 0) {
             return res.status(404).json({ message: "File not found" });
         }
-        console.log(file[0]._id);
+
+        // If multiple files found (shouldn't happen with unique filenames), log warning
+        if (file.length > 1) {
+            console.warn(`Multiple files found with filename: ${filename}. Using first match.`);
+        }
+
+        const fileDoc = file[0];
+        const fileId = fileDoc._id;
+        console.log('File found:', fileDoc);
+        console.log('File ID:', fileId);
 
         // Check if file chunks are intact
         const chunksCollection = mongoose.connection.db.collection('cloud_images.chunks');
-        const chunks = await chunksCollection.find({ files_id: file[0]._id }).sort({ n: 1 }).toArray();
+        const chunks = await chunksCollection.find({ files_id: fileId }).sort({ n: 1 }).toArray();
 
         if (chunks.length === 0) {
-            console.error("No chunks found for file:", file[0]._id);
+            console.error("No chunks found for file:", fileId);
             return res.status(500).json({ message: "File chunks are missing or corrupted" });
         }
 
-        const downloadStream = bucket.openDownloadStream(file[0]._id);
+        const downloadStream = bucket.openDownloadStream(fileId);
 
         downloadStream.on("error", (error) => {
             console.error("Download stream error:", error);
@@ -227,10 +250,24 @@ exports.serveImageByFilename = async (req, res) => {
 
 exports.deleteImage = async (req, res) => {
     try {
-        const fileId = new mongoose.Types.ObjectId(req.params.fileId);
+        const filename = req.params.filename;
         const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
             bucketName: "cloud_images",
         });
+
+        // Find file by filename (should be unique now)
+        const file = await bucket.find({ filename: filename }).toArray();
+
+        if (!file || file.length === 0) {
+            return res.status(404).json({ message: "File not found" });
+        }
+
+        // If multiple files found (shouldn't happen with unique filenames), log warning
+        if (file.length > 1) {
+            console.warn(`Multiple files found with filename: ${filename}. Deleting first match.`);
+        }
+
+        const fileId = file[0]._id;
         await bucket.delete(fileId);
         res.status(200).json({ message: "Image deleted successfully" });
     } catch (error) {
@@ -238,68 +275,41 @@ exports.deleteImage = async (req, res) => {
     }
 };
 
-exports.cleanupCorruptedFiles = async (req, res) => {
+// New function to get image by ID (more reliable than filename)
+exports.serveImageById = async (req, res) => {
     try {
-        const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-            bucketName: "cloud_images",
-        });
+        const fileId = req.params.fileId;
 
-        const filesCollection = mongoose.connection.db.collection('cloud_images.files');
-        const chunksCollection = mongoose.connection.db.collection('cloud_images.chunks');
-
-        const files = await filesCollection.find({}).toArray();
-        const corruptedFiles = [];
-
-        for (const file of files) {
-            const chunks = await chunksCollection.find({ files_id: file._id }).sort({ n: 1 }).toArray();
-
-            // Check if chunks are missing or corrupted
-            let isCorrupted = false;
-            if (chunks.length === 0) {
-                isCorrupted = true;
-            } else {
-                for (let i = 0; i < chunks.length; i++) {
-                    if (chunks[i].n !== i) {
-                        isCorrupted = true;
-                        break;
-                    }
-                }
-            }
-
-            if (isCorrupted) {
-                corruptedFiles.push({
-                    _id: file._id,
-                    filename: file.filename,
-                    uploadDate: file.uploadDate
-                });
-            }
+        if (!mongoose.Types.ObjectId.isValid(fileId)) {
+            return res.status(400).json({ message: "Invalid file ID format" });
         }
 
-        res.status(200).json({
-            message: "Corrupted files analysis complete",
-            totalFiles: files.length,
-            corruptedFiles: corruptedFiles,
-            corruptedCount: corruptedFiles.length
-        });
-    } catch (error) {
-        console.error("Error analyzing corrupted files:", error);
-        res.status(500).json({ message: error.message });
-    }
-};
-
-exports.deleteCorruptedFile = async (req, res) => {
-    try {
-        const fileId = new mongoose.Types.ObjectId(req.params.fileId);
         const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
             bucketName: "cloud_images",
         });
 
-        // Delete the corrupted file
-        await bucket.delete(fileId);
+        const file = await bucket.find({ _id: new mongoose.Types.ObjectId(fileId) }).toArray();
 
-        res.status(200).json({ message: "Corrupted file deleted successfully" });
+        if (!file || file.length === 0) {
+            return res.status(404).json({ message: "File not found" });
+        }
+
+        const fileDoc = file[0];
+
+        // Set appropriate headers
+        res.set({
+            'Content-Type': fileDoc.contentType || 'application/octet-stream',
+            'Content-Length': fileDoc.length,
+            'Cache-Control': 'public, max-age=31536000'
+        });
+
+        const downloadStream = bucket.openDownloadStream(fileDoc._id);
+        downloadStream.pipe(res);
+
     } catch (error) {
-        console.error("Error deleting corrupted file:", error);
-        res.status(500).json({ message: error.message });
+        console.error("Error serving image by ID:", error);
+        if (!res.headersSent) {
+            res.status(500).json({ message: error.message });
+        }
     }
 };
