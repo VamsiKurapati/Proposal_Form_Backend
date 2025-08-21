@@ -90,18 +90,33 @@ exports.uploadImage = [
     singleImageUpload,
     async (req, res) => {
         try {
+            console.log("=== uploadImage function called ===");
+            console.log("req.file:", req.file);
+            console.log("req.file._id:", req.file?._id);
+            console.log("req.file.filename:", req.file?.filename);
+            console.log("req.file.originalname:", req.file?.originalname);
+
             // Use _id instead of id for GridFS files
             const fileId = req.file._id;
             const filename = req.file.filename;
             const originalName = req.file.originalname;
 
-            res.status(201).json({
+            console.log("Extracted values:");
+            console.log("- fileId:", fileId);
+            console.log("- filename:", filename);
+            console.log("- originalName:", originalName);
+
+            const response = {
                 message: "Image uploaded successfully",
                 fileId,
                 filename,
                 originalName
-            });
+            };
+
+            console.log("Sending response:", response);
+            res.status(201).json(response);
         } catch (error) {
+            console.error("Error in uploadImage:", error);
             res.status(500).json({ message: error.message });
         }
     }
