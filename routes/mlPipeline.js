@@ -11,9 +11,9 @@ router.get('/getRecommendedAndSavedRFPs', verifyUser(["company", "employee"]), g
 router.post('/getOtherRFPs', verifyUser(["company", "employee"]), getOtherRFPs);
 router.get('/getSavedAndDraftRFPs', verifyUser(["company", "employee"]), getSavedAndDraftRFPs);
 
-router.get('/getRecentAndSavedGrants', verifyUser(["company", "Editor"]), getRecentAndSavedGrants);
-router.post('/getOtherGrants', verifyUser(["company", "Editor"]), getOtherGrants);
-router.get('/getSavedAndDraftGrants', verifyUser(["company", "Editor"]), getSavedAndDraftGrants);
+router.get('/getRecentAndSavedGrants', verifyUser(["company", "employee"]), getRecentAndSavedGrants);
+router.post('/getOtherGrants', verifyUser(["company", "employee"]), getOtherGrants);
+router.get('/getSavedAndDraftGrants', verifyUser(["company", "employee"]), getSavedAndDraftGrants);
 
 router.post('/saveRFP', verifyUser(["company", "employee"]), saveRFP);
 router.post('/unsaveRFP', verifyUser(["company", "employee"]), unsaveRFP);
