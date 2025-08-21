@@ -71,11 +71,66 @@ const storage2 = new GridFsStorage({
     },
 });
 
-const upload2 = multer({ storage2 });
+// Add comprehensive debugging for storage2
+storage2.on('connection', (connection) => {
+    console.log('✅ GridFS Storage2 connected successfully');
+    console.log('Connection details:', connection);
+});
+
+storage2.on('connectionFailed', (error) => {
+    console.error('❌ GridFS Storage2 connection failed:', error);
+});
+
+storage2.on('file', (file) => {
+    console.log('📁 GridFS Storage2 file event triggered:', file);
+});
+
+storage2.on('error', (error) => {
+    console.error('💥 GridFS Storage2 error:', error);
+});
+
+// Add debugging for the multer instance
+const upload2 = multer({
+    storage: storage2,
+    limits: {
+        fileSize: 1 * 1024 * 1024, // 1MB limit
+    }
+});
+
+console.log("=== Multer Configuration Debug ===");
+console.log("storage2:", storage2);
+console.log("upload2:", upload2);
+console.log("storage2.ready:", storage2.ready);
+console.log("storage2.connection:", storage2.connection);
+
+// Add debugging to the singleImageUpload middleware
+const singleImageUpload = upload2.single('image');
+
+// Wrap the middleware with debugging
+const singleImageUploadWithDebug = (req, res, next) => {
+    console.log("=== Multer Middleware Debug ===");
+    console.log("Request headers:", req.headers);
+    console.log("Request body:", req.body);
+    console.log("Content-Type:", req.get('Content-Type'));
+
+    singleImageUpload(req, res, (err) => {
+        if (err) {
+            console.error("❌ Multer error:", err);
+            console.error("Multer error code:", err.code);
+            console.error("Multer error field:", err.field);
+            return next(err);
+        }
+
+        console.log("✅ Multer middleware completed successfully");
+        console.log("req.file after multer:", req.file);
+        console.log("req.files after multer:", req.files);
+        console.log("req.body after multer:", req.body);
+
+        next();
+    });
+};
 
 const singleTemplateImageUpload = upload.single('image');
-
-const singleImageUpload = upload2.single('image');
 
 exports.uploadTemplateImage = [
     singleTemplateImageUpload,
@@ -99,19 +154,35 @@ exports.uploadTemplateImage = [
 ];
 
 exports.uploadImage = [
-    singleImageUpload,
+    singleImageUploadWithDebug,
     async (req, res) => {
         try {
             console.log("=== uploadImage function called ===");
+            console.log("Request method:", req.method);
+            console.log("Request URL:", req.url);
+            console.log("Request headers:", req.headers);
+            console.log("Request body:", req.body);
             console.log("req.file:", req.file);
-            console.log("req.file._id:", req.file?._id);
-            console.log("req.file.filename:", req.file?.filename);
-            console.log("req.file.originalname:", req.file?.originalname);
+            console.log("req.file type:", typeof req.file);
+            console.log("req.file keys:", req.file ? Object.keys(req.file) : 'No file object');
+
+            if (req.file) {
+                console.log("req.file._id:", req.file._id);
+                console.log("req.file.filename:", req.file.filename);
+                console.log("req.file.originalname:", req.file.originalname);
+                console.log("req.file.fieldname:", req.file.fieldname);
+                console.log("req.file.encoding:", req.file.encoding);
+                console.log("req.file.mimetype:", req.file.mimetype);
+                console.log("req.file.size:", req.file.size);
+                console.log("req.file.buffer:", req.file.buffer ? 'Buffer present' : 'No buffer');
+            } else {
+                console.error("❌ req.file is undefined or null!");
+            }
 
             // Use _id instead of id for GridFS files
-            const fileId = req.file._id;
-            const filename = req.file.filename;
-            const originalName = req.file.originalname;
+            const fileId = req.file?._id;
+            const filename = req.file?.filename;
+            const originalName = req.file?.originalname;
 
             console.log("Extracted values:");
             console.log("- fileId:", fileId);
@@ -124,13 +195,17 @@ exports.uploadImage = [
                     bucketName: "cloud_images",
                 });
 
-                const storedFile = await bucket.find({ _id: fileId }).toArray();
-                console.log("File found in database:", storedFile);
+                if (fileId) {
+                    const storedFile = await bucket.find({ _id: fileId }).toArray();
+                    console.log("File found in database:", storedFile);
 
-                if (storedFile.length === 0) {
-                    console.error("WARNING: File was not found in database after upload!");
+                    if (storedFile.length === 0) {
+                        console.error("WARNING: File was not found in database after upload!");
+                    } else {
+                        console.log("SUCCESS: File confirmed in database");
+                    }
                 } else {
-                    console.log("SUCCESS: File confirmed in database");
+                    console.error("❌ Cannot check database - fileId is undefined!");
                 }
             } catch (dbError) {
                 console.error("Error checking database:", dbError);
@@ -147,6 +222,7 @@ exports.uploadImage = [
             res.status(201).json(response);
         } catch (error) {
             console.error("Error in uploadImage:", error);
+            console.error("Error stack:", error.stack);
             res.status(500).json({ message: error.message });
         }
     }

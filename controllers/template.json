@@ -1330,7 +1330,7 @@
           "rotation": 0,
           "zIndex": 6,
           "properties": {
-            "src": "template://project_summery.jpg",
+            "src": "template://project_summery_1755762171014-663061224.jpg",
             "fit": "cover",
             "showLineHeightPanel": false,
             "showCommonEffectsPanel": false,
@@ -1432,7 +1432,7 @@
           "rotation": 0,
           "zIndex": 6,
           "properties": {
-            "src": "template://business-strategy-success-target-goals_1.jpg",
+            "src": "template://business-strategy-success-target-goals_1_1755762143089-848397924.jpg",
             "fit": "fill",
             "showLineHeightPanel": false,
             "showCommonEffectsPanel": false,
@@ -1739,7 +1739,7 @@
           "rotation": 0,
           "zIndex": 7,
           "properties": {
-            "src": "template://Deliverables.jpg",
+            "src": "template://Deliverables_1755762155366-871417095.jpg",
             "fit": "cover",
             "showLineHeightPanel": false,
             "showCommonEffectsPanel": false,
@@ -1996,7 +1996,7 @@
           "rotation": 0,
           "zIndex": 7,
           "properties": {
-            "src": "template://Timeline.jpg",
+            "src": "template://Timeline_1755762182798-951944413.jpg",
             "fit": "cover",
             "showLineHeightPanel": false,
             "showCommonEffectsPanel": false,
@@ -3598,7 +3598,7 @@
           "rotation": 0,
           "zIndex": 6,
           "properties": {
-            "src": "template://Why_us.png",
+            "src": "template://Why_us_1755762074032-160683938.png",
             "fit": "contain",
             "showLineHeightPanel": false,
             "showCommonEffectsPanel": false,
@@ -3881,7 +3881,7 @@
           "rotation": 0,
           "zIndex": 7,
           "properties": {
-            "src": "template://web.svg",
+            "src": "template://web_1755762118645-424575935.svg",
             "fit": "contain",
             "showLineHeightPanel": false,
             "showCommonEffectsPanel": false,
@@ -3900,7 +3900,7 @@
           "rotation": 0,
           "zIndex": 8,
           "properties": {
-            "src": "template://mail.svg",
+            "src": "template://mail_1755762219333-77842695.svg",
             "fit": "contain",
             "showLineHeightPanel": false,
             "showCommonEffectsPanel": false,
@@ -3919,7 +3919,7 @@
           "rotation": 0,
           "zIndex": 9,
           "properties": {
-            "src": "template://call.svg",
+            "src": "template://call_1755762205736-228464171.svg",
             "fit": "contain",
             "showLineHeightPanel": false,
             "showCommonEffectsPanel": false,
