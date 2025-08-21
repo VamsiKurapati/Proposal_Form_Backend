@@ -36,16 +36,25 @@ const upload = multer({ storage });
 const storage2 = new GridFsStorage({
     url: process.env.MONGO_URI,
     file: (req, file) => {
+        console.log("=== GridFS Storage2 Configuration ===");
+        console.log("File being processed:", file);
+        console.log("MONGO_URI:", process.env.MONGO_URI);
+
         return new Promise((resolve, reject) => {
             crypto.randomBytes(16, (err, buf) => {
-                if (err) return reject(err);
+                if (err) {
+                    console.error("Crypto error:", err);
+                    return reject(err);
+                }
                 // Generate unique filename to prevent duplicates
                 const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
                 const fileExtension = file.originalname.split('.').pop();
                 const fileNameWithoutExt = file.originalname.substring(0, file.originalname.lastIndexOf('.'));
                 const uniqueFilename = `${fileNameWithoutExt}_${uniqueSuffix}.${fileExtension}`;
 
-                resolve({
+                console.log("Generated filename:", uniqueFilename);
+
+                const fileConfig = {
                     filename: uniqueFilename,
                     bucketName: "cloud_images",
                     metadata: {
@@ -53,7 +62,10 @@ const storage2 = new GridFsStorage({
                         uploadedAt: new Date(),
                         uniqueId: buf.toString('hex')
                     },
-                });
+                };
+
+                console.log("File config:", fileConfig);
+                resolve(fileConfig);
             });
         });
     },
@@ -105,6 +117,24 @@ exports.uploadImage = [
             console.log("- fileId:", fileId);
             console.log("- filename:", filename);
             console.log("- originalName:", originalName);
+
+            // Verify the file was actually stored in the database
+            try {
+                const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+                    bucketName: "cloud_images",
+                });
+
+                const storedFile = await bucket.find({ _id: fileId }).toArray();
+                console.log("File found in database:", storedFile);
+
+                if (storedFile.length === 0) {
+                    console.error("WARNING: File was not found in database after upload!");
+                } else {
+                    console.log("SUCCESS: File confirmed in database");
+                }
+            } catch (dbError) {
+                console.error("Error checking database:", dbError);
+            }
 
             const response = {
                 message: "Image uploaded successfully",
