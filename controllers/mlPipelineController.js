@@ -203,15 +203,17 @@ exports.getSavedAndDraftRFPs = async (req, res) => {
       }
     });
 
-    const draftRFPs_1 = await DraftRFP.find({ userEmail }).lean();
-    const draftRFPs = draftRFPs_1.map((item) => {
+    const draftRFPs = await DraftRFP.find({ userEmail }).populate('currentEditor', '_id fullName email').lean();
+    const draftRFPs_1 = draftRFPs.map((item) => {
       return {
+        generatedProposal: item.generatedProposal[item.generatedProposal.length - 1],
+        currentEditor: item.currentEditor,
         ...item.rfp,
         _id: item.rfpId,
       }
     });
 
-    res.status(200).json({ savedRFPs, draftRFPs });
+    res.status(200).json({ savedRFPs, draftRFPs: draftRFPs_1 });
   } catch (err) {
     console.error('Error in /getSavedAndDraftRFPs:', err);
     res.status(500).json({ error: 'Failed to get saved and draft RFPs' });
@@ -473,6 +475,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       rfpId: proposal._id,
       rfp: { ...proposal },
       generatedProposal: processedProposal,
+      currentEditor: req.user._id,
     });
     await new_Draft.save();
 
