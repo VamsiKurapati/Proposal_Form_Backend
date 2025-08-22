@@ -206,7 +206,7 @@ exports.getSavedAndDraftRFPs = async (req, res) => {
     const draftRFPs = await DraftRFP.find({ userEmail }).populate('currentEditor', '_id fullName email').lean();
     const draftRFPs_1 = draftRFPs.map((item) => {
       return {
-        generatedProposal: item.generatedProposal[item.generatedProposal.length - 1],
+        generatedProposal: item.generatedProposal,
         currentEditor: item.currentEditor,
         ...item.rfp,
         _id: item.rfpId,
