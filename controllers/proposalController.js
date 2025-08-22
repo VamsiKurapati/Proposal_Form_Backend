@@ -71,7 +71,7 @@ exports.generatePDF = async (req, res) => {
     const { project } = req.body;
     console.log("Project: ", project);
 
-    const pdf = await axios.post('http://56.228.64.88:5000/download-pdf', project.pages);
+    const pdf = await axios.post('http://56.228.64.88:5000/download-pdf', project);
 
     console.log("PDF: ", pdf.data);
 
