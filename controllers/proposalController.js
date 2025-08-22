@@ -66,6 +66,22 @@ exports.advancedComplianceCheck = async (req, res) => {
   }
 };
 
+exports.generatePDF = async (req, res) => {
+  try {
+    const proposal = req.body;
+    console.log("Proposal: ", proposal);
+
+    const pdf = await axios.post('http://56.228.64.88:5000/download-pdf', proposal);
+
+    console.log("PDF: ", pdf);
+
+    res.status(200).json(pdf.data);
+  } catch (error) {
+    console.error('Error in generatePDF:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 
 // Service to delete expired proposals and their associated files from GridFS
 
