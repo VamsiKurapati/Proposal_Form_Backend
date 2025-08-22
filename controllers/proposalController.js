@@ -69,11 +69,11 @@ exports.advancedComplianceCheck = async (req, res) => {
 exports.generatePDF = async (req, res) => {
   try {
     const proposal = req.body;
-    console.log("Proposal: ", proposal);
+    // console.log("Proposal: ", proposal);
 
     const pdf = await axios.post('http://56.228.64.88:5000/download-pdf', proposal);
 
-    console.log("PDF: ", pdf);
+    console.log("PDF: ", pdf.data);
 
     res.status(200).json(pdf.data);
   } catch (error) {
