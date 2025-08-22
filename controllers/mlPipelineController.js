@@ -812,7 +812,7 @@ exports.handleFileUploadAndSendForRFPExtraction = [
         enhancedDescription += `\n\nSubmission Instructions: ${rfp.proposalInstructions}`;
       }
 
-      const newRFP = new MatchedRFP({
+      const newRFP = await MatchedRFP.create({
         title: rfp.title,
         description: enhancedDescription,
         organization: rfp.organization || '',
@@ -827,8 +827,6 @@ exports.handleFileUploadAndSendForRFPExtraction = [
         logo: 'None',
         type: 'Uploaded',
       });
-
-      await newRFP.save();
 
       // Clean up: Delete the uploaded file from GridFS after processing
       try {
