@@ -71,11 +71,11 @@ exports.generatePDF = async (req, res) => {
     const { project } = req.body;
     console.log("Project: ", project);
 
-    const pdf = await axios.post('http://56.228.64.88:5000/download-pdf', project);
+    const pdf = await axios.post('http://56.228.64.88:5000/download-pdf', project, { responseType: "arraybuffer" });
 
-    console.log("PDF: ", pdf.data);
-
-    res.status(200).json(pdf.data);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="proposal.pdf"');
+    res.status(200).send(pdf.data);
   } catch (error) {
     console.error('Error in generatePDF:', error);
     res.status(500).json({ message: error.message });
