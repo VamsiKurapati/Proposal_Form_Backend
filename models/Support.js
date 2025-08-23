@@ -1,8 +1,7 @@
 const mongoose = require("mongoose");
-
+ 
 const supportSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-
   category: {
     type: String,
     enum: [
@@ -16,12 +15,13 @@ const supportSchema = new mongoose.Schema({
     default: 'Others'
   },
 
+ 
   subCategory: { type: String },
-
+ 
   description: { type: String, required: true },
-
-  Resolved_Description: { type: String, required: false, default: "Admin will contact you soon" },
-
+ 
+  Resolved_Description: { type: String, required: false},
+  
   status: {
     type: String,
     enum: ['Created', 'In Progress', 'Completed', 'Withdrawn'],
@@ -50,6 +50,7 @@ const supportSchema = new mongoose.Schema({
     }
   ],
 
+
   isOpen: { type: Boolean, default: false },
 
   priority: {
@@ -58,7 +59,7 @@ const supportSchema = new mongoose.Schema({
     default: 'Low'
   }
 }, { timestamps: true });
-
-
+ 
+ 
 
 module.exports = mongoose.model("Support", supportSchema);
