@@ -9,6 +9,7 @@ const DraftRFP = require('../models/DraftRFP');
 const EmployeeProfile = require('../models/EmployeeProfile');
 const CompanyProfile = require('../models/CompanyProfile');
 const Grant = require('../models/Grant');
+const CalendarEvent = require('../models/CalendarEvents');
 
 const SavedGrant = require('../models/SavedGrant');
 const DraftGrant = require('../models/DraftGrant');
@@ -478,6 +479,17 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       currentEditor: req.user._id,
     });
     await new_Draft.save();
+
+    const new_CalendarEvent = new CalendarEvent({
+      companyId: companyProfile_1._id,
+      employeeId: req.user._id,
+      proposalId: new_Proposal._id,
+      title: proposal.title,
+      startDate: new Date(),
+      endDate: new Date(),
+      status: "In Progress",
+    });
+    await new_CalendarEvent.save();
 
     res.status(200).json(processedProposal);
   } catch (err) {
