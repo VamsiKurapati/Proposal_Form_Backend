@@ -4,11 +4,11 @@ const mongoose = require('mongoose');
 const Proposal = require('../models/Proposal');
 const MatchedRFP = require('../models/MatchedRFP');
 const RFP = require('../models/RFP');
+const Grant = require('../models/Grant');
 const SavedRFP = require('../models/SavedRFP');
 const DraftRFP = require('../models/DraftRFP');
 const EmployeeProfile = require('../models/EmployeeProfile');
 const CompanyProfile = require('../models/CompanyProfile');
-const Grant = require('../models/Grant');
 const CalendarEvent = require('../models/CalendarEvents');
 
 const SavedGrant = require('../models/SavedGrant');
@@ -898,16 +898,64 @@ exports.handleFileUploadAndSendForRFPExtraction = [
   }
 ];
 
-exports.postAllGrants = async (req, res) => {
-  try {
-    const { grants } = req.body;
-    const result = await Grant.insertMany(grants);
-    res.status(200).json({ "message": "Grants saved successfully", "data": result });
-  } catch (err) {
-    console.error('Error in /postAllGrants:', err);
-    res.status(500).json({ error: 'Failed to load Grants' });
+exports.handleFileUploadAndSendForGrantExtraction = [
+  singleFileUpload(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      console.error('Multer error:', err);
+      return res.status(400).json({ error: 'File upload error' });
+    }
+  }),
+  async (req, res) => {
+    try {
+      const { grant } = req.body;
+      const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+        bucketName: 'uploads'
+      });
+      const downloadStream = bucket.openDownloadStream(req.file.id);
+      const fileBuffer = await new Promise((resolve, reject) => {
+        downloadStream.on('data', (chunk) => {
+          chunks.push(chunk);
+        });
+        downloadStream.on('end', () => {
+          const buffer = Buffer.concat(chunks);
+          resolve(buffer);
+        });
+        downloadStream.on('error', (error) => {
+          reject(error);
+        });
+      });
+      const formData = new FormData();
+      formData.append('file', fileBuffer, {
+        filename: req.file.originalname,
+        contentType: req.file.mimetype
+      });
+      const apiResponse = await axios.post(`http://56.228.64.88:5000/extract-structured-grant`, formData, {
+        headers: {
+          ...formData.getHeaders(),
+        },
+        timeout: 60000, // 60 second timeout for large files
+      });
+
+      console.log("API Response: ", apiResponse);
+      console.log("API Response Data: ", apiResponse.data);
+
+      // Clean up: Delete the uploaded file from GridFS after processing
+      try {
+        await bucket.delete(req.file.id);
+        console.log("Uploaded file deleted from GridFS");
+
+      } catch (deleteError) {
+        // Log error but don't fail the request since RFP was already saved
+        console.error('Failed to delete uploaded file from GridFS:', deleteError);
+      }
+
+      res.status(200).json({ message: "Grant extracted and saved successfully", grant: apiResponse.data });
+    } catch (err) {
+      console.error('Error in /handleFileUploadAndSendForGrantExtraction:', err);
+      res.status(500).json({ error: 'Failed to handle file upload and send for grant extraction' });
+    }
   }
-};
+];
 
 exports.saveGrant = async (req, res) => {
   try {
@@ -1186,5 +1234,15 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
   } catch (err) {
     console.error('Error in /sendDataForProposalGeneration:', err);
     res.status(500).json({ error: 'Failed to send data for proposal generation' });
+  }
+};
+
+exports.triggerGrant = async () => {
+  try {
+    const grants = await axios.get(`http://56.228.64.88:5000/grants/trigger`);
+    const grant_data = await Grant.insertMany(grants);
+    console.log("Grant data: ", grant_data);
+  } catch (err) {
+    console.error('Error in /triggerGrant:', err);
   }
 };

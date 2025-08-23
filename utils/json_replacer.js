@@ -133,19 +133,6 @@ function replaceTextInJson(inputFile, proposalData, userData) {
     "aqmqb0fzi": userData.website,
   };
 
-  // Function to replace text by ID
-  function replaceTextById(data, idTextMap) {
-    data.pages?.forEach((page) => {
-      page.elements?.forEach((element) => {
-        if (element.type === "text" && element.id && idTextMap[element.id]) {
-          element.properties = element.properties || {};
-          element.properties.text = idTextMap[element.id]; // replace text
-        }
-      });
-    });
-    return data;
-  }
-
   // Function to replace text by ID with safety checks 
   function replaceTextById(data, idTextMap) {
     if (!data || typeof data !== 'object') {
