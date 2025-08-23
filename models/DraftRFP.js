@@ -16,7 +16,9 @@ const DraftRFPSchema = new mongoose.Schema({
         link: String,
         contact: String,
         timeline: String
-    }
+    },
+    generatedProposal: { type: Object, required: true },
+    currentEditor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 }, { timestamps: true });
 
 module.exports = mongoose.models.DraftRFP || mongoose.model('DraftRFP', DraftRFPSchema);

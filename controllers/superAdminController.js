@@ -107,17 +107,24 @@ exports.getSupportStatsAndData = async (req, res) => {
 
       if (categoryCounts.hasOwnProperty(item._id)) {
         categoryCounts[item._id] = item.count;
-
       }
     });
 
     // Get all support tickets, sorted by creation date descending
 
-    const supports = await Support.find().sort({ createdAt: -1 });
+    const supports = await Support.find().sort({ createdAt: -1 }).lean();
+
+    const support_data = supports.map(item => {
+      // console.log(item.subCategory, item.status);
+      return {
+        ...item,
+        status: item.isOpen && (item.status !== "In Progress" && item.status !== "Completed" && item.status !== "Withdrawn") ? "Re-Opened" : item.status
+      }
+    });
 
     res.json({
       TicketStats: categoryCounts,
-      TicketData: supports
+      TicketData: support_data
     });
   } catch (err) {
     res.status(500).json({ message: "Error fetching support stats and data", error: err.message });
@@ -130,24 +137,12 @@ exports.updateSupportTicket = async (req, res) => {
 
     const { id } = req.params;
     // Accept all updatable fields as per Support.js schema
-    const {
-      status,
-      category,
-      subCategory,
-      description
-      // Note: priority is not present in the current Support.js schema
-    } = req.body;
+    const { status } = req.body;
 
-    // Build update object dynamically
-    const updateFields = {};
-    if (status) updateFields.status = status;
-    if (category) updateFields.category = category;
-    if (subCategory !== undefined) updateFields.subCategory = subCategory;
-    if (description !== undefined) updateFields.description = description;
+    const { Resolved_Description } = req.body || "";
 
-    if (Object.keys(updateFields).length === 0) {
-      return res.status(400).json({ message: "At least one field (status, category, subCategory, description) must be provided to update." });
-
+    if (!status) {
+      return res.status(400).json({ message: "Status is required" });
     }
 
     const updatedSupport = await Support.findByIdAndUpdate(
@@ -169,10 +164,10 @@ exports.updateSupportTicket = async (req, res) => {
 exports.addAdminMessage = async (req, res) => {
   try {
     const id = req.params.id;
-    const { message } = req.body;
+    const { newAdminMessage } = req.body;
     const updatedSupport = await Support.findByIdAndUpdate(
       id,
-      { $push: { adminMessages: { message } } },
+      { $push: { adminMessages: { message: newAdminMessage, createdAt: new Date() } } },
       { new: true }
     );
     res.json(updatedSupport);

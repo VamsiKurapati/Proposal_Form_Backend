@@ -19,9 +19,9 @@ const storage = new GridFsStorage({
         return new Promise((resolve, reject) => {
             crypto.randomBytes(16, (err, buf) => {
                 if (err) return reject(err);
-                const filename = buf.toString("hex") + path.extname(file.originalname);
+                // const filename = buf.toString("hex") + path.extname(file.originalname);
                 resolve({
-                    filename,
+                    filename: file.originalname,
                     bucketName: "uploads",
                     metadata: { originalname: file.originalname },
                 });
@@ -211,6 +211,36 @@ exports.getEmployeeProfile = async (req, res) => {
             logoUrl: employeeProfile.logoUrl,
         };
         res.status(200).json(data);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.getCompanyProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+        const companyProfile = await CompanyProfile.findOne({ email: employeeProfile.companyMail });
+        if (!companyProfile) {
+            return res.status(404).json({ message: "Company profile not found" });
+        }
+
+        const Proposals = await Proposal.find({ companyMail: companyProfile.email });
+
+        const requiredData = {
+            companyName: companyProfile.companyName,
+            adminName: companyProfile.adminName,
+            industry: companyProfile.industry,
+            bio: companyProfile.bio,
+            employees: companyProfile.employees,
+            proposals: Proposals,
+            caseStudies: companyProfile.caseStudies,
+        };
+
+        res.status(200).json(requiredData);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -446,9 +476,9 @@ exports.addEmployee = async (req, res) => {
                     console.log("Employee profile found");
                     employeeProfile.name = name;
                     employeeProfile.email = email;
-                //     const password = generateStrongPassword();
-                //     console.log("Password generated: ", password);
-                // const hashedPassword = await bcrypt.hash(password, 10);
+                    //     const password = generateStrongPassword();
+                    //     console.log("Password generated: ", password);
+                    // const hashedPassword = await bcrypt.hash(password, 10);
                     employeeProfile.phone = phone;
                     employeeProfile.about = shortDesc;
                     employeeProfile.jobTitle = jobTitle;
