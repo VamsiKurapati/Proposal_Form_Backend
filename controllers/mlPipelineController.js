@@ -898,64 +898,133 @@ exports.handleFileUploadAndSendForRFPExtraction = [
   }
 ];
 
-exports.handleFileUploadAndSendForGrantExtraction = [
-  singleFileUpload(req, res, (err) => {
-    if (err instanceof multer.MulterError) {
-      console.error('Multer error:', err);
-      return res.status(400).json({ error: 'File upload error' });
-    }
-  }),
-  async (req, res) => {
-    try {
-      const { grant } = req.body;
-      const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-        bucketName: 'uploads'
-      });
-      const downloadStream = bucket.openDownloadStream(req.file.id);
-      const fileBuffer = await new Promise((resolve, reject) => {
-        downloadStream.on('data', (chunk) => {
-          chunks.push(chunk);
-        });
-        downloadStream.on('end', () => {
-          const buffer = Buffer.concat(chunks);
-          resolve(buffer);
-        });
-        downloadStream.on('error', (error) => {
-          reject(error);
-        });
-      });
-      const formData = new FormData();
-      formData.append('file', fileBuffer, {
-        filename: req.file.originalname,
-        contentType: req.file.mimetype
-      });
-      const apiResponse = await axios.post(`http://56.228.64.88:5000/extract-structured-grant`, formData, {
-        headers: {
-          ...formData.getHeaders(),
-        },
-        timeout: 60000, // 60 second timeout for large files
-      });
+// exports.handleFileUploadAndSendForGrantExtraction = [
+//   (req, res, next) => {
+//     singleFileUpload(req, res, (err) => {
+//       if (err instanceof multer.MulterError) {
+//         console.error('Multer error:', err);
+//         if (err.code === 'LIMIT_FILE_SIZE') {
+//           return res.status(400).json({
+//             error: 'File too large. Maximum size is 10MB.',
+//             details: { code: err.code, field: err.field }
+//           });
+//         }
+//         return res.status(400).json({
+//           error: 'File upload error',
+//           details: err.message
+//         });
+//       } else if (err) {
+//         console.error('File upload error:', err);
+//         return res.status(400).json({
+//           error: err.message || 'File upload failed'
+//         });
+//       }
+//       next();
+//     });
+//   },
+//   async (req, res) => {
+//     try {
+//       if (!req.file) {
+//         return res.status(400).json({
+//           error: 'No file uploaded'
+//         });
+//       }
 
-      console.log("API Response: ", apiResponse);
-      console.log("API Response Data: ", apiResponse.data);
+//       // File validation using utility function
+//       const validation = validateFile(req.file);
+//       if (!validation.isValid) {
+//         return res.status(400).json({
+//           error: 'File validation failed',
+//           details: validation.errors
+//         });
+//       }
 
-      // Clean up: Delete the uploaded file from GridFS after processing
-      try {
-        await bucket.delete(req.file.id);
-        console.log("Uploaded file deleted from GridFS");
+//       // Get user email
+//       let userEmail = req.user.email;
+//       if (req.user.role === "employee") {
+//         const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+//         if (!employeeProfile) {
+//           return res.status(404).json({ error: 'Employee profile not found' });
+//         }
+//         userEmail = employeeProfile.companyMail;
+//       }
 
-      } catch (deleteError) {
-        // Log error but don't fail the request since RFP was already saved
-        console.error('Failed to delete uploaded file from GridFS:', deleteError);
-      }
+//       // Retrieve file from GridFS since req.file.buffer is undefined with GridFS storage
+//       const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+//         bucketName: 'uploads'
+//       });
 
-      res.status(200).json({ message: "Grant extracted and saved successfully", grant: apiResponse.data });
-    } catch (err) {
-      console.error('Error in /handleFileUploadAndSendForGrantExtraction:', err);
-      res.status(500).json({ error: 'Failed to handle file upload and send for grant extraction' });
-    }
-  }
-];
+//       // Get the file stream from GridFS
+//       const downloadStream = bucket.openDownloadStream(req.file.id);
+
+//       // Convert stream to buffer
+//       const chunks = [];
+//       const fileBuffer = await new Promise((resolve, reject) => {
+//         downloadStream.on('data', (chunk) => {
+//           chunks.push(chunk);
+//         });
+//         downloadStream.on('end', () => {
+//           const buffer = Buffer.concat(chunks);
+//           resolve(buffer);
+//         });
+//         downloadStream.on('error', (error) => {
+//           reject(error);
+//         });
+//       });
+
+//       // Create FormData for the external API
+//       const FormData = require('form-data');
+//       const formData = new FormData();
+//       formData.append('file', fileBuffer, {
+//         filename: req.file.originalname,
+//         contentType: req.file.mimetype
+//       });
+
+//       // Send file to external API with retry mechanism
+//       let apiResponse;
+//       let retryCount = 1;
+//       const maxRetries = 1;
+
+//       while (retryCount <= maxRetries) {
+//         try {
+//           apiResponse = await axios.post(`http://56.228.64.88:5000/extract-structured-rfp`, formData, {
+//             headers: {
+//               ...formData.getHeaders(),
+//             },
+//             timeout: 60000, // 60 second timeout for large files
+//           });
+//           break; // Success, exit retry loop
+//         } catch (error) {
+//           retryCount++;
+//           if (retryCount > maxRetries) {
+//             throw error; // Re-throw the error if all retries failed
+//           }
+//           // Wait before retrying (exponential backoff)
+//           const waitTime = Math.pow(2, retryCount) * 1000;
+//           await new Promise(resolve => setTimeout(resolve, waitTime));
+//         }
+//       }
+
+//       console.log("API Response: ", apiResponse);
+//       console.log("API Response Data: ", apiResponse.data);
+
+//       // Clean up: Delete the uploaded file from GridFS after processing
+//       try {
+//         await bucket.delete(req.file.id);
+//         console.log("Uploaded file deleted from GridFS");
+
+//       } catch (deleteError) {
+//         // Log error but don't fail the request since RFP was already saved
+//         console.error('Failed to delete uploaded file from GridFS:', deleteError);
+//       }
+
+//       res.status(200).json({ message: "Grant extracted and saved successfully", grant: apiResponse.data });
+//     } catch (err) {
+//       console.error('Error in /handleFileUploadAndSendForGrantExtraction:', err);
+//       res.status(500).json({ error: 'Failed to handle file upload and send for grant extraction' });
+//     }
+//   }
+// ];
 
 exports.saveGrant = async (req, res) => {
   try {
