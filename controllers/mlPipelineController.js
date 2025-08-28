@@ -1353,6 +1353,10 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       project_inputs: formData,
     };
 
+    console.log("User Data: ", userData);
+    console.log("Grant Data: ", grant);
+    console.log("Form Data: ", formData);
+
     const res_1 = await axios.post(`http://56.228.64.88:5000/grant_proposal_generation`, data);
     console.log("Res_1: ", res_1);
     const proposalData = res_1.data.proposal;
