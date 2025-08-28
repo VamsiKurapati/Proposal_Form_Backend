@@ -484,6 +484,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       companyId: companyProfile_1._id,
       employeeId: req.user._id,
       proposalId: new_Proposal._id,
+      grantId: null,
       title: proposal.title,
       startDate: new Date(),
       endDate: new Date(),
@@ -1392,6 +1393,19 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       project_inputs: formData,
       proposal: proposalData,
     });
+
+    const new_CalendarEvent = new CalendarEvent({
+      companyId: companyProfile_1._id,
+      employeeId: req.user._id,
+      proposalId: null,
+      grantId: grant._id,
+      title: "Proposal Submission",
+      startDate: new Date(),
+      endDate: new Date(),
+      status: "In Progress",
+    });
+
+    await new_CalendarEvent.save();
 
     res.status(200).json(proposalData);
   } catch (err) {
