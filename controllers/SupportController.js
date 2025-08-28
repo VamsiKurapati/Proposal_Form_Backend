@@ -119,3 +119,60 @@ exports.withdrawnSupportTicket = async (req, res) => {
 
 
 
+
+
+exports.addUserMessage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { message } = req.body;
+
+    const updatedSupport = await Support.findByIdAndUpdate(
+      id,
+      { $push: { userMessages: { message } } },
+      { new: true }
+    );
+
+    if (!updatedSupport) {
+      return res.status(404).json({ message: "Support ticket not found" });
+    }
+
+    res.json(updatedSupport);
+  } catch (err) {
+    res.status(500).json({ message: "Error adding user message", error: err.message });
+  }
+};
+
+
+exports.getUserMessages = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the ticket by ID
+    const ticket = await Support.findById(id);
+    if (!ticket) {
+      return res.status(404).json({ message: "Support ticket not found" });
+    }
+
+    // Return the userMessages array
+    res.json({ userMessages: ticket.userMessages });
+  } catch (err) {
+    res.status(500).json({ message: "Error retrieving user messages", error: err.message });
+  }
+};
+
+exports.getAdminMessages = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the ticket by ID
+    const ticket = await Support.findById(id);
+    if (!ticket) {
+      return res.status(404).json({ message: "Support ticket not found" });
+    }
+
+    // Return the adminMessages array
+    res.json({ adminMessages: ticket.adminMessages });
+  } catch (err) {
+    res.status(500).json({ message: "Error retrieving admin messages", error: err.message });
+  }
+};
