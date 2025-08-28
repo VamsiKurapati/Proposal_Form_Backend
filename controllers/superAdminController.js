@@ -180,14 +180,6 @@ exports.addAdminMessage = async (req, res) => {
 
 
 //Subscription Plans
-exports.createSubscriptionPlan = async (req, res) => {
-  try {
-    const { name, description, price, billing_cycle, features } = req.body;
-  } catch (err) {
-    res.status(500).json({ message: "Error creating subscription plan", error: err.message });
-  }
-};
-
 exports.getSubscriptionPlans = async (req, res) => {
   try {
     const subscriptionPlans = await SubscriptionPlan.find();
@@ -200,7 +192,25 @@ exports.getSubscriptionPlans = async (req, res) => {
 exports.updateSubscriptionPlan = async (req, res) => {
   try {
     const id = req.params.id;
-    const { name, description, price, billing_cycle, features } = req.body;
+    const { monthlyPrice, yearlyPrice, maxEditors, maxViewers, maxRFPProposalGenerations, maxGrantProposalGenerations } = req.body;
+
+    const existingSubscriptionPlan = await SubscriptionPlan.findById(id);
+
+    if (!existingSubscriptionPlan) {
+      return res.status(404).json({ message: "Subscription plan not found" });
+    }
+
+    //if "enterprise" plan is being updated, then update only the price, maxRFPProposalGenerations, maxGrantProposalGenerations
+    if (existingSubscriptionPlan.name === "Enterprise") {
+      const updatedSubscriptionPlan = await SubscriptionPlan.findByIdAndUpdate(id, { monthlyPrice, yearlyPrice, maxRFPProposalGenerations, maxGrantProposalGenerations }, { new: true });
+      res.json(updatedSubscriptionPlan);
+    }
+
+    //if "basic" or "pro" plan is being updated, then update only the price, maxEditors, maxViewers, maxRFPProposalGenerations, maxGrantProposalGenerations
+    if (existingSubscriptionPlan.name === "Basic" || existingSubscriptionPlan.name === "Pro") {
+      const updatedSubscriptionPlan = await SubscriptionPlan.findByIdAndUpdate(id, { monthlyPrice, yearlyPrice, maxEditors, maxViewers, maxRFPProposalGenerations, maxGrantProposalGenerations }, { new: true });
+      res.json(updatedSubscriptionPlan);
+    }
   } catch (err) {
     res.status(500).json({ message: "Error updating subscription plan", error: err.message });
   }
