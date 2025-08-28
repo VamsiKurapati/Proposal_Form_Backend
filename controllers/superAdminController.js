@@ -7,7 +7,7 @@ const Payment = require("../models/Payments");
 const Subscription = require("../models/Subscription");
 
 
-// Merged Company Stats and Company Data API
+//get company stats and company data
 exports.getCompanyStatsAndData = async (req, res) => {
   try {
     const totalCompanies = await CompanyProfile.countDocuments();
@@ -28,6 +28,7 @@ exports.getCompanyStatsAndData = async (req, res) => {
   }
 };
 
+//update company status
 exports.updateCompanyStatus = async (req, res) => {
   try {
     const id = req.params.id;
@@ -43,32 +44,7 @@ exports.updateCompanyStatus = async (req, res) => {
   }
 };
 
-// POST request to create a new notification
-exports.createNotification = async (req, res) => {
-  try {
-    const { title, description, type } = req.body;
-
-    // Basic validation
-    if (!title || !description || !type) {
-      return res.status(400).json({ message: "Title, description, and type are required" });
-    }
-
-    const notification = new Notification({
-      title,
-      description,
-      type
-    });
-
-    await notification.save();
-
-    res.status(201).json({ message: "Notification created successfully", notification });
-  } catch (err) {
-    res.status(500).json({ message: "Error creating notification", error: err.message });
-  }
-};
-
-
-
+//get notification data
 exports.getNotificationData = async (req, res) => {
   try {
     const notifications = await Notification.find();
@@ -79,7 +55,7 @@ exports.getNotificationData = async (req, res) => {
 }
 
 
-// Controller to get support ticket type counts and all support tickets in one API call
+//get support ticket type counts and all support tickets in one API call
 exports.getSupportStatsAndData = async (req, res) => {
   try {
     // Get counts by category (case-sensitive to match schema)
@@ -162,6 +138,7 @@ exports.updateSupportTicket = async (req, res) => {
   }
 };
 
+//add admin message to support ticket
 exports.addAdminMessage = async (req, res) => {
   try {
     const id = req.params.id;
@@ -189,6 +166,7 @@ exports.getSubscriptionPlans = async (req, res) => {
   }
 };
 
+//update subscription plan
 exports.updateSubscriptionPlan = async (req, res) => {
   try {
     const id = req.params.id;
@@ -217,7 +195,7 @@ exports.updateSubscriptionPlan = async (req, res) => {
 };
 
 
-// Merged Payment Summary and Payment Data API
+//get payments summary and payment data
 exports.getPaymentsSummaryAndData = async (req, res) => {
   try {
     // Fetch all payments
@@ -301,6 +279,7 @@ exports.getSubscriptionData = async (req, res) => {
   }
 };
 
+//update priority of support ticket
 exports.priorityCronJob = async (req, res) => {
   try {
     //Get all support tickets and update the priority of the ticket to "Medium" if ticket.createdAt is more than 1 day and "High" if ticket.createdAt is more than 48 hours
