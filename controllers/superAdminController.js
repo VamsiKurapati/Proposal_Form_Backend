@@ -118,7 +118,8 @@ exports.getSupportStatsAndData = async (req, res) => {
       // console.log(item.subCategory, item.status);
       return {
         ...item,
-        status: item.isOpen && (item.status !== "In Progress" && item.status !== "Completed" && item.status !== "Withdrawn") ? "Re-Opened" : item.status
+        //If Status is "Created" and isOpen is false, then status is "Pending" and If Status is not "In Progress" or "Completed" or "Withdrawn" and isOpen is true, then status is "Re-Opened"
+        status: item.status === "Created" && !item.isOpen ? "Pending" : item.isOpen && (item.status !== "In Progress" && item.status !== "Completed" && item.status !== "Withdrawn") ? "Re-Opened" : item.status
       }
     });
 
@@ -287,5 +288,26 @@ exports.getSubscriptionData = async (req, res) => {
     res.json(subscriptionData);
   } catch (err) {
     res.status(500).json({ message: "Error fetching subscription data", error: err.message });
+  }
+};
+
+exports.priorityCronJob = async (req, res) => {
+  try {
+    //Get all support tickets and update the priority of the ticket to "Medium" if ticket.createdAt is more than 1 day and "High" if ticket.createdAt is more than 48 hours
+    const supportTickets = await Support.find();
+    supportTickets.forEach(ticket => {
+      const createdAt = new Date(ticket.createdAt);
+      const now = new Date();
+      const diffTime = Math.abs(now - createdAt);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (diffDays > 1) {
+        ticket.priority = "Medium";
+      } else if (diffDays > 2) {
+        ticket.priority = "High";
+      }
+    });
+    res.json({ message: "Priority updated successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Error updating priority", error: err.message });
   }
 };

@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const { deleteExpiredProposals } = require('../controllers/proposalController');
 const { triggerGrant } = require('../controllers/mlPipelineController');
+const { priorityCronJob } = require('../controllers/superAdminController');
 
 
 
@@ -10,6 +11,11 @@ cron.schedule('0 0 * * *', async () => {
   await deleteExpiredProposals();
   // console.log("Triggering grant");
   await triggerGrant();
-  console.log('Cron job completed.');
+});
+
+// Cron job to update the priority of the support tickets every hour
+cron.schedule('0 * * * *', async () => {
+  await priorityCronJob();
+  //console.log('Priority updated successfully.');
 });
 
