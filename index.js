@@ -14,6 +14,8 @@ const supportRoute = require('./routes/SupportTicket.js');
 const imageRoute = require('./routes/Image.js');
 const SubscriptionPlan = require('./models/SubscriptionPlan.js');
 const Subscription = require('./models/Subscription.js');
+const nodemailer = require('nodemailer');
+
  
  
 const getSubscriptionPlansData = async (req, res) => {
@@ -49,6 +51,45 @@ const getSubscriptionPlansData = async (req, res) => {
     });
   }
 };
+
+const sendEmail = async (req, res) => {
+  const { name, company, email } = req.body; // extract from form
+
+  const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
+    auth: {
+      user: process.env.MAIL_USER,
+      pass: process.env.MAIL_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: email, 
+    to: process.env.MAIL_USER, 
+    subject: `New Contact Request from ${name}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
+        <h2 style="color: #2563EB;">New Contact Request</h2>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Company:</strong> ${company}</p>
+        <hr />
+        <p style="font-size: 12px; color: #666;">This email was generated from the Contact Us form on your website.</p>
+      </div>
+    `,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email sent: " + info.response);
+    res.status(200).json({ message: "Email sent successfully!" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to send email." });
+  }
+};
  
  
 const dbConnect = require('./utils/dbConnect.js');
@@ -64,6 +105,7 @@ app.use(cors({
 }));
  
 app.get('/getSubscriptionPlansData', getSubscriptionPlansData);
+app.post('/contact', sendEmail);
  
 // Register routes before starting server
 app.use('/api/proposals', proposalRoute);
