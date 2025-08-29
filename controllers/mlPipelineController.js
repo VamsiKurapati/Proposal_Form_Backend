@@ -1367,8 +1367,8 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       proposal: proposalData,
       companyMail: userEmail,
       deadline: grant.ESTIMATED_APPLICATION_DUE_DATE || "Not Provided",
-      initialProposal: res_1.data.result || null,
-      generatedProposal: res_1.data.result || null,
+      initialProposal: proposalData || null,
+      generatedProposal: proposalData || null,
       project_inputs: formData,
       status: "In Progress",
       submittedAt: new Date(),
@@ -1388,11 +1388,12 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
 
     const new_Draft = new DraftGrant({
       grantId: grant._id,
-      email: userEmail,
-      grant_data: grant,
-      project_inputs: formData,
-      proposal: proposalData,
+      userEmail: userEmail,
+      grant: grant,
+      generatedProposal: proposalData,
+      currentEditor: req.user._id,
     });
+    await new_Draft.save();
 
     const new_CalendarEvent = new CalendarEvent({
       companyId: companyProfile_1._id,
