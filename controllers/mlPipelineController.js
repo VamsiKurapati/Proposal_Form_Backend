@@ -172,12 +172,6 @@ exports.getRecommendedAndSavedRFPs = async (req, res) => {
 
 exports.getOtherRFPs = async (req, res) => {
   try {
-    let userEmail = req.user.email;
-    if (req.user.role === "employee") {
-      const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
-      userEmail = employeeProfile.companyMail;
-    }
-
     const industries = req.body.industries;
     const otherRFPs = await RFP.find({ organizationType: { $in: industries } }).lean();
 
@@ -327,12 +321,22 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     const { proposal } = req.body;
     let userEmail = req.user.email;
     let companyProfile_1 = "";
+    let userId = "";
     if (req.user.role === "employee") {
       const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
       userEmail = employeeProfile.companyMail;
       companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
+      let user = await User.findOne({ email: userEmail });
+      userId = user._id;
     } else {
       companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
+      userId = req.user._id;
+    }
+
+    const subscription = await Subscription.findOne({ userId: userId });
+    const currentRFPs = await Proposal.find({ companyMail: userEmail }).countDocuments();
+    if (subscription.max_rfp_proposal_generations <= currentRFPs) {
+      return res.status(400).json({ error: 'You have reached the maximum number of RFP proposals' });
     }
 
     const db = mongoose.connection.db;
@@ -1224,7 +1228,8 @@ exports.getRecentAndSavedGrants = async (req, res) => {
 
 exports.getOtherGrants = async (req, res) => {
   try {
-    const otherGrants = await Grant.find();
+    const categories = req.body.categories;
+    const otherGrants = await Grant.find({ CATEGORY_OF_FUNDING_ACTIVITY: { $in: categories } });
     res.status(200).json(otherGrants);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -1258,6 +1263,12 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
     } else {
       companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
+    }
+
+    const subscription = await Subscription.findOne({ userId: req.user._id });
+    const currentGrants = await GrantProposal.find({ companyMail: userEmail }).countDocuments();
+    if (subscription.max_grant_proposal_generations <= currentGrants) {
+      return res.status(400).json({ error: 'You have reached the maximum number of grant proposals' });
     }
 
     const db = mongoose.connection.db;
