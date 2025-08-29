@@ -93,7 +93,7 @@ exports.login = async (req, res) => {
     if (user.role === "SuperAdmin" || user.role === "company") {
       const subscription = await Subscription.findOne({ userId: user._id });
       let subscriptionData = {};
-      if (!subscription) {
+      if (!subscription || subscription.end_date < new Date()) {
         subscriptionData = {
           plan_name: "None",
           max_rfp_proposal_generations: 0,
@@ -122,7 +122,7 @@ exports.login = async (req, res) => {
       const subscription = await Subscription.findOne({ userId: User_1._id });
 
       let subscriptionData = {};
-      if (!subscription) {
+      if (!subscription || subscription.end_date < new Date()) {
         subscriptionData = {
           plan_name: "None",
           max_rfp_proposal_generations: 0,
