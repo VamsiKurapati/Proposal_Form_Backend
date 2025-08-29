@@ -7,6 +7,7 @@ const multer = require("multer");
 const { GridFsStorage } = require("multer-gridfs-storage");
 const crypto = require("crypto");
 const path = require("path");
+const Subscription = require("../models/Subscription");
 
 const storage = new GridFsStorage({
   url: process.env.MONGO_URI,
@@ -90,7 +91,18 @@ exports.login = async (req, res) => {
     );
 
     if (user.role === "SuperAdmin" || user.role === "company") {
-      return res.status(200).json({ token, user: userWithoutPassword });
+      const subscription = await Subscription.findOne({ userId: user._id });
+      let subscriptionData = {};
+      if (!subscription) {
+        subscriptionData = {
+          plan_name: "None",
+          max_rfp_proposal_generations: 0,
+          max_grant_proposal_generations: 0,
+        };
+      } else {
+        subscriptionData = subscription;
+      }
+      return res.status(200).json({ token, user: userWithoutPassword, subscription: subscriptionData });
     } else if (user.role === "employee") {
       const employeeProfile = await EmployeeProfile.findOne({ userId: user._id });
       if (!employeeProfile) {
@@ -100,7 +112,26 @@ exports.login = async (req, res) => {
         ...userWithoutPassword,
         accessLevel: employeeProfile.accessLevel,
       };
-      return res.status(200).json({ token, user: data });
+
+      const companyProfile = await CompanyProfile.findOne({ email: employeeProfile.companyMail });
+      if (!companyProfile) {
+        return res.status(404).json({ message: "Company profile not found" });
+      }
+
+      const User_1 = await User.findOne({ email: companyProfile.companyEmail });
+      const subscription = await Subscription.findOne({ userId: User_1._id });
+
+      let subscriptionData = {};
+      if (!subscription) {
+        subscriptionData = {
+          plan_name: "None",
+          max_rfp_proposal_generations: 0,
+          max_grant_proposal_generations: 0,
+        };
+      } else {
+        subscriptionData = subscription;
+      }
+      return res.status(200).json({ token, user: data, subscription: subscriptionData });
     } else {
       return res.status(400).json({ message: "Invalid user role" });
     }
