@@ -85,8 +85,8 @@ exports.getDashboardData = async (req, res) => {
             const subscription = await Subscription.findOne({ userId: user._id });
 
             const sub_data = {
-                maxRFPs: subscription.max_rfp_proposal_generations || 10,
-                maxGrants: subscription.max_grant_proposal_generations || 10,
+                maxRFPs: subscription.max_rfp_proposal_generations || 1,
+                maxGrants: subscription.max_grant_proposal_generations || 1,
                 currentRFPs: proposals.length,
                 currentGrants: grantProposals.length,
             };
@@ -191,11 +191,13 @@ exports.getDashboardData = async (req, res) => {
 
             const employees = companyProfile.employees || [];
 
-            const subscription = await Subscription.findOne({ userId: companyProfile._id });
+            const user = await User.findOne({ email: companyProfile.email });
+
+            const subscription = await Subscription.findOne({ userId: user._id });
 
             const sub_data = {
-                maxRFPs: subscription.max_rfp_proposal_generations || 10,
-                maxGrants: subscription.max_grant_proposal_generations || 10,
+                maxRFPs: subscription.max_rfp_proposal_generations || 1,
+                maxGrants: subscription.max_grant_proposal_generations || 1,
                 currentRFPs: proposals.length,
                 currentGrants: grantProposals.length,
             };
