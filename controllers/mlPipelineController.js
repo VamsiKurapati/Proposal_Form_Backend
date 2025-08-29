@@ -10,10 +10,12 @@ const DraftRFP = require('../models/DraftRFP');
 const EmployeeProfile = require('../models/EmployeeProfile');
 const CompanyProfile = require('../models/CompanyProfile');
 const CalendarEvent = require('../models/CalendarEvents');
-
+const Subscription = require('../models/Subscription');
+const User = require('../models/User');
 const SavedGrant = require('../models/SavedGrant');
 const DraftGrant = require('../models/DraftGrant');
 const GrantProposal = require('../models/GrantProposal');
+
 
 const axios = require('axios');
 
@@ -333,11 +335,11 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       userId = req.user._id;
     }
 
-    const subscription = await Subscription.findOne({ userId: userId });
-    const currentRFPs = await Proposal.find({ companyMail: userEmail }).countDocuments();
-    if (subscription.max_rfp_proposal_generations <= currentRFPs) {
-      return res.status(400).json({ error: 'You have reached the maximum number of RFP proposals' });
-    }
+    // const subscription = await Subscription.findOne({ userId: userId });
+    // const currentRFPs = await Proposal.find({ companyMail: userEmail }).countDocuments();
+    // if (subscription.max_rfp_proposal_generations <= currentRFPs) {
+    //   return res.status(400).json({ error: 'You have reached the maximum number of RFP proposals' });
+    // }
 
     const db = mongoose.connection.db;
 
@@ -445,7 +447,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       rfp: rfp,
     };
 
-    const res_1 = await axios.post(`http://56.228.64.88:5000/run-proposal-generation`, data);
+    const res_1 = await axios.post(`http://56.228.64.88:5000/new_rfp_proposal_generation`, data);
 
     const proposalData = res_1.data.proposal;
 
