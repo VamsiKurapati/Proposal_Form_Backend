@@ -85,10 +85,11 @@ exports.getDashboardData = async (req, res) => {
             const subscription = await Subscription.findOne({ userId: user._id });
 
             const sub_data = {
-                maxRFPs: subscription ? subscription.max_rfp_proposal_generations : 1,
-                maxGrants: subscription ? subscription.max_grant_proposal_generations : 1,
+                maxRFPs: subscription ? subscription.max_rfp_proposal_generations : 0,
+                maxGrants: subscription ? subscription.max_grant_proposal_generations : 0,
                 currentRFPs: proposals.length,
                 currentGrants: grantProposals.length,
+                plan_name: subscription ? subscription.plan_name : "None",
             };
 
             const data = {
@@ -196,10 +197,11 @@ exports.getDashboardData = async (req, res) => {
             const subscription = await Subscription.findOne({ userId: user._id });
 
             const sub_data = {
-                maxRFPs: subscription ? subscription.max_rfp_proposal_generations : 1,
-                maxGrants: subscription ? subscription.max_grant_proposal_generations : 1,
+                maxRFPs: subscription ? subscription.max_rfp_proposal_generations : 0,
+                maxGrants: subscription ? subscription.max_grant_proposal_generations : 0,
                 currentRFPs: proposals.length,
                 currentGrants: grantProposals.length,
+                plan_name: subscription ? subscription.plan_name : "None",
             };
 
             const data = {
