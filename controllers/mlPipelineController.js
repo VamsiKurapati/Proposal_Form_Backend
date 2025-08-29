@@ -1228,7 +1228,7 @@ exports.getRecentAndSavedGrants = async (req, res) => {
 
 exports.getOtherGrants = async (req, res) => {
   try {
-    const categories = req.body.categories;
+    const categories = req.body.category;
     const otherGrants = await Grant.find({ CATEGORY_OF_FUNDING_ACTIVITY: { $in: categories } });
     res.status(200).json(otherGrants);
   } catch (error) {

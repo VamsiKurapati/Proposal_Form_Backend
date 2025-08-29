@@ -2,8 +2,7 @@ const express = require('express');
 const router = express.Router();
 const verifyUser = require('../utils/verifyUser');
 
-const { getNotificationData, getSupportStatsAndData, updateSupportTicket, getSubscriptionPlans, updateSubscriptionPlan, getSubscriptionData, getPaymentsSummaryAndData, getCompanyStatsAndData, updateCompanyStatus, addAdminMessage } = require('../controllers/superAdminController');
-
+const { getCompanyStatsAndData, updateCompanyStatus, getNotificationData, getSupportStatsAndData, updateSupportTicket, addAdminMessage, getSubscriptionPlansData, updateSubscriptionPlanPrice, getPaymentsSummaryAndData } = require('../controllers/superAdminController');
 
 router.get('/getCompanyStatsAndData', verifyUser(["SuperAdmin"]), getCompanyStatsAndData);
 router.put('/updateCompanyStatus/:id', verifyUser(["SuperAdmin"]), updateCompanyStatus);
@@ -17,18 +16,12 @@ router.put('/updateSupportTicket/:id', verifyUser(["SuperAdmin"]), updateSupport
 router.post('/addAdminMessage/:id', verifyUser(["SuperAdmin"]), addAdminMessage);
 
 
-
-router.get('/getSubscriptionPlans', verifyUser(["SuperAdmin"]), getSubscriptionPlans);
-router.put('/updateSubscriptionPlan/:id', verifyUser(["SuperAdmin"]), updateSubscriptionPlan);
+router.get('/getSubscriptionPlansData', verifyUser(["SuperAdmin"]), getSubscriptionPlansData);
+router.put('/updateSubscriptionPlanPrice/:id', verifyUser(["SuperAdmin"]), updateSubscriptionPlanPrice);
 
 
 //payment
-router.get('/getPaymentStatsandData', verifyUser(["SuperAdmin"]), getPaymentsSummaryAndData);
-
-
-//subscription
-router.get('/getSubscriptionData', verifyUser(["SuperAdmin"]), getSubscriptionData);
-
+router.get('/getPaymentsSummaryAndData', verifyUser(["SuperAdmin"]), getPaymentsSummaryAndData);
 
 
 
