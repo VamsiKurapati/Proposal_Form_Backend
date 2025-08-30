@@ -414,17 +414,23 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       };
     });
 
+    console.log("Company Documents: ", companyDocuments_1);
+
     const caseStudies_1 = (companyProfile_1.caseStudies || []).map((study) => {
       return {
         [study.title]: study.about,
       };
     });
 
+    console.log("Case Studies: ", caseStudies_1);
+
     const pastProjects_1 = (companyProfile_1.proposals || []).map((project) => {
       return {
         name: project.title,
       };
     });
+
+    console.log("Past Projects: ", pastProjects_1);
 
     const certifications_1 = (companyProfile_1.licensesAndCertifications || []).map((certification) => {
       return {
@@ -433,6 +439,8 @@ exports.sendDataForProposalGeneration = async (req, res) => {
         validTill: certification.validTill,
       };
     });
+
+    console.log("Certifications: ", certifications_1);
 
     const employeeData_1 = (companyProfile_1.employees || []).map((employee) => {
       return {
@@ -443,6 +451,8 @@ exports.sendDataForProposalGeneration = async (req, res) => {
         email: employee.email,
       };
     });
+
+    console.log("Employee Data: ", employeeData_1);
 
     const rfp = {
       "RFP Title": proposal.title || '',
@@ -456,6 +466,8 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       "Contact Information": proposal.contact || '',
       "Timeline": proposal.timeline || '',
     };
+
+    console.log("RFP: ", rfp);
 
     const userData = {
       "_id": companyProfile_1._id,
@@ -482,6 +494,8 @@ exports.sendDataForProposalGeneration = async (req, res) => {
         "email": companyProfile_1.email || '',
       },
     };
+
+    console.log("User Data: ", userData);
 
     const data = {
       user: userData,
