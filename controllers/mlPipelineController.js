@@ -489,6 +489,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     };
 
     console.log("Generating proposal for RFP");
+    console.log("Data: ", data);
     const res_1 = await axios.post(`http://56.228.64.88:5000/new_rfp_proposal_generation`, data);
     console.log("Proposal generated for RFP");
 
