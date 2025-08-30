@@ -487,7 +487,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       "website": companyProfile_1.website || "",
       "linkedIn": companyProfile_1.linkedIn || "",
       "certifications": certifications_1,
-      "documents": companyDocuments_1,
+      "documents": [],
       "caseStudies": caseStudies_1,
       "pastProjects": pastProjects_1,
       "employees_information": employeeData_1,
