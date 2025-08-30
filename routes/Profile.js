@@ -4,7 +4,7 @@ const router = express.Router();
 
 const verifyUser = require('../utils/verifyUser');
 
-const { getProfile, getEmployeeProfile, getCompanyProfile, updateCompanyProfile, updateEmployeeProfile, addEmployee, addCaseStudy, addLicenseAndCertification, uploadLogo, getProfileImage, getCaseStudy, addDocument, getDocument, getProposals, changePassword } = require('../controllers/profileController.js');
+const { getProfile, getEmployeeProfile, getCompanyProfile, updateCompanyProfile, updateEmployeeProfile, addEmployee, removeEmployee, addCaseStudy, addLicenseAndCertification, uploadLogo, getProfileImage, getCaseStudy, addDocument, getDocument, getProposals, changePassword } = require('../controllers/profileController.js');
 
 router.get('/getProfile', verifyUser(["company"]), getProfile);
 router.get('/getCompanyProfile', verifyUser(["employee"]), getCompanyProfile);
@@ -13,6 +13,7 @@ router.put('/updateCompanyProfile', verifyUser(["company"]), updateCompanyProfil
 router.get('/getProposals', verifyUser(["company", "employee"]), getProposals);
 router.put('/updateEmployeeProfile', verifyUser(["employee"]), updateEmployeeProfile);
 router.post('/addEmployee', verifyUser(["company"]), addEmployee);
+router.post('/removeEmployee', verifyUser(["company"]), removeEmployee);
 router.post('/addCaseStudy', verifyUser(["company"]), addCaseStudy);
 router.post('/addLicenseAndCertification', verifyUser(["company"]), addLicenseAndCertification);
 router.post('/uploadLogo', verifyUser(["company", "employee"]), uploadLogo);

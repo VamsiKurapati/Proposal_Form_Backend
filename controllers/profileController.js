@@ -9,9 +9,9 @@ const { GridFsStorage } = require("multer-gridfs-storage");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const { randomInt } = require("crypto");
-const path = require("path");
 const multer = require("multer");
 const nodemailer = require("nodemailer");
+const Subscription = require("../models/Subscription");
 
 const storage = new GridFsStorage({
     url: process.env.MONGO_URI,
@@ -49,7 +49,7 @@ async function sendEmail(email, password) {
         //       if (error) {
         //         console.error("SMTP connection error:", error);
         //       } else {
-        //         console.log("SMTP server is ready to take messages");
+        //         //console.log("SMTP server is ready to take messages");
         //       }
         //     });
 
@@ -62,10 +62,10 @@ async function sendEmail(email, password) {
 
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
-                console.log(error);
+                //console.log(error);
                 reject(error);
             } else {
-                console.log("Email sent: " + info.response);
+                //console.log("Email sent: " + info.response);
                 resolve(info);
             }
         });
@@ -275,8 +275,8 @@ exports.uploadLogo = [
                 return res.status(404).json({ message: "User not found" });
             }
 
-            console.log(user.role);
-            console.log(req.file);
+            //console.log(user.role);
+            //console.log(req.file);
 
             if (!req.file) {
                 return res.status(400).json({ message: "No file uploaded" });
@@ -321,8 +321,8 @@ exports.updateCompanyProfile = [
             await user.save();
 
             let parsedServices = [];
-            console.log(services);
-            console.log(typeof services);
+            //console.log(services);
+            //console.log(typeof services);
             if (typeof services === "string") {
                 try {
                     parsedServices = JSON.parse(services);
@@ -424,9 +424,37 @@ exports.updateEmployeeProfile = async (req, res) => {
     }
 };
 
+const addEmployeeToCompanyProfile = async (req, employeeProfile) => {
+    const companyProfile_1 = await CompanyProfile.findOneAndUpdate(
+        { userId: req.user._id },
+        {
+            $push: {
+                employees: {
+                    employeeId: employeeProfile._id,
+                    name: employeeProfile.name,
+                    email: employeeProfile.email,
+                    phone: employeeProfile.phone,
+                    shortDesc: employeeProfile.about,
+                    highestQualification: employeeProfile.highestQualification,
+                    skills: employeeProfile.skills,
+                    jobTitle: employeeProfile.jobTitle,
+                    accessLevel: employeeProfile.accessLevel
+                }
+            }
+        },
+        { new: true }
+    );
+    await companyProfile_1.save();
+}
+
+
 exports.addEmployee = async (req, res) => {
     try {
         const { name, email, phone, shortDesc, highestQualification, skills, jobTitle, accessLevel } = req.body;
+
+        if (!name || !email || !phone || !shortDesc || !highestQualification || !skills || !jobTitle || !accessLevel) {
+            return res.status(400).json({ message: "All fields are required" });
+        }
 
         const user = await User.findById(req.user._id);
         if (!user) {
@@ -437,48 +465,63 @@ exports.addEmployee = async (req, res) => {
         }
 
         if (accessLevel == "Member") {
-            const companyProfile = await CompanyProfile.findOneAndUpdate(
-                { userId: req.user._id },
-                {
-                    $push: {
-                        employees: {
-                            name: name,
-                            email: email,
-                            phone: phone,
-                            shortDesc: shortDesc,
-                            highestQualification: highestQualification,
-                            skills: skills,
-                            jobTitle: jobTitle,
-                            accessLevel: accessLevel,
-                        }
-                    }
-                }
-            );
-            await companyProfile.save();
-            console.log("Employee added to company profile");
+            const companyProfile = await CompanyProfile.findOne({ userId: req.user._id });
+            if (companyProfile.employees.some(emp => emp.email === email)) {
+                return res.status(400).json({ message: "Employee already exists in company profile" });
+            }
+            const employeeProfile = {
+                name,
+                email,
+                phone,
+                about: shortDesc,
+                highestQualification,
+                skills,
+                jobTitle,
+                accessLevel,
+                employeeId: new mongoose.Types.ObjectId(),
+            };
+            await addEmployeeToCompanyProfile(req, employeeProfile);
+            //console.log("Employee added to company profile");
         } else {
+            const subscription = await Subscription.findOne({ userId: req.user._id });
+            const companyProfile = await CompanyProfile.findOne({ userId: req.user._id });
+            if (!companyProfile) {
+                return res.status(404).json({ message: "Company profile not found" });
+            }
+            if (companyProfile.employees.some(emp => emp.email === email)) {
+                return res.status(400).json({ message: "Employee already exists in company profile" });
+            }
+            const noOfEditors = companyProfile.employees.filter(emp => emp.accessLevel === "Editor").length;
+            const noOfViewers = companyProfile.employees.filter(emp => emp.accessLevel === "Viewer").length;
+            if (!subscription || subscription.end_date < new Date()) {
+                return res.status(404).json({ message: "Subscription not found" });
+            }
+            if (accessLevel === "Editor" && subscription.max_editors <= noOfEditors) {
+                return res.status(400).json({ message: "You have reached the maximum number of editors" });
+            }
+            if (accessLevel === "Viewer" && subscription.max_viewers <= noOfViewers) {
+                return res.status(400).json({ message: "You have reached the maximum number of viewers" });
+            }
             const user_1 = await User.findOne({ email });
             if (!user_1) {
-                console.log("User not found");
+                //console.log("User not found");
                 const password = generateStrongPassword();
-                console.log("Password generated: ", password);
+                //console.log("Password generated: ", password);
                 const hashedPassword = await bcrypt.hash(password, 10);
                 const user_2 = await User.create({ fullName: name, email, mobile: phone, password: hashedPassword, role: "employee" });
-                console.log("User created");
+                //console.log("User created");
                 const employeeProfile = new EmployeeProfile({ userId: user_2._id, name, email, phone, about: shortDesc, highestQualification, skills, jobTitle, accessLevel, companyMail: user.email });
                 await employeeProfile.save();
                 await sendEmail(email, password);
-                console.log("Employee profile created");
+                //console.log("Employee profile created");
+                await addEmployeeToCompanyProfile(req, employeeProfile);
             } else {
-                console.log("User found");
+                //console.log("User found");
                 const employeeProfile = await EmployeeProfile.findOne({ userId: user_1._id });
                 if (employeeProfile) {
-                    console.log("Employee profile found");
+                    //console.log("Employee profile found");
                     employeeProfile.name = name;
                     employeeProfile.email = email;
-                    //     const password = generateStrongPassword();
-                    //     console.log("Password generated: ", password);
-                    // const hashedPassword = await bcrypt.hash(password, 10);
                     employeeProfile.phone = phone;
                     employeeProfile.about = shortDesc;
                     employeeProfile.jobTitle = jobTitle;
@@ -487,46 +530,48 @@ exports.addEmployee = async (req, res) => {
                     employeeProfile.accessLevel = accessLevel;
                     employeeProfile.companyMail = user.email;
                     await employeeProfile.save();
-                    // await sendEmail(email, hashedPassword);
-                    console.log("Employee profile updated");
+                    //console.log("Employee profile updated");
+                    await addEmployeeToCompanyProfile(req, employeeProfile);
                 } else {
-                    console.log("Employee profile not found");
-                    const password = generateStrongPassword();
-                    console.log("Password generated: ", password);
-                    const hashedPassword = await bcrypt.hash(password, 10);
-                    const user_2 = await User.create({ fullName: name, email, mobile: phone, password: hashedPassword, role: "employee" });
-                    const employeeProfile = new EmployeeProfile({ userId: user_2._id, name, email, phone, about: shortDesc, highestQualification, skills, jobTitle, accessLevel, companyMail: user.email });
+                    //console.log("Employee profile not found");
+                    const employeeProfile = new EmployeeProfile({ userId: user_1._id, name, email, phone, about: shortDesc, highestQualification, skills, jobTitle, accessLevel, companyMail: user.email });
                     await employeeProfile.save();
-                    await sendEmail(email, password);
-                    console.log("Employee profile created");
+                    //console.log("Employee profile created");
+                    await addEmployeeToCompanyProfile(req, employeeProfile);
                 }
             }
-
-            const employeeProfile = await EmployeeProfile.findOne({ email });
-            const companyProfile = await CompanyProfile.findOneAndUpdate(
-                { userId: req.user._id },
-                {
-                    $push: {
-                        employees: {
-                            employeeId: employeeProfile._id,
-                            name: employeeProfile.name,
-                            email: employeeProfile.email,
-                            phone: employeeProfile.phone,
-                            shortDesc: employeeProfile.about,
-                            highestQualification: employeeProfile.highestQualification,
-                            skills: employeeProfile.skills,
-                            jobTitle: employeeProfile.jobTitle,
-                            accessLevel: employeeProfile.accessLevel
-                        }
-                    }
-                },
-                { new: true }
-            );
-
-            await companyProfile.save();
         }
-
         res.status(200).json({ message: "Employee added successfully" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.removeEmployee = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        if (user.role !== "company") {
+            return res.status(403).json({ message: "You are not authorized to remove an employee" });
+        }
+        const companyProfile = await CompanyProfile.findOne({ userId: req.user._id });
+        if (!companyProfile) {
+            return res.status(404).json({ message: "Company profile not found" });
+        }
+        const employeeProfile = await EmployeeProfile.findOne({ email, companyMail: user.email });
+        if (!employeeProfile) {
+            return res.status(404).json({ message: "Employee profile not found" });
+        }
+        const companyProfile_1 = await CompanyProfile.findOneAndUpdate(
+            { userId: req.user._id },
+            { $pull: { employees: { email: email, companyMail: user.email } } },
+            { new: true }
+        );
+        await companyProfile_1.save();
+        res.status(200).json({ message: "Employee removed successfully" });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -551,7 +596,7 @@ exports.addCaseStudy = [
             // Construct the file URL for the uploaded case study file
             const fileUrl = `${process.env.BACKEND_URL || "http://localhost:5000"}/api/profile/getCaseStudy/${req.file.id}`;
 
-            console.log("Adding case study");
+            //console.log("Adding case study");
             const companyProfile = await CompanyProfile.findOneAndUpdate(
                 { userId: req.user._id },
                 {
@@ -566,10 +611,10 @@ exports.addCaseStudy = [
                 },
                 { new: true }
             );
-            console.log("Case study added successfully");
+            //console.log("Case study added successfully");
             res.status(200).json({ message: "Case study added successfully" });
         } catch (error) {
-            console.log(error);
+            //console.log(error);
             res.status(500).json({ message: error.message });
         }
     }
@@ -612,7 +657,7 @@ exports.addDocument = [
             // Construct the file URL for the uploaded document
             const fileUrl = `${process.env.BACKEND_URL || "http://localhost:5000"}/api/profile/getDocument/${req.file.id}`;
 
-            console.log("Adding document");
+            //console.log("Adding document");
             const companyProfile = await CompanyProfile.findOneAndUpdate(
                 { userId: req.user._id },
                 {
@@ -628,10 +673,10 @@ exports.addDocument = [
                 },
                 { new: true }
             );
-            console.log("Document added successfully");
+            //console.log("Document added successfully");
             res.status(200).json({ message: "Document added successfully" });
         } catch (error) {
-            console.log(error);
+            //console.log(error);
             res.status(500).json({ message: error.message });
         }
     }
