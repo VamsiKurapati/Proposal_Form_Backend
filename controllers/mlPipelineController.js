@@ -321,18 +321,40 @@ exports.saveDraftRFP = async (req, res) => {
 exports.sendDataForProposalGeneration = async (req, res) => {
   try {
     const { proposal } = req.body;
+
+    // Validate proposal object
+    if (!proposal) {
+      return res.status(400).json({ error: 'Proposal data is required' });
+    }
+
+    // Check required proposal fields
+    if (!proposal.title || !proposal.description) {
+      return res.status(400).json({ error: 'Proposal title and description are required' });
+    }
+
     let userEmail = req.user.email;
     let companyProfile_1 = "";
     let userId = "";
     if (req.user.role === "employee") {
       const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+      if (!employeeProfile) {
+        return res.status(404).json({ error: 'Employee profile not found' });
+      }
       userEmail = employeeProfile.companyMail;
       companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
       let user = await User.findOne({ email: userEmail });
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
       userId = user._id;
     } else {
       companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
       userId = req.user._id;
+    }
+
+    // Check if company profile exists
+    if (!companyProfile_1) {
+      return res.status(404).json({ error: 'Company profile not found. Please complete your company profile first.' });
     }
 
     // const subscription = await Subscription.findOne({ userId: userId });
@@ -343,14 +365,19 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
     const db = mongoose.connection.db;
 
+    // Check if company has documents before processing
+    if (!companyProfile_1.documents || companyProfile_1.documents.length === 0) {
+      return res.status(400).json({ error: 'No company documents found. Please upload company documents first.' });
+    }
+
     //Extract the company Documents from upload.chunks and save them in the companyProfile_1.companyDocuments
-    let files = [];
-    if (companyProfile_1.documents.length > 0) {
-      files = await db.collection('uploads.files')
-        .find({ _id: { $in: companyProfile_1.documents.map(doc => doc.fileId) } })
-        .toArray();
-    } else {
-      files = [];
+    const files = await db.collection('uploads.files')
+      .find({ _id: { $in: companyProfile_1.documents.map(doc => doc.fileId) } })
+      .toArray();
+
+    // Check if files were found
+    if (!files || files.length === 0) {
+      return res.status(400).json({ error: 'No uploaded files found. Please ensure all company documents are properly uploaded.' });
     }
 
     const filesWithBase64 = await Promise.all(
@@ -372,7 +399,16 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       return acc;
     }, {});
 
-    const companyDocuments_1 = (companyProfile_1.documents || []).map((doc) => {
+    // Check if all required files are available
+    const missingFiles = companyProfile_1.documents.filter(doc => !filesMap[doc.fileId.toString()]);
+    if (missingFiles.length > 0) {
+      return res.status(400).json({
+        error: 'Some company documents are missing or corrupted. Please re-upload the following documents: ' +
+          missingFiles.map(doc => doc.name).join(', ')
+      });
+    }
+
+    const companyDocuments_1 = companyProfile_1.documents.map((doc) => {
       return {
         [doc.name + "." + doc.type]: filesMap[doc.fileId.toString()].base64,
       };
@@ -409,30 +445,30 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     });
 
     const rfp = {
-      "RFP Title": proposal.title,
-      "RFP Description": proposal.description,
-      "Match Score": proposal.match,
-      "Budget": proposal.budget,
-      "Deadline": proposal.deadline,
+      "RFP Title": proposal.title || '',
+      "RFP Description": proposal.description || '',
+      "Match Score": proposal.match || 0,
+      "Budget": proposal.budget || '',
+      "Deadline": proposal.deadline || '',
       "Issuing Organization": proposal.organization || "Not found",
-      "Industry": proposal.organizationType,
-      "URL": proposal.link,
+      "Industry": proposal.organizationType || '',
+      "URL": proposal.link || '',
       "Contact Information": proposal.contact || '',
       "Timeline": proposal.timeline || '',
     };
 
     const userData = {
       "_id": companyProfile_1._id,
-      "email": companyProfile_1.email,
-      "companyName": companyProfile_1.companyName,
-      "companyOverview": companyProfile_1.bio,
-      "yearOfEstablishment": companyProfile_1.establishedYear,
-      "employeeCount": companyProfile_1.numberOfEmployees,
+      "email": companyProfile_1.email || '',
+      "companyName": companyProfile_1.companyName || '',
+      "companyOverview": companyProfile_1.bio || '',
+      "yearOfEstablishment": companyProfile_1.establishedYear || '',
+      "employeeCount": companyProfile_1.numberOfEmployees || 0,
       "services": companyProfile_1.services || [],
-      "industry": companyProfile_1.industry,
-      "location": companyProfile_1.location,
-      "website": companyProfile_1.website,
-      "linkedIn": companyProfile_1.linkedIn,
+      "industry": companyProfile_1.industry || '',
+      "location": companyProfile_1.location || '',
+      "website": companyProfile_1.website || '',
+      "linkedIn": companyProfile_1.linkedIn || '',
       "certifications": certifications_1,
       "documents": companyDocuments_1,
       "caseStudies": caseStudies_1,
@@ -442,8 +478,8 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       "clientPortfolio": companyProfile_1.clients || [],
       "preferredIndustries": companyProfile_1.preferredIndustries || [],
       "pointOfContact": {
-        "name": companyProfile_1.adminName,
-        "email": companyProfile_1.email,
+        "name": companyProfile_1.adminName || '',
+        "email": companyProfile_1.email || '',
       }
     };
 
@@ -459,13 +495,13 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     const processedProposal = replaceTextInJson(template_json, proposalData, userData, rfp);
 
     const new_Proposal = new Proposal({
-      rfpId: proposal._id,
-      title: proposal.title,
+      rfpId: proposal._id || '',
+      title: proposal.title || '',
       client: proposal.organization || "Not found",
       initialProposal: processedProposal,
       generatedProposal: processedProposal,
       companyMail: userEmail,
-      deadline: proposal.deadline,
+      deadline: proposal.deadline || new Date(),
       status: "In Progress",
       submittedAt: new Date(),
       currentEditor: req.user._id,
@@ -484,7 +520,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
     const new_Draft = new DraftRFP({
       userEmail: userEmail,
-      rfpId: proposal._id,
+      rfpId: proposal._id || '',
       rfp: { ...proposal },
       generatedProposal: processedProposal,
       currentEditor: req.user._id,
@@ -496,7 +532,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       employeeId: req.user._id,
       proposalId: new_Proposal._id,
       grantId: null,
-      title: proposal.title,
+      title: proposal.title || '',
       startDate: new Date(),
       endDate: new Date(),
       status: "In Progress",
@@ -516,10 +552,23 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
     let companyProfile_1 = "";
     if (req.user.role === "employee") {
       const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+      if (!employeeProfile) {
+        return res.status(404).json({ error: 'Employee profile not found' });
+      }
       userEmail = employeeProfile.companyMail;
       companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
     } else {
       companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
+    }
+
+    // Check if company profile exists
+    if (!companyProfile_1) {
+      return res.status(404).json({ error: 'Company profile not found. Please complete your company profile first.' });
+    }
+
+    // Check if company has documents before processing
+    if (!companyProfile_1.documents || companyProfile_1.documents.length === 0) {
+      return res.status(400).json({ error: 'No company documents found. Please upload company documents first.' });
     }
 
     const db = mongoose.connection.db;
@@ -528,6 +577,11 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
     const files = await db.collection('uploads.files')
       .find({ _id: { $in: companyProfile_1.documents.map(doc => doc.fileId) } })
       .toArray();
+
+    // Check if files were found
+    if (!files || files.length === 0) {
+      return res.status(400).json({ error: 'No uploaded files found. Please ensure all company documents are properly uploaded.' });
+    }
 
     const filesWithBase64 = await Promise.all(
       files.map(async (file) => {
@@ -548,7 +602,16 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
       return acc;
     }, {});
 
-    const companyDocuments_1 = (companyProfile_1.documents || []).map((doc) => {
+    // Check if all required files are available
+    const missingFiles = companyProfile_1.documents.filter(doc => !filesMap[doc.fileId.toString()]);
+    if (missingFiles.length > 0) {
+      return res.status(400).json({
+        error: 'Some company documents are missing or corrupted. Please re-upload the following documents: ' +
+          missingFiles.map(doc => doc.name).join(', ')
+      });
+    }
+
+    const companyDocuments_1 = companyProfile_1.documents.map((doc) => {
       return {
         [doc.name + "." + doc.type]: filesMap[doc.fileId.toString()].base64,
       };
@@ -586,16 +649,16 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
 
     const userData = {
       "_id": companyProfile_1._id,
-      "email": companyProfile_1.email,
-      "companyName": companyProfile_1.companyName,
-      "companyOverview": companyProfile_1.bio,
-      "yearOfEstablishment": companyProfile_1.establishedYear,
-      "employeeCount": companyProfile_1.numberOfEmployees,
+      "email": companyProfile_1.email || '',
+      "companyName": companyProfile_1.companyName || '',
+      "companyOverview": companyProfile_1.bio || '',
+      "yearOfEstablishment": companyProfile_1.establishedYear || '',
+      "employeeCount": companyProfile_1.numberOfEmployees || 0,
       "services": companyProfile_1.services || [],
-      "industry": companyProfile_1.industry,
-      "location": companyProfile_1.location,
-      "website": companyProfile_1.website,
-      "linkedIn": companyProfile_1.linkedIn,
+      "industry": companyProfile_1.industry || '',
+      "location": companyProfile_1.location || '',
+      "website": companyProfile_1.website || '',
+      "linkedIn": companyProfile_1.linkedIn || '',
       "certifications": certifications_1,
       "documents": companyDocuments_1,
       "caseStudies": caseStudies_1,
@@ -605,8 +668,8 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
       "clientPortfolio": companyProfile_1.clients || [],
       "preferredIndustries": companyProfile_1.preferredIndustries || [],
       "pointOfContact": {
-        "name": companyProfile_1.adminName,
-        "email": companyProfile_1.email,
+        "name": companyProfile_1.adminName || '',
+        "email": companyProfile_1.email || '',
       }
     };
 
@@ -640,7 +703,7 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
           type: 'Matched',
           contact: rfp['Contact Information'] || '',
           timeline: rfp['Timeline'] || '',
-          email: companyProfile_1.email
+          email: companyProfile_1.email || ''
         });
       }
     }
@@ -1262,20 +1325,43 @@ exports.getSavedAndDraftGrants = async (req, res) => {
 exports.sendGrantDataForProposalGeneration = async (req, res) => {
   try {
     const { grant, formData } = req.body;
+
+    // Validate grant object
+    if (!grant) {
+      return res.status(400).json({ error: 'Grant data is required' });
+    }
+
     let userEmail = req.user.email;
     let companyProfile_1 = "";
     if (req.user.role === "employee") {
       const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+      if (!employeeProfile) {
+        return res.status(404).json({ error: 'Employee profile not found' });
+      }
       userEmail = employeeProfile.companyMail;
       companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
     } else {
       companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
     }
 
+    // Check if company profile exists
+    if (!companyProfile_1) {
+      return res.status(404).json({ error: 'Company profile not found. Please complete your company profile first.' });
+    }
+
     const subscription = await Subscription.findOne({ userId: req.user._id });
+    if (!subscription) {
+      return res.status(404).json({ error: 'Subscription not found' });
+    }
+
     const currentGrants = await GrantProposal.find({ companyMail: userEmail }).countDocuments();
     if (subscription.max_grant_proposal_generations <= currentGrants) {
       return res.status(400).json({ error: 'You have reached the maximum number of grant proposals' });
+    }
+
+    // Check if company has documents before processing
+    if (!companyProfile_1.documents || companyProfile_1.documents.length === 0) {
+      return res.status(400).json({ error: 'No company documents found. Please upload company documents first.' });
     }
 
     const db = mongoose.connection.db;
@@ -1284,6 +1370,11 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
     const files = await db.collection('uploads.files')
       .find({ _id: { $in: companyProfile_1.documents.map(doc => doc.fileId) } })
       .toArray();
+
+    // Check if files were found
+    if (!files || files.length === 0) {
+      return res.status(400).json({ error: 'No uploaded files found. Please ensure all company documents are properly uploaded.' });
+    }
 
     const filesWithBase64 = await Promise.all(
       files.map(async (file) => {
@@ -1304,7 +1395,16 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       return acc;
     }, {});
 
-    const companyDocuments_1 = (companyProfile_1.documents || []).map((doc) => {
+    // Check if all required files are available
+    const missingFiles = companyProfile_1.documents.filter(doc => !filesMap[doc.fileId.toString()]);
+    if (missingFiles.length > 0) {
+      return res.status(400).json({
+        error: 'Some company documents are missing or corrupted. Please re-upload the following documents: ' +
+          missingFiles.map(doc => doc.name).join(', ')
+      });
+    }
+
+    const companyDocuments_1 = companyProfile_1.documents.map((doc) => {
       return {
         [doc.name + "." + doc.type]: filesMap[doc.fileId.toString()].base64,
       };
@@ -1342,16 +1442,16 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
 
     const userData = {
       "_id": companyProfile_1._id,
-      "email": companyProfile_1.email,
-      "companyName": companyProfile_1.companyName,
-      "companyOverview": companyProfile_1.bio,
-      "yearOfEstablishment": companyProfile_1.establishedYear,
-      "employeeCount": companyProfile_1.numberOfEmployees,
+      "email": companyProfile_1.email || '',
+      "companyName": companyProfile_1.companyName || '',
+      "companyOverview": companyProfile_1.bio || '',
+      "yearOfEstablishment": companyProfile_1.establishedYear || '',
+      "employeeCount": companyProfile_1.numberOfEmployees || 0,
       "services": companyProfile_1.services || [],
-      "industry": companyProfile_1.industry,
-      "location": companyProfile_1.location,
-      "website": companyProfile_1.website,
-      "linkedIn": companyProfile_1.linkedIn,
+      "industry": companyProfile_1.industry || '',
+      "location": companyProfile_1.location || '',
+      "website": companyProfile_1.website || '',
+      "linkedIn": companyProfile_1.linkedIn || '',
       "certifications": certifications_1,
       "documents": companyDocuments_1,
       "caseStudies": caseStudies_1,
@@ -1361,8 +1461,8 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       "clientPortfolio": companyProfile_1.clients || [],
       "preferredIndustries": companyProfile_1.preferredIndustries || [],
       "pointOfContact": {
-        "name": companyProfile_1.adminName,
-        "email": companyProfile_1.email,
+        "name": companyProfile_1.adminName || '',
+        "email": companyProfile_1.email || '',
       }
     };
 
