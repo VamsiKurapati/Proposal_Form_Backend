@@ -481,7 +481,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
         "name": companyProfile_1.adminName || '',
         "email": companyProfile_1.email || '',
       },
-      "targetRFP": rfp.title || '',
+      "targetRFP": proposal.title || ''
     };
 
     const data = {
