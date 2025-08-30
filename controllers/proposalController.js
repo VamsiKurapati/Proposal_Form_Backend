@@ -3,14 +3,21 @@ const Proposal = require('../models/Proposal');
 const axios = require('axios');
 const MatchedRFP = require('../models/MatchedRFP');
 
+const { getStructuredJson } = require('../utils/get_structured_json');
+
 require('dotenv').config();
 
 exports.basicComplianceCheck = async (req, res) => {
   try {
-    const proposal = req.body;
+    const { proposal, proposalId } = req.body;
     console.log("Proposal: ", proposal);
+    console.log("Proposal ID: ", proposalId);
 
-    const resProposal = await axios.post('http://56.228.64.88:5000/basic-compliance', proposal);
+    const new_proposal = await Proposal.findById(proposalId);
+    console.log("New proposal: ", new_proposal);
+    const structuredJson = getStructuredJson(proposal, new_proposal.initialProposal);
+
+    const resProposal = await axios.post('http://56.228.64.88:5000/basic-compliance', structuredJson);
 
     console.log("Response: ", resProposal);
 
@@ -33,14 +40,18 @@ exports.basicComplianceCheck = async (req, res) => {
 
 exports.advancedComplianceCheck = async (req, res) => {
   try {
-    const proposal = req.body;
+    const { proposal, proposalId } = req.body;
     console.log("Proposal: ", proposal);
 
-    const rfp = await MatchedRFP.find({ title: proposal.rfpTitle });
+    const new_proposal = await Proposal.findById(proposalId);
+    console.log("New proposal: ", new_proposal);
+    const structuredJson = getStructuredJson(proposal, new_proposal.initialProposal);
+
+    const rfp = await MatchedRFP.find({ title: new_proposal.rfpTitle }).limit(1);
 
     const initialProposal_1 = [{
-      "rfp": rfp[0],
-      "proposal": proposal
+      "rfp": rfp,
+      "proposal": structuredJson
     }];
 
     console.log("Initial proposal: ", initialProposal_1);

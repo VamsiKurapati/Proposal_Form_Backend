@@ -451,13 +451,13 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
     const proposalData = res_1.data.proposal;
 
-    const processedProposal = replaceTextInJson(template_json, proposalData, userData);
+    const processedProposal = replaceTextInJson(template_json, proposalData, userData, rfp);
 
     const new_Proposal = new Proposal({
       rfpId: proposal._id,
       title: proposal.title,
       client: proposal.organization || "Not found",
-      initialProposal: proposalData,
+      initialProposal: processedProposal,
       generatedProposal: processedProposal,
       companyMail: userEmail,
       deadline: proposal.deadline,
@@ -498,7 +498,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     });
     await new_CalendarEvent.save();
 
-    res.status(200).json(processedProposal);
+    res.status(200).json({ processedProposal, proposalId: new_Proposal._id });
   } catch (err) {
     console.error('Error in /sendDataForProposalGeneration:', err);
     res.status(500).json({ error: 'Failed to send data for proposal generation' });

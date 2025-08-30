@@ -12,122 +12,22 @@
       },
       "elements": [
         {
-          "id": "mwtlalabf",
-          "type": "shape",
-          "shapeType": "rectangle",
-          "x": -15,
-          "y": 848.3953488372094,
-          "width": 742,
-          "height": 290.60465116279056,
-          "rotation": 0,
-          "zIndex": 1,
-          "properties": {
-            "fill": "#3d4d4e",
-            "stroke": "#354041",
-            "strokeWidth": 2,
-            "opacity": 1,
-            "rx": 25,
-            "strokeDasharray": "none",
-            "shadow": false,
-            "shadowBlur": 0,
-            "shadowColor": "#000",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          }
-        },
-        {
           "type": "text",
-          "x": 38.348837209302275,
-          "y": 472.1395348837209,
-          "width": 464,
-          "height": 165,
-          "rotation": 0,
-          "properties": {
-            "text": "Project\nProposal",
-            "fontSize": 72,
-            "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
-            "bold": true,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "id": "24j711v5u",
-          "zIndex": 2
-        },
-        {
-          "id": "ijeej0ii6",
-          "type": "shape",
-          "shapeType": "rightArrow",
-          "x": 295.13127042091116,
-          "y": 570.7691716317509,
-          "width": 55.00826446280996,
-          "height": 47.876033057851146,
-          "rotation": 324,
-          "zIndex": 3,
-          "properties": {
-            "fill": "#3d4d4e",
-            "stroke": "#111827",
-            "strokeWidth": 2,
-            "opacity": 1,
-            "rx": 0,
-            "strokeDasharray": "none",
-            "shadow": false,
-            "shadowBlur": 0,
-            "shadowColor": "#000",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          }
-        },
-        {
-          "id": "rlx5jtd14",
-          "type": "text",
-          "x": 39.534883720930225,
-          "y": 652.3255813953489,
-          "width": 526.232558139535,
-          "height": 177.06976744186045,
-          "rotation": 0,
-          "zIndex": 4,
-          "properties": {
-            "text": "Project Title",
-            "fontSize": 38,
-            "fontFamily": "Times New Roman",
-            "color": "#bf9e82",
-            "bold": false,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          }
-        },
-        {
-          "type": "text",
-          "x": 34.18604651162792,
-          "y": 17.906976744186018,
-          "width": 354.65116279069775,
+          "x": 110.51937984496124,
+          "y": 149.1525907792737,
+          "width": 503.77396980824165,
           "height": 51.93023255813951,
           "rotation": 0,
           "zIndex": 4,
           "properties": {
             "text": "Company Name",
-            "fontSize": 20,
+            "fontSize": 21,
             "fontFamily": "Times New Roman",
             "color": "#3f4e4d",
             "bold": true,
             "italic": false,
             "underline": false,
-            "textAlign": "left",
+            "textAlign": "center",
             "listStyle": "none",
             "lineHeight": 1.2,
             "letterSpacing": 0
@@ -136,118 +36,141 @@
         },
         {
           "type": "text",
-          "x": 562.5813953488372,
-          "y": 17.697674418604628,
-          "width": 163.95348837209315,
-          "height": 50.93023255813951,
+          "x": 180.06323949408403,
+          "y": 203.66136270909828,
+          "width": 354.65116279069775,
+          "height": 51.93023255813951,
           "rotation": 0,
           "zIndex": 4,
           "properties": {
-            "text": "Date",
+            "text": "REQUEST FOR PROPOSALS \nFOR A ",
             "fontSize": 20,
             "fontFamily": "Times New Roman",
             "color": "#3f4e4d",
             "bold": true,
             "italic": false,
             "underline": false,
-            "textAlign": "justify",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0.6
-          },
-          "id": "vago46ljn"
-        },
-        {
-          "type": "text",
-          "x": 44.186046511627865,
-          "y": 988.3720930232562,
-          "width": 253.48837209302326,
-          "height": 42.32558139534876,
-          "rotation": 0,
-          "properties": {
-            "text": "Prepared by :",
-            "fontSize": 24,
-            "fontFamily": "Arial",
-            "color": "#ffffff",
-            "bold": false,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
+            "textAlign": "center",
             "listStyle": "none",
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "6rc716iuq",
-          "zIndex": 7
+          "id": "yen6ilavt"
         },
         {
           "type": "text",
-          "x": 43.48837209302323,
-          "y": 1016.7441860465121,
-          "width": 253.48837209302326,
-          "height": 42.32558139534876,
+          "x": 179.18604651162792,
+          "y": 270.94206446348426,
+          "width": 354.65116279069775,
+          "height": 163.89514483884125,
           "rotation": 0,
+          "zIndex": 4,
           "properties": {
-            "text": "Name 1",
-            "fontSize": 28,
-            "fontFamily": "Arial",
-            "color": "#ffffff",
-            "bold": false,
+            "text": "Proposal Title",
+            "fontSize": 21,
+            "fontFamily": "Times New Roman",
+            "color": "#3f4e4d",
+            "bold": true,
             "italic": false,
             "underline": false,
-            "textAlign": "left",
+            "textAlign": "center",
             "listStyle": "none",
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "zIndex": 7,
-          "id": "m5qkm5m02"
+          "id": "buo0cwdou"
         },
         {
           "type": "text",
-          "x": 362.09302325581393,
-          "y": 986.5116279069772,
-          "width": 253.48837209302326,
-          "height": 42.32558139534876,
+          "x": 178.18604651162792,
+          "y": 451.906976744186,
+          "width": 354.65116279069775,
+          "height": 51.93023255813951,
           "rotation": 0,
+          "zIndex": 4,
           "properties": {
-            "text": "Prepared for :",
-            "fontSize": 24,
-            "fontFamily": "Arial",
-            "color": "#ffffff",
-            "bold": false,
+            "text": "Isuued by",
+            "fontSize": 21,
+            "fontFamily": "Times New Roman",
+            "color": "#3f4e4d",
+            "bold": true,
             "italic": false,
             "underline": false,
-            "textAlign": "left",
+            "textAlign": "center",
             "listStyle": "none",
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "zIndex": 7,
-          "id": "4q82joqkr"
+          "id": "9ci21u0c3"
         },
         {
           "type": "text",
-          "x": 362.55813953488365,
-          "y": 1014.883720930233,
-          "width": 253.48837209302326,
-          "height": 42.32558139534876,
+          "x": 177.18604651162792,
+          "y": 507.906976744186,
+          "width": 354.65116279069775,
+          "height": 51.93023255813951,
           "rotation": 0,
+          "zIndex": 4,
           "properties": {
-            "text": "Name 2",
-            "fontSize": 28,
-            "fontFamily": "Arial",
-            "color": "#ffffff",
-            "bold": false,
+            "text": "Name",
+            "fontSize": 21,
+            "fontFamily": "Times New Roman",
+            "color": "#3f4e4d",
+            "bold": true,
             "italic": false,
             "underline": false,
-            "textAlign": "left",
+            "textAlign": "center",
             "listStyle": "none",
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "zIndex": 7,
-          "id": "gkbjm70mr"
+          "id": "yzekp04mi"
+        },
+        {
+          "type": "text",
+          "x": 180.18604651162792,
+          "y": 617.9069767441861,
+          "width": 354.65116279069775,
+          "height": 51.93023255813951,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Date",
+            "fontSize": 21,
+            "fontFamily": "Times New Roman",
+            "color": "#3f4e4d",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "center",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "s85d0tldh"
+        },
+        {
+          "type": "text",
+          "x": 178.18604651162792,
+          "y": 559.9069767441861,
+          "width": 354.65116279069775,
+          "height": 51.93023255813951,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Address",
+            "fontSize": 21,
+            "fontFamily": "Times New Roman",
+            "color": "#3f4e4d",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "center",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "ey860fgut"
         }
       ]
     },
@@ -257,23 +180,23 @@
         "width": 794,
         "height": 1123,
         "background": {
-          "type": "svg",
-          "value": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?><!-- Created with Inkscape (http://www.inkscape.org/) --><svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:svg=\"http://www.w3.org/2000/svg\" version=\"1.1\" id=\"svg2\" width=\"794\" height=\"1123\" viewBox=\"0 0 794 1123\">\n  \n  \n<g transform=\"translate(0, 0.6375837082085809) scale(0.999161044487721)\"><defs id=\"defs6\"/><g id=\"g8\" transform=\"matrix(1.3333333,0,0,-1.3333333,0,1122.6667)\">\n    <g id=\"g10\" transform=\"matrix(1,0,0,-1,0,842)\">\n      <g id=\"g12\" transform=\"scale(0.7502827,0.75032091)\">\n        <path d=\"M 0,0 H 793.70081 V 1122.5197 H 0 Z\" style=\"fill:#3d4d4e;fill-opacity:1;fill-rule:nonzero;stroke:none\" id=\"path14\"/>\n      </g>\n    </g>\n  </g></g></svg>"
+          "type": "color",
+          "value": "#ffffff"
         }
       },
       "elements": [
         {
           "type": "text",
-          "x": 30.348837209302246,
-          "y": 95,
-          "width": 551,
-          "height": 82,
+          "x": 275.34883720930225,
+          "y": 150,
+          "width": 199,
+          "height": 36,
           "rotation": 0,
           "properties": {
             "text": "Table of Contents",
-            "fontSize": 70,
+            "fontSize": 24,
             "fontFamily": "Times New Roman",
-            "color": "#ffffff",
+            "color": "#000000",
             "bold": true,
             "italic": false,
             "underline": false,
@@ -286,206 +209,17 @@
           "id": "15uswcos4"
         },
         {
-          "id": "bxkt10112",
-          "type": "shape",
-          "shapeType": "line",
-          "x": -3,
-          "y": 200,
-          "width": 724,
-          "height": 20,
-          "rotation": 0,
-          "zIndex": 2,
-          "properties": {
-            "fill": "#ffffff",
-            "stroke": "#ffffff",
-            "strokeWidth": 3,
-            "opacity": 1,
-            "rx": 0,
-            "strokeDasharray": "none",
-            "shadow": false,
-            "shadowBlur": 0,
-            "shadowColor": "#000",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          }
-        },
-        {
-          "type": "shape",
-          "shapeType": "line",
-          "x": 0,
-          "y": 272,
-          "width": 724,
-          "height": 20,
-          "rotation": 0,
-          "zIndex": 2,
-          "properties": {
-            "fill": "#ffffff",
-            "stroke": "#ffffff",
-            "strokeWidth": 3,
-            "opacity": 1,
-            "rx": 0,
-            "strokeDasharray": "none",
-            "shadow": false,
-            "shadowBlur": 0,
-            "shadowColor": "#000",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          },
-          "id": "uv3s1fn67"
-        },
-        {
-          "type": "shape",
-          "shapeType": "line",
-          "x": -3,
-          "y": 345,
-          "width": 724,
-          "height": 20,
-          "rotation": 0,
-          "zIndex": 2,
-          "properties": {
-            "fill": "#ffffff",
-            "stroke": "#ffffff",
-            "strokeWidth": 3,
-            "opacity": 1,
-            "rx": 0,
-            "strokeDasharray": "none",
-            "shadow": false,
-            "shadowBlur": 0,
-            "shadowColor": "#000",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          },
-          "id": "sldlxarcj"
-        },
-        {
-          "type": "shape",
-          "shapeType": "line",
-          "x": -1,
-          "y": 417,
-          "width": 724,
-          "height": 20,
-          "rotation": 0,
-          "zIndex": 2,
-          "properties": {
-            "fill": "#ffffff",
-            "stroke": "#ffffff",
-            "strokeWidth": 3,
-            "opacity": 1,
-            "rx": 0,
-            "strokeDasharray": "none",
-            "shadow": false,
-            "shadowBlur": 0,
-            "shadowColor": "#000",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          },
-          "id": "f7zwpxmcm"
-        },
-        {
-          "type": "shape",
-          "shapeType": "line",
-          "x": 3,
-          "y": 490,
-          "width": 724,
-          "height": 20,
-          "rotation": 0,
-          "zIndex": 2,
-          "properties": {
-            "fill": "#ffffff",
-            "stroke": "#ffffff",
-            "strokeWidth": 3,
-            "opacity": 1,
-            "rx": 0,
-            "strokeDasharray": "none",
-            "shadow": false,
-            "shadowBlur": 0,
-            "shadowColor": "#000",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          },
-          "id": "vipehjb66"
-        },
-        {
-          "type": "shape",
-          "shapeType": "line",
-          "x": -2,
-          "y": 562,
-          "width": 724,
-          "height": 20,
-          "rotation": 0,
-          "zIndex": 2,
-          "properties": {
-            "fill": "#ffffff",
-            "stroke": "#ffffff",
-            "strokeWidth": 3,
-            "opacity": 1,
-            "rx": 0,
-            "strokeDasharray": "none",
-            "shadow": false,
-            "shadowBlur": 0,
-            "shadowColor": "#000",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          },
-          "id": "cj733dkxg"
-        },
-        {
-          "type": "shape",
-          "shapeType": "line",
-          "x": -2,
-          "y": 1069,
-          "width": 724,
-          "height": 20,
-          "rotation": 0,
-          "zIndex": 2,
-          "properties": {
-            "fill": "#ffffff",
-            "stroke": "#ffffff",
-            "strokeWidth": 3,
-            "opacity": 1,
-            "rx": 0,
-            "strokeDasharray": "none",
-            "shadow": false,
-            "shadowBlur": 0,
-            "shadowColor": "#000",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          },
-          "id": "ffcty2l84"
-        },
-        {
           "type": "text",
-          "x": 147.48837209302323,
-          "y": 227.74418604651214,
-          "width": 253.48837209302326,
-          "height": 42.32558139534876,
+          "x": 85,
+          "y": 200,
+          "width": 110,
+          "height": 30,
           "rotation": 0,
           "properties": {
             "text": "Summary",
-            "fontSize": 28,
+            "fontSize": 24,
             "fontFamily": "Arial",
-            "color": "#ffffff",
+            "color": "#000000",
             "bold": false,
             "italic": false,
             "underline": false,
@@ -499,16 +233,16 @@
         },
         {
           "type": "text",
-          "x": 147.48837209302323,
-          "y": 297.74418604651214,
+          "x": 85,
+          "y": 235,
           "width": 253.48837209302326,
-          "height": 42.32558139534876,
+          "height": 30,
           "rotation": 0,
           "properties": {
             "text": "Objectives",
-            "fontSize": 28,
+            "fontSize": 24,
             "fontFamily": "Arial",
-            "color": "#ffffff",
+            "color": "#000000",
             "bold": false,
             "italic": false,
             "underline": false,
@@ -522,16 +256,16 @@
         },
         {
           "type": "text",
-          "x": 145.48837209302323,
-          "y": 371.74418604651214,
+          "x": 85,
+          "y": 270,
           "width": 259.48837209302326,
-          "height": 42.32558139534876,
+          "height": 29,
           "rotation": 0,
           "properties": {
             "text": "Proposed Solution",
-            "fontSize": 28,
+            "fontSize": 24,
             "fontFamily": "Arial",
-            "color": "#ffffff",
+            "color": "#000000",
             "bold": false,
             "italic": false,
             "underline": false,
@@ -545,16 +279,16 @@
         },
         {
           "type": "text",
-          "x": 148.48837209302323,
-          "y": 444.74418604651214,
+          "x": 85,
+          "y": 305,
           "width": 259.48837209302326,
-          "height": 42.32558139534876,
+          "height": 30,
           "rotation": 0,
           "properties": {
             "text": "Deliverables",
-            "fontSize": 28,
+            "fontSize": 24,
             "fontFamily": "Arial",
-            "color": "#ffffff",
+            "color": "#000000",
             "bold": false,
             "italic": false,
             "underline": false,
@@ -568,17 +302,17 @@
         },
         {
           "type": "text",
-          "x": 40.534883720930225,
-          "y": 224.32558139534888,
-          "width": 50.232558139534945,
-          "height": 46.06976744186045,
+          "x": 40,
+          "y": 198.32558139534888,
+          "width": 35,
+          "height": 30,
           "rotation": 0,
           "zIndex": 4,
           "properties": {
             "text": "01",
-            "fontSize": 38,
+            "fontSize": 24,
             "fontFamily": "Verdana",
-            "color": "#bf9e82",
+            "color": "#000000",
             "bold": false,
             "italic": false,
             "underline": false,
@@ -591,431 +325,16 @@
         },
         {
           "type": "text",
-          "x": 42.534883720930225,
-          "y": 297.3255813953489,
-          "width": 50.232558139534945,
-          "height": 46.06976744186045,
-          "rotation": 0,
-          "zIndex": 4,
-          "properties": {
-            "text": "02",
-            "fontSize": 38,
-            "fontFamily": "Verdana",
-            "color": "#bf9e82",
-            "bold": false,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "id": "nsztqycvq"
-        },
-        {
-          "type": "text",
-          "x": 42.534883720930225,
-          "y": 370.3255813953489,
-          "width": 50.232558139534945,
-          "height": 46.06976744186045,
-          "rotation": 0,
-          "zIndex": 4,
-          "properties": {
-            "text": "03",
-            "fontSize": 38,
-            "fontFamily": "Verdana",
-            "color": "#bf9e82",
-            "bold": false,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "id": "trxjput6j"
-        },
-        {
-          "type": "text",
-          "x": 42.534883720930225,
-          "y": 442.3255813953489,
-          "width": 50.232558139534945,
-          "height": 46.06976744186045,
-          "rotation": 0,
-          "zIndex": 4,
-          "properties": {
-            "text": "04",
-            "fontSize": 38,
-            "fontFamily": "Verdana",
-            "color": "#bf9e82",
-            "bold": false,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "id": "jamcqjwnc"
-        },
-        {
-          "type": "shape",
-          "shapeType": "line",
-          "x": -2,
-          "y": 634,
-          "width": 724,
-          "height": 20,
-          "rotation": 0,
-          "zIndex": 2,
-          "properties": {
-            "fill": "#ffffff",
-            "stroke": "#ffffff",
-            "strokeWidth": 3,
-            "opacity": 1,
-            "rx": 0,
-            "strokeDasharray": "none",
-            "shadow": false,
-            "shadowBlur": 0,
-            "shadowColor": "#000",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          },
-          "id": "jsukvxvps"
-        },
-        {
-          "type": "shape",
-          "shapeType": "line",
-          "x": -4,
-          "y": 779,
-          "width": 724,
-          "height": 20,
-          "rotation": 0,
-          "zIndex": 2,
-          "properties": {
-            "fill": "#ffffff",
-            "stroke": "#ffffff",
-            "strokeWidth": 3,
-            "opacity": 1,
-            "rx": 0,
-            "strokeDasharray": "none",
-            "shadow": false,
-            "shadowBlur": 0,
-            "shadowColor": "#000",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          },
-          "id": "rtvno51uh"
-        },
-        {
-          "type": "shape",
-          "shapeType": "line",
-          "x": 0,
-          "y": 707,
-          "width": 724,
-          "height": 20,
-          "rotation": 0,
-          "zIndex": 2,
-          "properties": {
-            "fill": "#ffffff",
-            "stroke": "#ffffff",
-            "strokeWidth": 3,
-            "opacity": 1,
-            "rx": 0,
-            "strokeDasharray": "none",
-            "shadow": false,
-            "shadowBlur": 0,
-            "shadowColor": "#000",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          },
-          "id": "os8wf1d5p"
-        },
-        {
-          "type": "shape",
-          "shapeType": "line",
-          "x": -2,
-          "y": 852,
-          "width": 724,
-          "height": 20,
-          "rotation": 0,
-          "zIndex": 2,
-          "properties": {
-            "fill": "#ffffff",
-            "stroke": "#ffffff",
-            "strokeWidth": 3,
-            "opacity": 1,
-            "rx": 0,
-            "strokeDasharray": "none",
-            "shadow": false,
-            "shadowBlur": 0,
-            "shadowColor": "#000",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          },
-          "id": "po3t571bo"
-        },
-        {
-          "type": "shape",
-          "shapeType": "line",
-          "x": -2,
-          "y": 924,
-          "width": 724,
-          "height": 20,
-          "rotation": 0,
-          "zIndex": 2,
-          "properties": {
-            "fill": "#ffffff",
-            "stroke": "#ffffff",
-            "strokeWidth": 3,
-            "opacity": 1,
-            "rx": 0,
-            "strokeDasharray": "none",
-            "shadow": false,
-            "shadowBlur": 0,
-            "shadowColor": "#000",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          },
-          "id": "0b5chzkcl"
-        },
-        {
-          "type": "shape",
-          "shapeType": "line",
-          "x": -3,
-          "y": 997,
-          "width": 724,
-          "height": 20,
-          "rotation": 0,
-          "zIndex": 2,
-          "properties": {
-            "fill": "#ffffff",
-            "stroke": "#ffffff",
-            "strokeWidth": 3,
-            "opacity": 1,
-            "rx": 0,
-            "strokeDasharray": "none",
-            "shadow": false,
-            "shadowBlur": 0,
-            "shadowColor": "#000",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          },
-          "id": "5im68k5pw"
-        },
-        {
-          "type": "text",
-          "x": 40.534883720930225,
-          "y": 583.3255813953489,
-          "width": 50.232558139534945,
-          "height": 46.06976744186045,
-          "rotation": 0,
-          "zIndex": 4,
-          "properties": {
-            "text": "06",
-            "fontSize": 38,
-            "fontFamily": "Verdana",
-            "color": "#bf9e82",
-            "bold": false,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "id": "0qgjp9r4a"
-        },
-        {
-          "type": "text",
-          "x": 43.534883720930225,
-          "y": 659.3255813953489,
-          "width": 50.232558139534945,
-          "height": 46.06976744186045,
-          "rotation": 0,
-          "zIndex": 4,
-          "properties": {
-            "text": "07",
-            "fontSize": 38,
-            "fontFamily": "Verdana",
-            "color": "#bf9e82",
-            "bold": false,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "id": "dyhwys1nb"
-        },
-        {
-          "type": "text",
-          "x": 42.534883720930225,
-          "y": 730.3255813953489,
-          "width": 50.232558139534945,
-          "height": 46.06976744186045,
-          "rotation": 0,
-          "zIndex": 4,
-          "properties": {
-            "text": "08",
-            "fontSize": 38,
-            "fontFamily": "Verdana",
-            "color": "#bf9e82",
-            "bold": false,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "id": "vgz5ukr40"
-        },
-        {
-          "type": "text",
-          "x": 41.534883720930225,
-          "y": 512.3255813953489,
-          "width": 50.232558139534945,
-          "height": 46.06976744186045,
-          "rotation": 0,
-          "zIndex": 4,
-          "properties": {
-            "text": "05",
-            "fontSize": 38,
-            "fontFamily": "Verdana",
-            "color": "#bf9e82",
-            "bold": false,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "id": "gk5dd5nud"
-        },
-        {
-          "type": "text",
-          "x": 42.534883720930225,
-          "y": 802.3255813953489,
-          "width": 50.232558139534945,
-          "height": 46.06976744186045,
-          "rotation": 0,
-          "zIndex": 4,
-          "properties": {
-            "text": "09",
-            "fontSize": 38,
-            "fontFamily": "Verdana",
-            "color": "#bf9e82",
-            "bold": false,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "id": "d2jnlpzxa"
-        },
-        {
-          "type": "text",
-          "x": 40.534883720930225,
-          "y": 876.3255813953489,
-          "width": 50.232558139534945,
-          "height": 46.06976744186045,
-          "rotation": 0,
-          "zIndex": 4,
-          "properties": {
-            "text": "10",
-            "fontSize": 38,
-            "fontFamily": "Verdana",
-            "color": "#bf9e82",
-            "bold": false,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "id": "26hpyq3wn"
-        },
-        {
-          "type": "text",
-          "x": 40.534883720930225,
-          "y": 948.3255813953489,
-          "width": 50.232558139534945,
-          "height": 46.06976744186045,
-          "rotation": 0,
-          "zIndex": 4,
-          "properties": {
-            "text": "11",
-            "fontSize": 38,
-            "fontFamily": "Verdana",
-            "color": "#bf9e82",
-            "bold": false,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "id": "cnhq7pyxf"
-        },
-        {
-          "type": "text",
-          "x": 41.534883720930225,
-          "y": 1019.3255813953489,
-          "width": 50.232558139534945,
-          "height": 46.06976744186045,
-          "rotation": 0,
-          "zIndex": 4,
-          "properties": {
-            "text": "12",
-            "fontSize": 38,
-            "fontFamily": "Verdana",
-            "color": "#bf9e82",
-            "bold": false,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "id": "776e4jql3"
-        },
-        {
-          "type": "text",
-          "x": 147.48837209302323,
-          "y": 516.7441860465121,
+          "x": 85.36715997181108,
+          "y": 340,
           "width": 333.48837209302326,
-          "height": 42.32558139534876,
+          "height": 30,
           "rotation": 0,
           "properties": {
-            "text": "Tech Stack & Project Plan",
-            "fontSize": 28,
+            "text": "Project Plan & Tech Stack",
+            "fontSize": 24,
             "fontFamily": "Arial",
-            "color": "#ffffff",
+            "color": "#000000",
             "bold": false,
             "italic": false,
             "underline": false,
@@ -1029,16 +348,16 @@
         },
         {
           "type": "text",
-          "x": 147.48837209302326,
-          "y": 587.7441860465121,
+          "x": 85,
+          "y": 375,
           "width": 333.48837209302326,
-          "height": 42.32558139534876,
+          "height": 30,
           "rotation": 0,
           "properties": {
             "text": "Timeline",
-            "fontSize": 28,
+            "fontSize": 24,
             "fontFamily": "Arial",
-            "color": "#ffffff",
+            "color": "#000000",
             "bold": false,
             "italic": false,
             "underline": false,
@@ -1052,16 +371,16 @@
         },
         {
           "type": "text",
-          "x": 146.48837209302326,
-          "y": 661.7441860465121,
+          "x": 85,
+          "y": 410,
           "width": 440.48837209302326,
-          "height": 42.32558139534876,
+          "height": 30,
           "rotation": 0,
           "properties": {
             "text": "Risk Assessment & Mitigation Plan",
-            "fontSize": 28,
+            "fontSize": 24,
             "fontFamily": "Arial",
-            "color": "#ffffff",
+            "color": "#000000",
             "bold": false,
             "italic": false,
             "underline": false,
@@ -1075,16 +394,16 @@
         },
         {
           "type": "text",
-          "x": 147.48837209302326,
-          "y": 732.7441860465121,
+          "x": 85,
+          "y": 445,
           "width": 216.48837209302326,
-          "height": 42.32558139534876,
+          "height": 30,
           "rotation": 0,
           "properties": {
             "text": "Budget Estimate",
-            "fontSize": 28,
+            "fontSize": 24,
             "fontFamily": "Arial",
-            "color": "#ffffff",
+            "color": "#000000",
             "bold": false,
             "italic": false,
             "underline": false,
@@ -1098,16 +417,16 @@
         },
         {
           "type": "text",
-          "x": 147.48837209302326,
-          "y": 803.7441860465121,
+          "x": 85,
+          "y": 480,
           "width": 216.48837209302326,
-          "height": 42.32558139534876,
+          "height": 30,
           "rotation": 0,
           "properties": {
             "text": "Team Details",
-            "fontSize": 28,
+            "fontSize": 24,
             "fontFamily": "Arial",
-            "color": "#ffffff",
+            "color": "#000000",
             "bold": false,
             "italic": false,
             "underline": false,
@@ -1121,16 +440,16 @@
         },
         {
           "type": "text",
-          "x": 147.48837209302326,
-          "y": 876.7441860465121,
+          "x": 85,
+          "y": 515,
           "width": 282.48837209302326,
-          "height": 42.32558139534876,
+          "height": 30,
           "rotation": 0,
           "properties": {
             "text": "Certification & Awards",
-            "fontSize": 28,
+            "fontSize": 24,
             "fontFamily": "Arial",
-            "color": "#ffffff",
+            "color": "#000000",
             "bold": false,
             "italic": false,
             "underline": false,
@@ -1144,16 +463,16 @@
         },
         {
           "type": "text",
-          "x": 147.48837209302326,
-          "y": 950.7441860465121,
+          "x": 85.36715997181115,
+          "y": 550,
           "width": 364.48837209302326,
-          "height": 42.32558139534876,
+          "height": 30.20436927413664,
           "rotation": 0,
           "properties": {
-            "text": "Case Studies & Past Project",
-            "fontSize": 28,
+            "text": "Case Studies",
+            "fontSize": 24,
             "fontFamily": "Arial",
-            "color": "#ffffff",
+            "color": "#000000",
             "bold": false,
             "italic": false,
             "underline": false,
@@ -1167,16 +486,16 @@
         },
         {
           "type": "text",
-          "x": 145.48837209302326,
-          "y": 1023.7441860465121,
+          "x": 85,
+          "y": 620,
           "width": 216.48837209302326,
-          "height": 42.32558139534876,
+          "height": 30,
           "rotation": 0,
           "properties": {
             "text": "Why Us?",
-            "fontSize": 28,
+            "fontSize": 24,
             "fontFamily": "Arial",
-            "color": "#ffffff",
+            "color": "#000000",
             "bold": false,
             "italic": false,
             "underline": false,
@@ -1187,60 +506,67 @@
           },
           "zIndex": 7,
           "id": "kfq365n7o"
-        }
-      ]
-    },
-    {
-      "id": 1754412963324,
-      "pageSettings": {
-        "width": 794,
-        "height": 1123,
-        "background": {
-          "type": "color",
-          "value": "#ffffff"
-        }
-      },
-      "elements": [
-        {
-          "id": "ajnvb9of9",
-          "type": "shape",
-          "shapeType": "rectangle",
-          "x": -24,
-          "y": 96,
-          "width": 755,
-          "height": 242,
-          "rotation": 0,
-          "zIndex": 1,
-          "properties": {
-            "fill": "#fafafa",
-            "stroke": "#3d4d4e",
-            "strokeWidth": 6,
-            "opacity": 1,
-            "rx": 20,
-            "strokeDasharray": "none",
-            "shadow": false,
-            "shadowBlur": 0,
-            "shadowColor": "#000",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          }
         },
         {
           "type": "text",
-          "x": 25.348837209302275,
-          "y": 354.1395348837209,
-          "width": 273,
-          "height": 84,
+          "x": 405.1860465116279,
+          "y": 80,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
           "rotation": 0,
+          "zIndex": 4,
           "properties": {
-            "text": "Summary",
-            "fontSize": 64,
+            "text": "Request For Proposals For:",
+            "fontSize": 20,
             "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
+            "color": "#000000",
             "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "zofxs42lm"
+        },
+        {
+          "type": "text",
+          "x": 404.1860465116279,
+          "y": 110,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Proposal Title",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "if8up9eoi"
+        },
+        {
+          "type": "text",
+          "x": 39.534883720930225,
+          "y": 233,
+          "width": 35,
+          "height": 30,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "02",
+            "fontSize": 24,
+            "fontFamily": "Verdana",
+            "color": "#000000",
+            "bold": false,
             "italic": false,
             "underline": false,
             "textAlign": "left",
@@ -1248,22 +574,22 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "zIndex": 2,
-          "id": "r23ep8zxz"
+          "id": "d9xlmu8d2"
         },
         {
           "type": "text",
-          "x": 26.348837209302246,
-          "y": 436.1395348837209,
-          "width": 695,
-          "height": 605,
+          "x": 39.534883720930225,
+          "y": 268,
+          "width": 35,
+          "height": 30,
           "rotation": 0,
+          "zIndex": 4,
           "properties": {
-            "text": "Executive Summery",
-            "fontSize": 22,
-            "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
-            "bold": true,
+            "text": "03",
+            "fontSize": 24,
+            "fontFamily": "Verdana",
+            "color": "#000000",
+            "bold": false,
             "italic": false,
             "underline": false,
             "textAlign": "left",
@@ -1271,13 +597,265 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "zIndex": 2,
-          "id": "ey5rdjrpw"
+          "id": "nnkcncz19"
         },
         {
           "type": "text",
-          "x": 27.18604651162792,
-          "y": 31.906976744186018,
+          "x": 40,
+          "y": 303,
+          "width": 35,
+          "height": 30,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "04",
+            "fontSize": 24,
+            "fontFamily": "Verdana",
+            "color": "#000000",
+            "bold": false,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "y7uwg2e8p"
+        },
+        {
+          "type": "text",
+          "x": 40,
+          "y": 338,
+          "width": 35,
+          "height": 30,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "05",
+            "fontSize": 24,
+            "fontFamily": "Verdana",
+            "color": "#000000",
+            "bold": false,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "cgr4k42w7"
+        },
+        {
+          "type": "text",
+          "x": 40,
+          "y": 408,
+          "width": 35,
+          "height": 30,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "07",
+            "fontSize": 24,
+            "fontFamily": "Verdana",
+            "color": "#000000",
+            "bold": false,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "4r2ydt2dd"
+        },
+        {
+          "type": "text",
+          "x": 40,
+          "y": 373,
+          "width": 35,
+          "height": 30,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "06",
+            "fontSize": 24,
+            "fontFamily": "Verdana",
+            "color": "#000000",
+            "bold": false,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "v9120nec8"
+        },
+        {
+          "type": "text",
+          "x": 40,
+          "y": 443,
+          "width": 35,
+          "height": 30,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "08",
+            "fontSize": 24,
+            "fontFamily": "Verdana",
+            "color": "#000000",
+            "bold": false,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "grix3i2at"
+        },
+        {
+          "type": "text",
+          "x": 39.62579281183931,
+          "y": 478,
+          "width": 35,
+          "height": 30,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "09",
+            "fontSize": 24,
+            "fontFamily": "Verdana",
+            "color": "#000000",
+            "bold": false,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "56m8p16w6"
+        },
+        {
+          "type": "text",
+          "x": 40,
+          "y": 513,
+          "width": 35,
+          "height": 30,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "10",
+            "fontSize": 24,
+            "fontFamily": "Verdana",
+            "color": "#000000",
+            "bold": false,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "5qep7j2wn"
+        },
+        {
+          "type": "text",
+          "x": 40,
+          "y": 548,
+          "width": 35,
+          "height": 30,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "11",
+            "fontSize": 24,
+            "fontFamily": "Verdana",
+            "color": "#000000",
+            "bold": false,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "u8qkt6tmy"
+        },
+        {
+          "type": "text",
+          "x": 40,
+          "y": 583,
+          "width": 35,
+          "height": 30,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "12",
+            "fontSize": 24,
+            "fontFamily": "Verdana",
+            "color": "#000000",
+            "bold": false,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "croy2pflz"
+        },
+        {
+          "type": "text",
+          "x": 40,
+          "y": 618,
+          "width": 35,
+          "height": 30,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "13",
+            "fontSize": 24,
+            "fontFamily": "Verdana",
+            "color": "#000000",
+            "bold": false,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "dnkobztvd"
+        },
+        {
+          "type": "text",
+          "x": 85,
+          "y": 655,
+          "width": 216.48837209302326,
+          "height": 30,
+          "rotation": 0,
+          "properties": {
+            "text": "Terms & Conditions",
+            "fontSize": 24,
+            "fontFamily": "Arial",
+            "color": "#000000",
+            "bold": false,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "zIndex": 7,
+          "id": "nusctu2kn"
+        },
+        {
+          "type": "text",
+          "x": 20,
+          "y": 20.391825229034495,
           "width": 354.65116279069775,
           "height": 51.93023255813951,
           "rotation": 0,
@@ -1295,12 +873,12 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "xrit30mp9"
+          "id": "hckbomv4v"
         },
         {
           "type": "text",
-          "x": 560.5813953488372,
-          "y": 27.697674418604628,
+          "x": 525,
+          "y": 20,
           "width": 163.95348837209315,
           "height": 70.93023255813951,
           "rotation": 0,
@@ -1318,32 +896,104 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "cocneu56a"
+          "id": "9vdk6huu9"
         },
         {
-          "id": "qgosslp2d",
-          "type": "image",
-          "x": -23,
-          "y": 100,
-          "width": 752,
-          "height": 234,
+          "type": "text",
+          "x": 85,
+          "y": 690,
+          "width": 216.48837209302326,
+          "height": 30,
           "rotation": 0,
-          "zIndex": 6,
           "properties": {
-            "src": "template://project_summery_1755762171014-663061224.jpg",
-            "fit": "cover",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false,
-            "borderRadius": 25
-          }
+            "text": "Attachment",
+            "fontSize": 24,
+            "fontFamily": "Arial",
+            "color": "#000000",
+            "bold": false,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "zIndex": 7,
+          "id": "cfizt7phj"
+        },
+        {
+          "type": "text",
+          "x": 40,
+          "y": 653,
+          "width": 35,
+          "height": 30,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "14",
+            "fontSize": 24,
+            "fontFamily": "Verdana",
+            "color": "#000000",
+            "bold": false,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "mog5asbg9"
+        },
+        {
+          "type": "text",
+          "x": 40,
+          "y": 688,
+          "width": 35,
+          "height": 30,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "15",
+            "fontSize": 24,
+            "fontFamily": "Verdana",
+            "color": "#000000",
+            "bold": false,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "tetqvaljq"
+        },
+        {
+          "type": "text",
+          "x": 85,
+          "y": 585,
+          "width": 364.48837209302326,
+          "height": 30.20436927413664,
+          "rotation": 0,
+          "properties": {
+            "text": "Past Project",
+            "fontSize": 24,
+            "fontFamily": "Arial",
+            "color": "#000000",
+            "bold": false,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "zIndex": 7,
+          "id": "ejnk47sw5"
         }
       ]
     },
     {
-      "id": 1755127008155,
+      "id": 1756409051048,
       "pageSettings": {
         "width": 794,
         "height": 1123,
@@ -1355,8 +1005,54 @@
       "elements": [
         {
           "type": "text",
-          "x": 25.649461145774254,
-          "y": 23.199659671015276,
+          "x": 405.1860465116279,
+          "y": 80,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Request For Proposals For:",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "wcds7gkt8"
+        },
+        {
+          "type": "text",
+          "x": 404.1860465116279,
+          "y": 110,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Proposal Title",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "mdub9ouyg"
+        },
+        {
+          "type": "text",
+          "x": 20,
+          "y": 20.391825229034495,
           "width": 354.65116279069775,
           "height": 51.93023255813951,
           "rotation": 0,
@@ -1374,14 +1070,14 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "beilqsb7k"
+          "id": "amqnhn7r5"
         },
         {
           "type": "text",
-          "x": 556.6057855927397,
-          "y": 23.422043078220433,
-          "width": 194.0419839473144,
-          "height": 53.470055566989046,
+          "x": 525,
+          "y": 20,
+          "width": 163.95348837209315,
+          "height": 70.93023255813951,
           "rotation": 0,
           "zIndex": 4,
           "properties": {
@@ -1397,18 +1093,169 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "sh2ifubk0"
+          "id": "e393dkga7"
         },
         {
           "type": "text",
-          "x": 24.307993097661722,
-          "y": 122.08711827378224,
-          "width": 347.15384615384613,
-          "height": 85,
+          "x": 50,
+          "y": 178.78787878787878,
+          "width": 273,
+          "height": 37.78787878787878,
+          "rotation": 0,
+          "properties": {
+            "text": "Summary",
+            "fontSize": 24,
+            "fontFamily": "Times New Roman",
+            "color": "#3d4d4e",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "zIndex": 2,
+          "id": "cdbd0vr7x"
+        },
+        {
+          "type": "text",
+          "x": 50,
+          "y": 230,
+          "width": 687,
+          "height": 775,
+          "rotation": 0,
+          "properties": {
+            "text": "Insert the Executive Summery here...",
+            "fontSize": 16,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "zIndex": 2,
+          "id": "4ey4knfhs"
+        }
+      ]
+    },
+    {
+      "id": 1756410235511,
+      "pageSettings": {
+        "width": 794,
+        "height": 1123,
+        "background": {
+          "type": "color",
+          "value": "#ffffff"
+        }
+      },
+      "elements": [
+        {
+          "type": "text",
+          "x": 405.1860465116279,
+          "y": 80,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Request For Proposals For:",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "h95c6ta89"
+        },
+        {
+          "type": "text",
+          "x": 404.1860465116279,
+          "y": 110,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Proposal Title",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "sb4xu4at9"
+        },
+        {
+          "type": "text",
+          "x": 20,
+          "y": 20.391825229034495,
+          "width": 354.65116279069775,
+          "height": 51.93023255813951,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Company Name",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#3f4e4d",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "j01snnxfv"
+        },
+        {
+          "type": "text",
+          "x": 525,
+          "y": 20,
+          "width": 163.95348837209315,
+          "height": 70.93023255813951,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Date",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#3f4e4d",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "tuss33u6f"
+        },
+        {
+          "type": "text",
+          "x": 50,
+          "y": 178.78787878787878,
+          "width": 273,
+          "height": 37.78787878787878,
           "rotation": 0,
           "properties": {
             "text": "Objectives",
-            "fontSize": 64,
+            "fontSize": 24,
             "fontFamily": "Times New Roman",
             "color": "#3d4d4e",
             "bold": true,
@@ -1420,67 +1267,20 @@
             "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "0wm8lmxpm"
-        },
-        {
-          "id": "xe0hfyign",
-          "type": "image",
-          "x": 545.7575757575758,
-          "y": 221.8585858585858,
-          "width": 272.72727272727275,
-          "height": 752.1818181818182,
-          "rotation": 0,
-          "zIndex": 6,
-          "properties": {
-            "src": "template://business-strategy-success-target-goals_1_1755762143089-848397924.jpg",
-            "fit": "fill",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false,
-            "borderRadius": 25
-          }
-        },
-        {
-          "id": "d8f4xsmyk",
-          "type": "shape",
-          "shapeType": "rectangle",
-          "x": 540,
-          "y": 214.09090909090912,
-          "width": 306.8686868686867,
-          "height": 766.5151515151515,
-          "rotation": 0,
-          "zIndex": 5,
-          "properties": {
-            "fill": "#3f4f4e",
-            "stroke": "#3f4f4e",
-            "strokeWidth": 1,
-            "opacity": 1,
-            "rx": 25,
-            "strokeDasharray": "none",
-            "shadow": false,
-            "shadowBlur": 0,
-            "shadowColor": "#000",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          }
+          "id": "v0qa2ggsa"
         },
         {
           "type": "text",
-          "x": 25.55308342714656,
-          "y": 215.35440318686886,
-          "width": 470.6868686868687,
-          "height": 761.0781263967104,
+          "x": 50,
+          "y": 230,
+          "width": 687,
+          "height": 775,
           "rotation": 0,
           "properties": {
-            "text": "Clear statement of what the project aims to achieve",
-            "fontSize": 22,
+            "text": "Insert the Objectives here...",
+            "fontSize": 16,
             "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
+            "color": "#000000",
             "bold": true,
             "italic": false,
             "underline": false,
@@ -1490,12 +1290,12 @@
             "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "8zb1waflu"
+          "id": "4eyndmkib"
         }
       ]
     },
     {
-      "id": 1755030494723,
+      "id": 1756410586327,
       "pageSettings": {
         "width": 794,
         "height": 1123,
@@ -1507,8 +1307,54 @@
       "elements": [
         {
           "type": "text",
-          "x": 24.481319552853904,
-          "y": 29.72178356482057,
+          "x": 405.1860465116279,
+          "y": 80,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Request For Proposals For:",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "l2aehow6b"
+        },
+        {
+          "type": "text",
+          "x": 404.1860465116279,
+          "y": 110,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Proposal Title",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "mxzpxxnjo"
+        },
+        {
+          "type": "text",
+          "x": 20,
+          "y": 20.391825229034495,
           "width": 354.65116279069775,
           "height": 51.93023255813951,
           "rotation": 0,
@@ -1526,14 +1372,14 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "fmpd5e7qi"
+          "id": "1z73ijy8k"
         },
         {
           "type": "text",
-          "x": 536.3579979821203,
-          "y": 27.519388210963804,
-          "width": 194.0419839473144,
-          "height": 53.470055566989046,
+          "x": 525,
+          "y": 20,
+          "width": 163.95348837209315,
+          "height": 70.93023255813951,
           "rotation": 0,
           "zIndex": 4,
           "properties": {
@@ -1549,18 +1395,18 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "qsj9au3d8"
+          "id": "juifg3w23"
         },
         {
           "type": "text",
-          "x": 26.90976300916614,
-          "y": 103.10481738882649,
-          "width": 509.1007488087134,
-          "height": 85,
+          "x": 50,
+          "y": 178.78787878787878,
+          "width": 273,
+          "height": 37.78787878787878,
           "rotation": 0,
           "properties": {
             "text": "Proposed Solution",
-            "fontSize": 64,
+            "fontSize": 24,
             "fontFamily": "Times New Roman",
             "color": "#3d4d4e",
             "bold": true,
@@ -1572,20 +1418,20 @@
             "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "i3bxqe75i"
+          "id": "dv3d45i59"
         },
         {
           "type": "text",
-          "x": 28.384941834226225,
-          "y": 188.5225447797892,
-          "width": 693.5983731116476,
-          "height": 747.0781263967104,
+          "x": 50,
+          "y": 230,
+          "width": 687,
+          "height": 775,
           "rotation": 0,
           "properties": {
-            "text": "Detailed description of your approach",
-            "fontSize": 22,
+            "text": "Insert the Proposed Solution here...",
+            "fontSize": 16,
             "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
+            "color": "#000000",
             "bold": true,
             "italic": false,
             "underline": false,
@@ -1595,12 +1441,12 @@
             "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "bwy6ho5te"
+          "id": "zjlwgdt8i"
         }
       ]
     },
     {
-      "id": 1755127638239,
+      "id": 1756410756193,
       "pageSettings": {
         "width": 794,
         "height": 1123,
@@ -1611,42 +1457,107 @@
       },
       "elements": [
         {
-          "id": "1als1l2eg",
-          "type": "shape",
-          "shapeType": "rectangle",
-          "x": -24,
-          "y": 93,
-          "width": 758,
-          "height": 242,
+          "type": "text",
+          "x": 405.1860465116279,
+          "y": 80,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
           "rotation": 0,
-          "zIndex": 1,
+          "zIndex": 4,
           "properties": {
-            "fill": "#fafafa",
-            "stroke": "#3d4d4e",
-            "strokeWidth": 6,
-            "opacity": 1,
-            "rx": 20,
-            "strokeDasharray": "none",
-            "shadow": false,
-            "shadowBlur": 0,
-            "shadowColor": "#000",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          }
+            "text": "Request For Proposals For:",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "7iymen2k8"
         },
         {
           "type": "text",
-          "x": 26.348837209302275,
-          "y": 351.1395348837209,
-          "width": 345,
-          "height": 84,
+          "x": 404.1860465116279,
+          "y": 110,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Proposal Title",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "dcb17250f"
+        },
+        {
+          "type": "text",
+          "x": 20,
+          "y": 20.391825229034495,
+          "width": 354.65116279069775,
+          "height": 51.93023255813951,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Company Name",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#3f4e4d",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "x2yby8dgv"
+        },
+        {
+          "type": "text",
+          "x": 525,
+          "y": 20,
+          "width": 163.95348837209315,
+          "height": 70.93023255813951,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Date",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#3f4e4d",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "27xoznepe"
+        },
+        {
+          "type": "text",
+          "x": 50,
+          "y": 178.78787878787878,
+          "width": 273,
+          "height": 37.78787878787878,
           "rotation": 0,
           "properties": {
             "text": "Deliverables",
-            "fontSize": 64,
+            "fontSize": 24,
             "fontFamily": "Times New Roman",
             "color": "#3d4d4e",
             "bold": true,
@@ -1658,20 +1569,20 @@
             "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "x7xn2qdmz"
+          "id": "30jt25pfy"
         },
         {
           "type": "text",
-          "x": 24.348837209302246,
-          "y": 430.1395348837209,
-          "width": 729,
-          "height": 605,
+          "x": 50,
+          "y": 230,
+          "width": 687,
+          "height": 775,
           "rotation": 0,
           "properties": {
-            "text": "Scope of Work / Deliverables",
-            "fontSize": 22,
+            "text": "Insert the Deliverables here...",
+            "fontSize": 16,
             "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
+            "color": "#000000",
             "bold": true,
             "italic": false,
             "underline": false,
@@ -1681,12 +1592,71 @@
             "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "3h57bpwnh"
+          "id": "av3rcuxl4"
+        }
+      ]
+    },
+    {
+      "id": 1756410799877,
+      "pageSettings": {
+        "width": 794,
+        "height": 1123,
+        "background": {
+          "type": "color",
+          "value": "#ffffff"
+        }
+      },
+      "elements": [
+        {
+          "type": "text",
+          "x": 405.1860465116279,
+          "y": 80,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Request For Proposals For:",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "0uwqus41j"
         },
         {
           "type": "text",
-          "x": 27.18604651162792,
-          "y": 27.906976744186018,
+          "x": 404.1860465116279,
+          "y": 110,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Proposal Title",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "oylv4651k"
+        },
+        {
+          "type": "text",
+          "x": 20,
+          "y": 20.391825229034495,
           "width": 354.65116279069775,
           "height": 51.93023255813951,
           "rotation": 0,
@@ -1704,14 +1674,14 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "8po2nlzuh"
+          "id": "sml8c7n57"
         },
         {
           "type": "text",
-          "x": 570.5813953488372,
-          "y": 26.697674418604628,
+          "x": 525,
+          "y": 20,
           "width": 163.95348837209315,
-          "height": 41.93023255813951,
+          "height": 70.93023255813951,
           "rotation": 0,
           "zIndex": 4,
           "properties": {
@@ -1727,32 +1697,58 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "g2bo7ys9z"
+          "id": "k27rh2pci"
         },
         {
-          "id": "tb1stxjx0",
-          "type": "image",
-          "x": -21,
-          "y": 99,
-          "width": 753,
-          "height": 231,
+          "type": "text",
+          "x": 50,
+          "y": 178.78787878787878,
+          "width": 273,
+          "height": 37.78787878787878,
           "rotation": 0,
-          "zIndex": 7,
           "properties": {
-            "src": "template://Deliverables_1755762155366-871417095.jpg",
-            "fit": "cover",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false,
-            "borderRadius": 25
-          }
+            "text": "Project Plan & Tech Stack",
+            "fontSize": 24,
+            "fontFamily": "Times New Roman",
+            "color": "#3d4d4e",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "zIndex": 2,
+          "id": "g3x7qdule"
+        },
+        {
+          "type": "text",
+          "x": 50,
+          "y": 230,
+          "width": 687,
+          "height": 775,
+          "rotation": 0,
+          "properties": {
+            "text": "Insert the Project Plan & Tech Stack here...",
+            "fontSize": 16,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "zIndex": 2,
+          "id": "py7u859qk"
         }
       ]
     },
     {
-      "id": 1755128604099,
+      "id": 1756410860527,
       "pageSettings": {
         "width": 794,
         "height": 1123,
@@ -1764,8 +1760,54 @@
       "elements": [
         {
           "type": "text",
-          "x": 24.481319552853904,
-          "y": 29.72178356482057,
+          "x": 405.1860465116279,
+          "y": 80,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Request For Proposals For:",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "vwbuz71v1"
+        },
+        {
+          "type": "text",
+          "x": 404.1860465116279,
+          "y": 110,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Proposal Title",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "vnjr21s7m"
+        },
+        {
+          "type": "text",
+          "x": 20,
+          "y": 20.391825229034495,
           "width": 354.65116279069775,
           "height": 51.93023255813951,
           "rotation": 0,
@@ -1783,14 +1825,14 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "fd7t5hou7"
+          "id": "kxp07qj8i"
         },
         {
           "type": "text",
-          "x": 536.3579979821203,
-          "y": 27.519388210963804,
-          "width": 194.0419839473144,
-          "height": 53.470055566989046,
+          "x": 525,
+          "y": 20,
+          "width": 163.95348837209315,
+          "height": 70.93023255813951,
           "rotation": 0,
           "zIndex": 4,
           "properties": {
@@ -1806,104 +1848,18 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "53zsrta3v"
+          "id": "o6gdqq202"
         },
         {
           "type": "text",
-          "x": 26.90976300916614,
-          "y": 103.10481738882649,
-          "width": 378.10074880871343,
-          "height": 156,
-          "rotation": 0,
-          "properties": {
-            "text": "Tech Stack & Project Plan",
-            "fontSize": 64,
-            "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
-            "bold": true,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "zIndex": 2,
-          "id": "jvorht16w"
-        },
-        {
-          "type": "text",
-          "x": 28.384941834226225,
-          "y": 262.5225447797892,
-          "width": 718.5983731116476,
-          "height": 776.0781263967104,
-          "rotation": 0,
-          "properties": {
-            "text": "Tools, technologies, and structured plan for execution.",
-            "fontSize": 22,
-            "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
-            "bold": true,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "zIndex": 2,
-          "id": "2ruh3ec4z"
-        }
-      ]
-    },
-    {
-      "id": 1755129044418,
-      "pageSettings": {
-        "width": 794,
-        "height": 1123,
-        "background": {
-          "type": "color",
-          "value": "#ffffff"
-        }
-      },
-      "elements": [
-        {
-          "id": "mnrtorykx",
-          "type": "shape",
-          "shapeType": "rectangle",
-          "x": -24,
-          "y": 93,
-          "width": 758,
-          "height": 242,
-          "rotation": 0,
-          "zIndex": 1,
-          "properties": {
-            "fill": "#fafafa",
-            "stroke": "#3d4d4e",
-            "strokeWidth": 6,
-            "opacity": 1,
-            "rx": 20,
-            "strokeDasharray": "none",
-            "shadow": false,
-            "shadowBlur": 0,
-            "shadowColor": "#000",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          }
-        },
-        {
-          "type": "text",
-          "x": 25.348837209302275,
-          "y": 343.1395348837209,
-          "width": 245,
-          "height": 84,
+          "x": 50,
+          "y": 178.78787878787878,
+          "width": 273,
+          "height": 37.78787878787878,
           "rotation": 0,
           "properties": {
             "text": "Timeline",
-            "fontSize": 64,
+            "fontSize": 24,
             "fontFamily": "Times New Roman",
             "color": "#3d4d4e",
             "bold": true,
@@ -1915,20 +1871,20 @@
             "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "gr160v0j3"
+          "id": "ijbyltc8c"
         },
         {
           "type": "text",
-          "x": 22.348837209302246,
-          "y": 430.1395348837209,
-          "width": 448,
-          "height": 605,
+          "x": 50,
+          "y": 230,
+          "width": 687,
+          "height": 775,
           "rotation": 0,
           "properties": {
-            "text": "Schedule with major phases and deadlines.",
-            "fontSize": 22,
+            "text": "Insert the Timeline here...",
+            "fontSize": 16,
             "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
+            "color": "#000000",
             "bold": true,
             "italic": false,
             "underline": false,
@@ -1938,78 +1894,12 @@
             "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "1r85l9bw5"
-        },
-        {
-          "type": "text",
-          "x": 27.18604651162792,
-          "y": 27.906976744186018,
-          "width": 354.65116279069775,
-          "height": 51.93023255813951,
-          "rotation": 0,
-          "zIndex": 4,
-          "properties": {
-            "text": "Company Name",
-            "fontSize": 20,
-            "fontFamily": "Times New Roman",
-            "color": "#3f4e4d",
-            "bold": true,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "id": "yo156zvu3"
-        },
-        {
-          "type": "text",
-          "x": 570.5813953488372,
-          "y": 26.697674418604628,
-          "width": 163.95348837209315,
-          "height": 41.93023255813951,
-          "rotation": 0,
-          "zIndex": 4,
-          "properties": {
-            "text": "Date",
-            "fontSize": 20,
-            "fontFamily": "Times New Roman",
-            "color": "#3f4e4d",
-            "bold": true,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "id": "lr1c9gw6d"
-        },
-        {
-          "id": "ljlrds7rg",
-          "type": "image",
-          "x": -14,
-          "y": 97,
-          "width": 744,
-          "height": 234,
-          "rotation": 0,
-          "zIndex": 7,
-          "properties": {
-            "src": "template://Timeline_1755762182798-951944413.jpg",
-            "fit": "cover",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false,
-            "borderRadius": 25
-          }
+          "id": "88d3f1l3a"
         }
       ]
     },
     {
-      "id": 1755129273680,
+      "id": 1756411059543,
       "pageSettings": {
         "width": 794,
         "height": 1123,
@@ -2021,8 +1911,54 @@
       "elements": [
         {
           "type": "text",
-          "x": 24.481319552853904,
-          "y": 29.72178356482057,
+          "x": 405.1860465116279,
+          "y": 80,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Request For Proposals For:",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "mfvztqouu"
+        },
+        {
+          "type": "text",
+          "x": 404.1860465116279,
+          "y": 110,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Proposal Title",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "tg2kneo4b"
+        },
+        {
+          "type": "text",
+          "x": 20,
+          "y": 20.391825229034495,
           "width": 354.65116279069775,
           "height": 51.93023255813951,
           "rotation": 0,
@@ -2040,14 +1976,14 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "zjwlb70va"
+          "id": "kqvsb9pql"
         },
         {
           "type": "text",
-          "x": 536.3579979821203,
-          "y": 27.519388210963804,
-          "width": 194.0419839473144,
-          "height": 53.470055566989046,
+          "x": 525,
+          "y": 20,
+          "width": 163.95348837209315,
+          "height": 70.93023255813951,
           "rotation": 0,
           "zIndex": 4,
           "properties": {
@@ -2063,18 +1999,18 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "c8e7ksbzz"
+          "id": "4zdegwrsx"
         },
         {
           "type": "text",
-          "x": 26.90976300916614,
-          "y": 103.10481738882649,
-          "width": 515.1007488087134,
-          "height": 156,
+          "x": 50,
+          "y": 178.78787878787878,
+          "width": 367.1176470588235,
+          "height": 37.78787878787878,
           "rotation": 0,
           "properties": {
             "text": "Risk Assessment & Mitigation Plan",
-            "fontSize": 64,
+            "fontSize": 24,
             "fontFamily": "Times New Roman",
             "color": "#3d4d4e",
             "bold": true,
@@ -2086,20 +2022,20 @@
             "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "wkyd01y6l"
+          "id": "8y9fyzn6f"
         },
         {
           "type": "text",
-          "x": 28.384941834226225,
-          "y": 262.5225447797892,
-          "width": 718.5983731116476,
-          "height": 776.0781263967104,
+          "x": 50,
+          "y": 230,
+          "width": 687,
+          "height": 775,
           "rotation": 0,
           "properties": {
-            "text": "Identified risks and how they will be managed.",
-            "fontSize": 22,
+            "text": "Insert the Risk Assessment & Mitigation Plan here...",
+            "fontSize": 16,
             "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
+            "color": "#000000",
             "bold": true,
             "italic": false,
             "underline": false,
@@ -2109,12 +2045,12 @@
             "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "pmi8nres2"
+          "id": "gc7hokh4z"
         }
       ]
     },
     {
-      "id": 1755129491179,
+      "id": 1756412374905,
       "pageSettings": {
         "width": 794,
         "height": 1123,
@@ -2126,8 +2062,54 @@
       "elements": [
         {
           "type": "text",
-          "x": 24.481319552853904,
-          "y": 29.72178356482057,
+          "x": 405.1860465116279,
+          "y": 80,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Request For Proposals For:",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "jdxttnmoe"
+        },
+        {
+          "type": "text",
+          "x": 404.1860465116279,
+          "y": 110,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Proposal Title",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "a6mnqs3pi"
+        },
+        {
+          "type": "text",
+          "x": 20,
+          "y": 20.391825229034495,
           "width": 354.65116279069775,
           "height": 51.93023255813951,
           "rotation": 0,
@@ -2145,14 +2127,14 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "ohqxh4r0c"
+          "id": "vcygupow0"
         },
         {
           "type": "text",
-          "x": 536.3579979821203,
-          "y": 27.519388210963804,
-          "width": 194.0419839473144,
-          "height": 53.470055566989046,
+          "x": 525,
+          "y": 20,
+          "width": 163.95348837209315,
+          "height": 70.93023255813951,
           "rotation": 0,
           "zIndex": 4,
           "properties": {
@@ -2168,18 +2150,18 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "apgpwrh1v"
+          "id": "wbdun45xt"
         },
         {
           "type": "text",
-          "x": 26.90976300916614,
-          "y": 103.10481738882649,
-          "width": 509.1007488087134,
-          "height": 85,
+          "x": 50,
+          "y": 178.78787878787878,
+          "width": 367.1176470588235,
+          "height": 37.78787878787878,
           "rotation": 0,
           "properties": {
             "text": "Budget Estimate",
-            "fontSize": 64,
+            "fontSize": 24,
             "fontFamily": "Times New Roman",
             "color": "#3d4d4e",
             "bold": true,
@@ -2191,20 +2173,20 @@
             "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "pmvf1zevu"
+          "id": "5addhuqth"
         },
         {
           "type": "text",
-          "x": 28.384941834226225,
-          "y": 188.5225447797892,
-          "width": 723.5983731116476,
-          "height": 89.07812639671045,
+          "x": 50,
+          "y": 230,
+          "width": 687,
+          "height": 368,
           "rotation": 0,
           "properties": {
-            "text": "The estimated budget for this project is based on the anticipated scope of work, required resources, and projected timelines, ensuring optimal allocation of funds to achieve the desired outcomes.",
-            "fontSize": 22,
+            "text": "Insert the Budget Estimate here...",
+            "fontSize": 16,
             "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
+            "color": "#000000",
             "bold": true,
             "italic": false,
             "underline": false,
@@ -2214,21 +2196,21 @@
             "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "59p5nuifp"
+          "id": "ru4uuq3pc"
         },
         {
           "type": "text",
-          "x": 29.534883720930225,
-          "y": 275.3255813953489,
+          "x": 52.534883720930225,
+          "y": 662.3255813953489,
           "width": 240.23255813953494,
           "height": 44.06976744186045,
           "rotation": 0,
           "zIndex": 4,
           "properties": {
             "text": "Items",
-            "fontSize": 32,
+            "fontSize": 24,
             "fontFamily": "Verdana",
-            "color": "#bf9e82",
+            "color": "#000000",
             "bold": true,
             "italic": false,
             "underline": false,
@@ -2237,21 +2219,21 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "iz0wtbon9"
+          "id": "mgwvb6we2"
         },
         {
           "type": "text",
-          "x": 488.5348837209302,
-          "y": 277.3255813953489,
+          "x": 497.5348837209302,
+          "y": 662.3255813953489,
           "width": 262.23255813953494,
           "height": 44.06976744186045,
           "rotation": 0,
           "zIndex": 4,
           "properties": {
             "text": "Estimate Cost",
-            "fontSize": 32,
+            "fontSize": 24,
             "fontFamily": "Verdana",
-            "color": "#bf9e82",
+            "color": "#000000",
             "bold": true,
             "italic": false,
             "underline": false,
@@ -2260,45 +2242,18 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "mwjhnmy2p"
-        },
-        {
-          "type": "shape",
-          "shapeType": "line",
-          "x": 15,
-          "y": 315,
-          "width": 749,
-          "height": 20,
-          "rotation": 0,
-          "zIndex": 2,
-          "properties": {
-            "fill": "#3d4d4e",
-            "stroke": "#3d4d4e",
-            "strokeWidth": 3,
-            "opacity": 1,
-            "rx": 0,
-            "strokeDasharray": "none",
-            "shadow": false,
-            "shadowBlur": 0,
-            "shadowColor": "#000",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          },
-          "id": "gjsv5wpl3"
+          "id": "zkbd05758"
         },
         {
           "type": "text",
-          "x": 23.384941834226225,
-          "y": 334.5225447797892,
+          "x": 50.384941834226225,
+          "y": 732.5225447797892,
           "width": 418.59837311164756,
-          "height": 712.0781263967104,
+          "height": 352.07812639671045,
           "rotation": 0,
           "properties": {
-            "text": "Item1: Personnel Costs \n\n\nItem2: Equipment & Tools\n\n\nItem3: Operational Expenses\n\n\nItem4: Travel & Logistics\n\n\nItem5: Contingency Reserve",
-            "fontSize": 22,
+            "text": "Item1: Personnel Costs \nItem2: Equipment & Tools\nItem3: Operational Expenses\nItem4: Travel & Logistics\nItem5: Contingency Reserve",
+            "fontSize": 16,
             "fontFamily": "Times New Roman",
             "color": "#3d4d4e",
             "bold": true,
@@ -2306,22 +2261,22 @@
             "underline": false,
             "textAlign": "left",
             "listStyle": "none",
-            "lineHeight": 1.2,
+            "lineHeight": 1.8,
             "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "fth8r5bzi"
+          "id": "z87fhreft"
         },
         {
           "type": "text",
-          "x": 525.3849418342262,
-          "y": 335.5225447797892,
+          "x": 517.3849418342262,
+          "y": 732.5225447797892,
           "width": 159.59837311164756,
-          "height": 712.0781263967104,
+          "height": 356.07812639671045,
           "rotation": 0,
           "properties": {
-            "text": "$$$\n\n$$$\n\n$$$\n\n$$$\n\n$$$",
-            "fontSize": 22,
+            "text": "$$$\n$$$\n$$$\n$$$\n$$$",
+            "fontSize": 16,
             "fontFamily": "Times New Roman",
             "color": "#3d4d4e",
             "bold": true,
@@ -2333,12 +2288,39 @@
             "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "ov00zmc64"
+          "id": "pd4ohjjii"
+        },
+        {
+          "type": "shape",
+          "shapeType": "line",
+          "x": 50,
+          "y": 704,
+          "width": 687,
+          "height": 20,
+          "rotation": 0,
+          "zIndex": 2,
+          "properties": {
+            "fill": "#3d4d4e",
+            "stroke": "#3d4d4e",
+            "strokeWidth": 3,
+            "opacity": 1,
+            "rx": 0,
+            "strokeDasharray": "none",
+            "shadow": false,
+            "shadowBlur": 0,
+            "shadowColor": "#000",
+            "showLineHeightPanel": false,
+            "showCommonEffectsPanel": false,
+            "showSpecialEffectsPanel": false,
+            "showStrokeStylePanel": false,
+            "showShapeEffectsPanel": false
+          },
+          "id": "ti705wu32"
         }
       ]
     },
     {
-      "id": 1755131086273,
+      "id": 1756412250070,
       "pageSettings": {
         "width": 794,
         "height": 1123,
@@ -2350,8 +2332,54 @@
       "elements": [
         {
           "type": "text",
-          "x": 24.481319552853904,
-          "y": 29.72178356482057,
+          "x": 405.1860465116279,
+          "y": 80,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Request For Proposals For:",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "5qzzag11e"
+        },
+        {
+          "type": "text",
+          "x": 404.1860465116279,
+          "y": 110,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Proposal Title",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "7dazzlr2d"
+        },
+        {
+          "type": "text",
+          "x": 20,
+          "y": 20.391825229034495,
           "width": 354.65116279069775,
           "height": 51.93023255813951,
           "rotation": 0,
@@ -2369,14 +2397,14 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "guzx7j4ra"
+          "id": "nn7ertnve"
         },
         {
           "type": "text",
-          "x": 536.3579979821203,
-          "y": 27.519388210963804,
-          "width": 194.0419839473144,
-          "height": 53.470055566989046,
+          "x": 525,
+          "y": 20,
+          "width": 163.95348837209315,
+          "height": 70.93023255813951,
           "rotation": 0,
           "zIndex": 4,
           "properties": {
@@ -2392,18 +2420,18 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "yveh3f5ht"
+          "id": "udlmeex0z"
         },
         {
           "type": "text",
-          "x": 26.90976300916614,
-          "y": 103.10481738882649,
-          "width": 509.1007488087134,
-          "height": 85,
+          "x": 50,
+          "y": 178.78787878787878,
+          "width": 367.1176470588235,
+          "height": 37.78787878787878,
           "rotation": 0,
           "properties": {
             "text": "Team Details",
-            "fontSize": 64,
+            "fontSize": 24,
             "fontFamily": "Times New Roman",
             "color": "#3d4d4e",
             "bold": true,
@@ -2415,47 +2443,20 @@
             "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "75o0dn3f3"
-        },
-        {
-          "type": "shape",
-          "shapeType": "line",
-          "x": -4,
-          "y": 288,
-          "width": 749,
-          "height": 20,
-          "rotation": 0,
-          "zIndex": 2,
-          "properties": {
-            "fill": "#3d4d4e",
-            "stroke": "#3d4d4e",
-            "strokeWidth": 3,
-            "opacity": 1,
-            "rx": 0,
-            "strokeDasharray": "none",
-            "shadow": false,
-            "shadowBlur": 0,
-            "shadowColor": "#000",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          },
-          "id": "3aobufrop"
+          "id": "m5ctaxbi1"
         },
         {
           "type": "text",
-          "x": 30.90976300916614,
-          "y": 199.1048173888265,
-          "width": 270.10074880871343,
-          "height": 39,
+          "x": 50,
+          "y": 230,
+          "width": 687,
+          "height": 811,
           "rotation": 0,
           "properties": {
-            "text": "Employee Count:",
-            "fontSize": 32,
-            "fontFamily": "Arial",
-            "color": "#3d4d4e",
+            "text": "Insert the Team Details here...",
+            "fontSize": 16,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
             "bold": true,
             "italic": false,
             "underline": false,
@@ -2465,169 +2466,12 @@
             "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "l2j02187t"
-        },
-        {
-          "type": "text",
-          "x": 29.534883720930225,
-          "y": 240.32558139534888,
-          "width": 176.23255813953494,
-          "height": 39.06976744186045,
-          "rotation": 0,
-          "zIndex": 4,
-          "properties": {
-            "text": "Count",
-            "fontSize": 32,
-            "fontFamily": "Verdana",
-            "color": "#bf9e82",
-            "bold": false,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "id": "m5sbuvhgn"
-        },
-        {
-          "type": "text",
-          "x": 30.90976300916614,
-          "y": 329.1048173888265,
-          "width": 270.10074880871343,
-          "height": 39,
-          "rotation": 0,
-          "properties": {
-            "text": "Team Members",
-            "fontSize": 32,
-            "fontFamily": "Arial",
-            "color": "#3d4d4e",
-            "bold": true,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "zIndex": 2,
-          "id": "tu4hfsrnd"
-        },
-        {
-          "type": "text",
-          "x": 30.534883720930225,
-          "y": 368.3255813953489,
-          "width": 718.232558139535,
-          "height": 265.5011399908801,
-          "rotation": 0,
-          "zIndex": 4,
-          "properties": {
-            "text": "Key team members, roles.",
-            "fontSize": 20,
-            "fontFamily": "Verdana",
-            "color": "#bf9e82",
-            "bold": false,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0,
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          },
-          "id": "87jwib1lv"
-        },
-        {
-          "type": "text",
-          "x": 27.929370852303407,
-          "y": 693.5950134672579,
-          "width": 270.10074880871343,
-          "height": 39,
-          "rotation": 0,
-          "properties": {
-            "text": "Team Experience",
-            "fontSize": 32,
-            "fontFamily": "Arial",
-            "color": "#3d4d4e",
-            "bold": true,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0,
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          },
-          "zIndex": 6,
-          "id": "w97vlfgf0"
-        },
-        {
-          "type": "shape",
-          "shapeType": "line",
-          "x": -3,
-          "y": 655.3921568627452,
-          "width": 749,
-          "height": 20,
-          "rotation": 0,
-          "zIndex": 2,
-          "properties": {
-            "fill": "#3d4d4e",
-            "stroke": "#3d4d4e",
-            "strokeWidth": 3,
-            "opacity": 1,
-            "rx": 0,
-            "strokeDasharray": "none",
-            "shadow": false,
-            "shadowBlur": 0,
-            "shadowColor": "#000",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          },
-          "id": "hfucv3bvv"
-        },
-        {
-          "type": "text",
-          "x": 30.534883720930225,
-          "y": 737.109895120839,
-          "width": 722.232558139535,
-          "height": 331.2854537163703,
-          "rotation": 0,
-          "zIndex": 4,
-          "properties": {
-            "text": "relevant expertise.",
-            "fontSize": 20,
-            "fontFamily": "Verdana",
-            "color": "#bf9e82",
-            "bold": false,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0,
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          },
-          "id": "l7e430yoq"
+          "id": "m14li90xw"
         }
       ]
     },
     {
-      "id": 1755173621835,
+      "id": 1756411920872,
       "pageSettings": {
         "width": 794,
         "height": 1123,
@@ -2639,8 +2483,54 @@
       "elements": [
         {
           "type": "text",
-          "x": 24.481319552853904,
-          "y": 29.72178356482057,
+          "x": 405.1860465116279,
+          "y": 80,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Request For Proposals For:",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "h8xd4ywzo"
+        },
+        {
+          "type": "text",
+          "x": 404.1860465116279,
+          "y": 110,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Proposal Title",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "m19j8subn"
+        },
+        {
+          "type": "text",
+          "x": 20,
+          "y": 20.391825229034495,
           "width": 354.65116279069775,
           "height": 51.93023255813951,
           "rotation": 0,
@@ -2658,14 +2548,14 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "tiritxrrf"
+          "id": "mucg3l24k"
         },
         {
           "type": "text",
-          "x": 536.3579979821203,
-          "y": 27.519388210963804,
-          "width": 194.0419839473144,
-          "height": 53.470055566989046,
+          "x": 525,
+          "y": 20,
+          "width": 163.95348837209315,
+          "height": 70.93023255813951,
           "rotation": 0,
           "zIndex": 4,
           "properties": {
@@ -2681,20 +2571,20 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "3na97c7np"
+          "id": "0bjhx1p07"
         },
         {
           "type": "text",
-          "x": 22.52379809688543,
-          "y": 103.10481738882649,
-          "width": 385.34636284380116,
-          "height": 85,
+          "x": 50,
+          "y": 178.78787878787878,
+          "width": 367.1176470588235,
+          "height": 37.78787878787878,
           "rotation": 0,
           "properties": {
             "text": "Certifications",
-            "fontSize": 64,
+            "fontSize": 24,
             "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
+            "color": "#000000",
             "bold": true,
             "italic": false,
             "underline": false,
@@ -2704,20 +2594,20 @@
             "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "ijfdgfdsb"
+          "id": "4zaldra76"
         },
         {
           "type": "text",
-          "x": 24.876169904401678,
-          "y": 188.5225447797892,
-          "width": 666.5983731116476,
-          "height": 61.078126396710445,
+          "x": 50,
+          "y": 230,
+          "width": 687,
+          "height": 368,
           "rotation": 0,
           "properties": {
-            "text": "Our commitment to excellence is reflected in the industry-recognized certifications and prestigious awards we have earned over the years.",
-            "fontSize": 22,
+            "text": "Insert the Certifications here...",
+            "fontSize": 16,
             "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
+            "color": "#000000",
             "bold": true,
             "italic": false,
             "underline": false,
@@ -2727,21 +2617,21 @@
             "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "5dashybez"
+          "id": "v78no4hjq"
         },
         {
           "type": "text",
-          "x": 24.534883720930225,
-          "y": 279.3255813953489,
-          "width": 240.23255813953494,
-          "height": 31.06976744186045,
+          "x": 52.534883720930225,
+          "y": 662.3255813953489,
+          "width": 191.23255813953494,
+          "height": 36.06976744186045,
           "rotation": 0,
           "zIndex": 4,
           "properties": {
             "text": "Certification",
             "fontSize": 24,
             "fontFamily": "Verdana",
-            "color": "#bf9e82",
+            "color": "#000000",
             "bold": true,
             "italic": false,
             "underline": false,
@@ -2750,14 +2640,83 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "q8lndi9bv"
+          "id": "0xcx5lkn3"
+        },
+        {
+          "type": "text",
+          "x": 620.5348837209302,
+          "y": 662.3255813953489,
+          "width": 130.23255813953494,
+          "height": 44.06976744186045,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Valid Till",
+            "fontSize": 24,
+            "fontFamily": "Verdana",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "ln7wgj9ns"
+        },
+        {
+          "type": "text",
+          "x": 50.384941834226225,
+          "y": 728.5225447797892,
+          "width": 261.59837311164756,
+          "height": 149.07812639671045,
+          "rotation": 0,
+          "properties": {
+            "text": "Certification1\nCertification2\nCertification3\nCertification4\nCertification5",
+            "fontSize": 16,
+            "fontFamily": "Times New Roman",
+            "color": "#3d4d4e",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.8,
+            "letterSpacing": 0
+          },
+          "zIndex": 2,
+          "id": "35e192y6x"
+        },
+        {
+          "type": "text",
+          "x": 619.3849418342262,
+          "y": 729.5225447797892,
+          "width": 118.59837311164756,
+          "height": 154.07812639671045,
+          "rotation": 0,
+          "properties": {
+            "text": "__/__/____\n__/__/____\n__/__/____\n__/__/____\n__/__/____",
+            "fontSize": 16,
+            "fontFamily": "Times New Roman",
+            "color": "#3d4d4e",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "center",
+            "listStyle": "none",
+            "lineHeight": 1.8,
+            "letterSpacing": 0
+          },
+          "zIndex": 2,
+          "id": "b5bayno80"
         },
         {
           "type": "shape",
           "shapeType": "line",
-          "x": 15,
-          "y": 315,
-          "width": 749,
+          "x": 50,
+          "y": 704,
+          "width": 687,
           "height": 20,
           "rotation": 0,
           "zIndex": 2,
@@ -2777,67 +2736,21 @@
             "showStrokeStylePanel": false,
             "showShapeEffectsPanel": false
           },
-          "id": "bhtx5o72r"
+          "id": "yswyyir5t"
         },
         {
           "type": "text",
-          "x": 23.384941834226225,
-          "y": 334.5225447797892,
-          "width": 213.59837311164756,
-          "height": 474.4290035896928,
-          "rotation": 0,
-          "properties": {
-            "text": "Certification1\n\n\n\nCertification2\n\n\n\nCertification3\n\n\n\n\nCertification4\n",
-            "fontSize": 22,
-            "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
-            "bold": true,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "zIndex": 2,
-          "id": "qp5qzzi4m"
-        },
-        {
-          "type": "text",
-          "x": 597.3849418342262,
-          "y": 330.5225447797892,
-          "width": 134.59837311164756,
-          "height": 481.9377755195176,
-          "rotation": 0,
-          "properties": {
-            "text": "__/__/____\n\n\n__/__/____\n\n\n__/__/____\n\n\n__/__/____",
-            "fontSize": 22,
-            "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
-            "bold": true,
-            "italic": false,
-            "underline": false,
-            "textAlign": "center",
-            "listStyle": "none",
-            "lineHeight": 1.8,
-            "letterSpacing": 0
-          },
-          "zIndex": 2,
-          "id": "6sggav3zl"
-        },
-        {
-          "type": "text",
-          "x": 264.5348837209302,
-          "y": 258.3255813953489,
-          "width": 265.23255813953494,
-          "height": 61.06976744186045,
+          "x": 353.5348837209302,
+          "y": 652.3255813953489,
+          "width": 184.23255813953494,
+          "height": 56.06976744186045,
           "rotation": 0,
           "zIndex": 4,
           "properties": {
             "text": "Issuing Organization",
             "fontSize": 24,
             "fontFamily": "Verdana",
-            "color": "#bf9e82",
+            "color": "#000000",
             "bold": true,
             "italic": false,
             "underline": false,
@@ -2846,117 +2759,44 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "m28nksaux"
+          "id": "4wqhzus01"
         },
         {
           "type": "text",
-          "x": 587.5348837209302,
-          "y": 270.3255813953489,
-          "width": 175.23255813953494,
-          "height": 31.06976744186045,
+          "x": 331.3849418342262,
+          "y": 728.5225447797892,
+          "width": 262.59837311164756,
+          "height": 149.07812639671045,
+          "rotation": 0,
+          "properties": {
+            "text": "Issuing Organization1 \nIssuing Organization2\nIssuing Organization3\nIssuing Organization4\nIssuing Organization5",
+            "fontSize": 16,
+            "fontFamily": "Times New Roman",
+            "color": "#3d4d4e",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.8,
+            "letterSpacing": 0
+          },
+          "zIndex": 2,
+          "id": "pyx59by62"
+        },
+        {
+          "type": "text",
+          "x": 50.534883720930225,
+          "y": 887.3255813953489,
+          "width": 191.23255813953494,
+          "height": 36.06976744186045,
           "rotation": 0,
           "zIndex": 4,
-          "properties": {
-            "text": "Valid Till",
-            "fontSize": 24,
-            "fontFamily": "Verdana",
-            "color": "#bf9e82",
-            "bold": true,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "id": "5kdttdgmp"
-        },
-        {
-          "type": "text",
-          "x": 263.3849418342262,
-          "y": 333.5225447797892,
-          "width": 293.59837311164756,
-          "height": 477.5693544668859,
-          "rotation": 0,
-          "properties": {
-            "text": "Issuing Organization1\n\n\n\nIssuing Organization2\n\n\n\nIssuing Organization3\n\n\n\n\nIssuing Organization4\n",
-            "fontSize": 22,
-            "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
-            "bold": true,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0,
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          },
-          "zIndex": 2,
-          "id": "smswn49o8"
-        },
-        {
-          "type": "text",
-          "x": 24.384941834226225,
-          "y": 881.5225447797892,
-          "width": 352.59837311164756,
-          "height": 204.07812639671045,
-          "rotation": 0,
-          "properties": {
-            "text": "Item1\n\n\nItem2\n\n\nItem3\n",
-            "fontSize": 22,
-            "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
-            "bold": true,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "zIndex": 2,
-          "id": "m8yrx1jp1"
-        },
-        {
-          "type": "text",
-          "x": 381.3849418342262,
-          "y": 881.5225447797892,
-          "width": 352.59837311164756,
-          "height": 204.07812639671045,
-          "rotation": 0,
-          "properties": {
-            "text": "Item4\n\n\nItem5",
-            "fontSize": 22,
-            "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
-            "bold": true,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "zIndex": 2,
-          "id": "qofivgdvq"
-        },
-        {
-          "type": "text",
-          "x": 27.43607879863977,
-          "y": 813.2802559853179,
-          "width": 230.08320494906428,
-          "height": 65.70175438596482,
-          "rotation": 0,
           "properties": {
             "text": "Awards",
-            "fontSize": 64,
-            "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
+            "fontSize": 24,
+            "fontFamily": "Verdana",
+            "color": "#000000",
             "bold": true,
             "italic": false,
             "underline": false,
@@ -2965,13 +2805,35 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
+          "id": "bskpkkc6c"
+        },
+        {
+          "type": "text",
+          "x": 50.384941834226225,
+          "y": 923.5225447797892,
+          "width": 366.59837311164756,
+          "height": 149.07812639671045,
+          "rotation": 0,
+          "properties": {
+            "text": "Awards1\nAwards2\nAwards3\nAwards4\nAwards5",
+            "fontSize": 16,
+            "fontFamily": "Times New Roman",
+            "color": "#3d4d4e",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.8,
+            "letterSpacing": 0
+          },
           "zIndex": 2,
-          "id": "ag5mqy0e9"
+          "id": "pv7rgfqzh"
         }
       ]
     },
     {
-      "id": 1755176637397,
+      "id": 1756413088485,
       "pageSettings": {
         "width": 794,
         "height": 1123,
@@ -2983,8 +2845,54 @@
       "elements": [
         {
           "type": "text",
-          "x": 24.481319552853904,
-          "y": 29.72178356482057,
+          "x": 405.1860465116279,
+          "y": 80,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Request For Proposals For:",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "v3bannwad"
+        },
+        {
+          "type": "text",
+          "x": 404.1860465116279,
+          "y": 110,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Proposal Title",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "79r01186b"
+        },
+        {
+          "type": "text",
+          "x": 20,
+          "y": 20.391825229034495,
           "width": 354.65116279069775,
           "height": 51.93023255813951,
           "rotation": 0,
@@ -3002,14 +2910,14 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "zvzob8s2j"
+          "id": "0272zwvof"
         },
         {
           "type": "text",
-          "x": 536.3579979821203,
-          "y": 27.519388210963804,
-          "width": 194.0419839473144,
-          "height": 53.470055566989046,
+          "x": 525,
+          "y": 20,
+          "width": 163.95348837209315,
+          "height": 70.93023255813951,
           "rotation": 0,
           "zIndex": 4,
           "properties": {
@@ -3025,18 +2933,18 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "1uyfqg2v1"
+          "id": "s74ju2ssi"
         },
         {
           "type": "text",
-          "x": 25.909763009166113,
-          "y": 104.35043142391422,
-          "width": 356.59197687888883,
-          "height": 71.91228070175436,
+          "x": 50,
+          "y": 178.78787878787878,
+          "width": 367.1176470588235,
+          "height": 37.78787878787878,
           "rotation": 0,
           "properties": {
             "text": "Case Studies",
-            "fontSize": 64,
+            "fontSize": 24,
             "fontFamily": "Times New Roman",
             "color": "#3d4d4e",
             "bold": true,
@@ -3048,71 +2956,20 @@
             "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "pe7ue5vbx"
+          "id": "nf4gwkk1d"
         },
         {
           "type": "text",
-          "x": 31.41207670338639,
-          "y": 237.76417788657696,
-          "width": 718.232558139535,
-          "height": 334.297837617299,
-          "rotation": 0,
-          "zIndex": 4,
-          "properties": {
-            "text": "Case Studies",
-            "fontSize": 20,
-            "fontFamily": "Verdana",
-            "color": "#bf9e82",
-            "bold": false,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0,
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          },
-          "id": "kdg64n2jr"
-        },
-        {
-          "type": "text",
-          "x": 30.534883720930225,
-          "y": 728.9571603427172,
-          "width": 722.232558139535,
-          "height": 339.4381884944921,
-          "rotation": 0,
-          "zIndex": 4,
-          "properties": {
-            "text": "Past Projects",
-            "fontSize": 20,
-            "fontFamily": "Verdana",
-            "color": "#bf9e82",
-            "bold": false,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "id": "h3qe3fk8h"
-        },
-        {
-          "type": "text",
-          "x": 29.50774885177003,
-          "y": 178.94359741136816,
-          "width": 722.7387239888405,
-          "height": 61.078126396710445,
+          "x": 50,
+          "y": 230,
+          "width": 687,
+          "height": 811,
           "rotation": 0,
           "properties": {
-            "text": "Our case studies demonstrate how we have delivered measurable results and solved real-world business challenges for our clients.",
-            "fontSize": 22,
+            "text": "Insert the Case Studies here...",
+            "fontSize": 16,
             "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
+            "color": "#000000",
             "bold": true,
             "italic": false,
             "underline": false,
@@ -3122,58 +2979,12 @@
             "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "z3r7eff9w"
-        },
-        {
-          "type": "text",
-          "x": 30.82204371092041,
-          "y": 569.7890279151425,
-          "width": 363.609520738538,
-          "height": 78.05263157894728,
-          "rotation": 0,
-          "properties": {
-            "text": "Past Projects",
-            "fontSize": 64,
-            "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
-            "bold": true,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "zIndex": 2,
-          "id": "90fh2id78"
-        },
-        {
-          "type": "text",
-          "x": 30.03406464124373,
-          "y": 652.2769307447014,
-          "width": 722.7387239888405,
-          "height": 61.078126396710445,
-          "rotation": 0,
-          "properties": {
-            "text": "Our past projects reflect our ability to deliver innovative solutions across multiple domains.",
-            "fontSize": 22,
-            "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
-            "bold": true,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "zIndex": 2,
-          "id": "dlo0n6hpz"
+          "id": "0u9y51lyn"
         }
       ]
     },
     {
-      "id": 1755390873121,
+      "id": 1756413295734,
       "pageSettings": {
         "width": 794,
         "height": 1123,
@@ -3185,8 +2996,54 @@
       "elements": [
         {
           "type": "text",
-          "x": 24.481319552853904,
-          "y": 29.72178356482057,
+          "x": 405.1860465116279,
+          "y": 80,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Request For Proposals For:",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "5tklg17az"
+        },
+        {
+          "type": "text",
+          "x": 404.1860465116279,
+          "y": 110,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Proposal Title",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "zy6zq47zd"
+        },
+        {
+          "type": "text",
+          "x": 20,
+          "y": 20.391825229034495,
           "width": 354.65116279069775,
           "height": 51.93023255813951,
           "rotation": 0,
@@ -3204,14 +3061,14 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "9itfenprm"
+          "id": "86ohbs6cd"
         },
         {
           "type": "text",
-          "x": 536.3579979821203,
-          "y": 27.519388210963804,
-          "width": 194.0419839473144,
-          "height": 53.470055566989046,
+          "x": 525,
+          "y": 20,
+          "width": 163.95348837209315,
+          "height": 70.93023255813951,
           "rotation": 0,
           "zIndex": 4,
           "properties": {
@@ -3227,18 +3084,18 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "3g8mptmsg"
+          "id": "7jlxt1p8r"
         },
         {
           "type": "text",
-          "x": 25.909763009166113,
-          "y": 104.35043142391422,
-          "width": 610.5135455063398,
-          "height": 71.91228070175436,
+          "x": 50,
+          "y": 178.78787878787878,
+          "width": 367.1176470588235,
+          "height": 37.78787878787878,
           "rotation": 0,
           "properties": {
-            "text": "Partnership Overview",
-            "fontSize": 64,
+            "text": "Past Projects",
+            "fontSize": 24,
             "fontFamily": "Times New Roman",
             "color": "#3d4d4e",
             "bold": true,
@@ -3247,76 +3104,38 @@
             "textAlign": "left",
             "listStyle": "none",
             "lineHeight": 1.2,
-            "letterSpacing": 0,
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
+            "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "gk9lteno7"
+          "id": "lrxflvaxe"
         },
         {
           "type": "text",
-          "x": 31.41207670338639,
-          "y": 237.76417788657696,
-          "width": 718.232558139535,
-          "height": 811.7488180094558,
-          "rotation": 0,
-          "zIndex": 4,
-          "properties": {
-            "text": "Partnership Overview",
-            "fontSize": 20,
-            "fontFamily": "Verdana",
-            "color": "#bf9e82",
-            "bold": false,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0,
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          },
-          "id": "e4si4fftk"
-        },
-        {
-          "type": "text",
-          "x": 29.50774885177003,
-          "y": 178.94359741136816,
-          "width": 722.7387239888405,
-          "height": 61.078126396710445,
+          "x": 50,
+          "y": 230,
+          "width": 687,
+          "height": 811,
           "rotation": 0,
           "properties": {
-            "text": "The partnership overview illustrates how our combined expertise and resources will drive measurable outcomes.",
-            "fontSize": 22,
+            "text": "Insert the Past Projects here...",
+            "fontSize": 16,
             "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
+            "color": "#000000",
             "bold": true,
             "italic": false,
             "underline": false,
             "textAlign": "left",
             "listStyle": "none",
             "lineHeight": 1.2,
-            "letterSpacing": 0,
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
+            "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "nd6kpulj8"
+          "id": "oknuxrpj2"
         }
       ]
     },
     {
-      "id": 1755391151736,
+      "id": 1756413339784,
       "pageSettings": {
         "width": 794,
         "height": 1123,
@@ -3328,8 +3147,54 @@
       "elements": [
         {
           "type": "text",
-          "x": 24.481319552853904,
-          "y": 29.72178356482057,
+          "x": 405.1860465116279,
+          "y": 80,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Request For Proposals For:",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "2mpy0xruk"
+        },
+        {
+          "type": "text",
+          "x": 404.1860465116279,
+          "y": 110,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Proposal Title",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "f9smebw4k"
+        },
+        {
+          "type": "text",
+          "x": 20,
+          "y": 20.391825229034495,
           "width": 354.65116279069775,
           "height": 51.93023255813951,
           "rotation": 0,
@@ -3347,14 +3212,14 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "edcrgtn4p"
+          "id": "cm1fihph1"
         },
         {
           "type": "text",
-          "x": 536.3579979821203,
-          "y": 27.519388210963804,
-          "width": 194.0419839473144,
-          "height": 53.470055566989046,
+          "x": 525,
+          "y": 20,
+          "width": 163.95348837209315,
+          "height": 70.93023255813951,
           "rotation": 0,
           "zIndex": 4,
           "properties": {
@@ -3370,18 +3235,18 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "eguv75xvt"
+          "id": "09rapdyr2"
         },
         {
           "type": "text",
-          "x": 24.92937085230338,
-          "y": 104.35043142391422,
-          "width": 414.4351141337908,
-          "height": 164.0691434468524,
+          "x": 50,
+          "y": 178.78787878787878,
+          "width": 367.1176470588235,
+          "height": 37.78787878787878,
           "rotation": 0,
           "properties": {
-            "text": "References & Proven Results",
-            "fontSize": 64,
+            "text": "Partnership Overview",
+            "fontSize": 24,
             "fontFamily": "Times New Roman",
             "color": "#3d4d4e",
             "bold": true,
@@ -3390,76 +3255,38 @@
             "textAlign": "left",
             "listStyle": "none",
             "lineHeight": 1.2,
-            "letterSpacing": 0,
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
+            "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "7d8eqnweh"
+          "id": "r7o54rpo9"
         },
         {
           "type": "text",
-          "x": 24.549331605347163,
-          "y": 331.8818249454005,
-          "width": 728.0364797081625,
-          "height": 838.21940624475,
-          "rotation": 0,
-          "zIndex": 4,
-          "properties": {
-            "text": "References & Proven Results",
-            "fontSize": 20,
-            "fontFamily": "Verdana",
-            "color": "#bf9e82",
-            "bold": false,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0,
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          },
-          "id": "o6xovc8aq"
-        },
-        {
-          "type": "text",
-          "x": 23.62539591059346,
-          "y": 266.1984993721525,
-          "width": 724.6995083025661,
-          "height": 61.078126396710445,
+          "x": 50,
+          "y": 230,
+          "width": 687,
+          "height": 811,
           "rotation": 0,
           "properties": {
-            "text": "This section provides evidence of our past success, showcasing tangible results and client satisfaction",
-            "fontSize": 22,
+            "text": "Insert the Past Projects here...",
+            "fontSize": 16,
             "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
+            "color": "#000000",
             "bold": true,
             "italic": false,
             "underline": false,
             "textAlign": "left",
             "listStyle": "none",
             "lineHeight": 1.2,
-            "letterSpacing": 0,
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
+            "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "gta1c9gsd"
+          "id": "joc0g7s91"
         }
       ]
     },
     {
-      "id": 1755178233403,
+      "id": 1756413367318,
       "pageSettings": {
         "width": 794,
         "height": 1123,
@@ -3470,42 +3297,258 @@
       },
       "elements": [
         {
-          "id": "6wyapqjkx",
-          "type": "shape",
-          "shapeType": "rectangle",
-          "x": -24,
-          "y": 93,
-          "width": 758,
-          "height": 242,
+          "type": "text",
+          "x": 405.1860465116279,
+          "y": 80,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
           "rotation": 0,
-          "zIndex": 1,
+          "zIndex": 4,
           "properties": {
-            "fill": "#fafafa",
-            "stroke": "#3d4d4e",
-            "strokeWidth": 6,
-            "opacity": 1,
-            "rx": 20,
-            "strokeDasharray": "none",
-            "shadow": false,
-            "shadowBlur": 0,
-            "shadowColor": "#000",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          }
+            "text": "Request For Proposals For:",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "h0swbg81o"
         },
         {
           "type": "text",
-          "x": 26.348837209302275,
-          "y": 351.1395348837209,
-          "width": 345,
-          "height": 84,
+          "x": 404.1860465116279,
+          "y": 110,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Proposal Title",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "bbz72200c"
+        },
+        {
+          "type": "text",
+          "x": 20,
+          "y": 20.391825229034495,
+          "width": 354.65116279069775,
+          "height": 51.93023255813951,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Company Name",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#3f4e4d",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "n995jqud7"
+        },
+        {
+          "type": "text",
+          "x": 525,
+          "y": 20,
+          "width": 163.95348837209315,
+          "height": 70.93023255813951,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Date",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#3f4e4d",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "l40zfj9n3"
+        },
+        {
+          "type": "text",
+          "x": 50,
+          "y": 178.78787878787878,
+          "width": 367.1176470588235,
+          "height": 37.78787878787878,
+          "rotation": 0,
+          "properties": {
+            "text": "References & Proven Results",
+            "fontSize": 24,
+            "fontFamily": "Times New Roman",
+            "color": "#3d4d4e",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "zIndex": 2,
+          "id": "7mxohgmun"
+        },
+        {
+          "type": "text",
+          "x": 50,
+          "y": 230,
+          "width": 687,
+          "height": 811,
+          "rotation": 0,
+          "properties": {
+            "text": "Insert the References & Proven Results here...",
+            "fontSize": 16,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "zIndex": 2,
+          "id": "osz6i3jcc"
+        }
+      ]
+    },
+    {
+      "id": 1756413400434,
+      "pageSettings": {
+        "width": 794,
+        "height": 1123,
+        "background": {
+          "type": "color",
+          "value": "#ffffff"
+        }
+      },
+      "elements": [
+        {
+          "type": "text",
+          "x": 405.1860465116279,
+          "y": 80,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Request For Proposals For:",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "ll90cq6gq"
+        },
+        {
+          "type": "text",
+          "x": 404.1860465116279,
+          "y": 110,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Proposal Title",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "gm8bbqjgr"
+        },
+        {
+          "type": "text",
+          "x": 20,
+          "y": 20.391825229034495,
+          "width": 354.65116279069775,
+          "height": 51.93023255813951,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Company Name",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#3f4e4d",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "1a2awvl8b"
+        },
+        {
+          "type": "text",
+          "x": 525,
+          "y": 20,
+          "width": 163.95348837209315,
+          "height": 70.93023255813951,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Date",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#3f4e4d",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "zaliz1uya"
+        },
+        {
+          "type": "text",
+          "x": 50,
+          "y": 178.78787878787878,
+          "width": 367.1176470588235,
+          "height": 37.78787878787878,
           "rotation": 0,
           "properties": {
             "text": "Why Us?",
-            "fontSize": 64,
+            "fontSize": 24,
             "fontFamily": "Times New Roman",
             "color": "#3d4d4e",
             "bold": true,
@@ -3517,20 +3560,20 @@
             "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "8coce24ei"
+          "id": "gy74gaf67"
         },
         {
           "type": "text",
-          "x": 24.348837209302246,
-          "y": 430.1395348837209,
-          "width": 729,
-          "height": 605,
+          "x": 50,
+          "y": 230,
+          "width": 687,
+          "height": 811,
           "rotation": 0,
           "properties": {
-            "text": "Choosing the right partner is crucial to your success — here’s why we are the team you can trust.\n",
-            "fontSize": 22,
+            "text": "Insert the Why Us? here...",
+            "fontSize": 16,
             "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
+            "color": "#000000",
             "bold": true,
             "italic": false,
             "underline": false,
@@ -3540,77 +3583,12 @@
             "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "fbl5jusz0"
-        },
-        {
-          "type": "text",
-          "x": 27.18604651162792,
-          "y": 27.906976744186018,
-          "width": 354.65116279069775,
-          "height": 51.93023255813951,
-          "rotation": 0,
-          "zIndex": 4,
-          "properties": {
-            "text": "Company Name",
-            "fontSize": 20,
-            "fontFamily": "Times New Roman",
-            "color": "#3f4e4d",
-            "bold": true,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "id": "6yy6weiwc"
-        },
-        {
-          "type": "text",
-          "x": 570.5813953488372,
-          "y": 26.697674418604628,
-          "width": 163.95348837209315,
-          "height": 41.93023255813951,
-          "rotation": 0,
-          "zIndex": 4,
-          "properties": {
-            "text": "Date",
-            "fontSize": 20,
-            "fontFamily": "Times New Roman",
-            "color": "#3f4e4d",
-            "bold": true,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "id": "szpfj3eaf"
-        },
-        {
-          "id": "ott14samf",
-          "type": "image",
-          "x": -4,
-          "y": 96,
-          "width": 735,
-          "height": 236,
-          "rotation": 0,
-          "zIndex": 6,
-          "properties": {
-            "src": "template://Why_us_1755762074032-160683938.png",
-            "fit": "contain",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          }
+          "id": "etw86yng5"
         }
       ]
     },
     {
-      "id": 1755179057646,
+      "id": 1756413432150,
       "pageSettings": {
         "width": 794,
         "height": 1123,
@@ -3622,8 +3600,54 @@
       "elements": [
         {
           "type": "text",
-          "x": 24.481319552853904,
-          "y": 29.72178356482057,
+          "x": 405.1860465116279,
+          "y": 80,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Request For Proposals For:",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "ojojuozft"
+        },
+        {
+          "type": "text",
+          "x": 404.1860465116279,
+          "y": 110,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Proposal Title",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "ctrxb9v51"
+        },
+        {
+          "type": "text",
+          "x": 20,
+          "y": 20.391825229034495,
           "width": 354.65116279069775,
           "height": 51.93023255813951,
           "rotation": 0,
@@ -3641,14 +3665,14 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "vrywa3v5e"
+          "id": "td31ssthl"
         },
         {
           "type": "text",
-          "x": 536.3579979821203,
-          "y": 27.519388210963804,
-          "width": 194.0419839473144,
-          "height": 53.470055566989046,
+          "x": 525,
+          "y": 20,
+          "width": 163.95348837209315,
+          "height": 70.93023255813951,
           "rotation": 0,
           "zIndex": 4,
           "properties": {
@@ -3664,41 +3688,18 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "mnj4v52l4"
+          "id": "0xidw6oi3"
         },
         {
           "type": "text",
-          "x": 233.05011388635916,
-          "y": 96.96446651163352,
-          "width": 309.8375909139765,
-          "height": 156,
+          "x": 50,
+          "y": 178.78787878787878,
+          "width": 367.1176470588235,
+          "height": 37.78787878787878,
           "rotation": 0,
           "properties": {
             "text": "Terms & Conditions",
-            "fontSize": 64,
-            "fontFamily": "Times New Roman",
-            "color": "#3d4d4e",
-            "bold": true,
-            "italic": false,
-            "underline": false,
-            "textAlign": "center",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "zIndex": 2,
-          "id": "sj8xv68bn"
-        },
-        {
-          "type": "text",
-          "x": 28.384941834226225,
-          "y": 262.5225447797892,
-          "width": 718.5983731116476,
-          "height": 776.0781263967104,
-          "rotation": 0,
-          "properties": {
-            "text": "These Terms and Conditions outline the rules, responsibilities, and guidelines governing the use of our services and engagement with our company.",
-            "fontSize": 22,
+            "fontSize": 24,
             "fontFamily": "Times New Roman",
             "color": "#3d4d4e",
             "bold": true,
@@ -3710,12 +3711,35 @@
             "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "s1vqi9ija"
+          "id": "hzyi9sgob"
+        },
+        {
+          "type": "text",
+          "x": 50,
+          "y": 230,
+          "width": 687,
+          "height": 811,
+          "rotation": 0,
+          "properties": {
+            "text": "Insert the Why Us? here...",
+            "fontSize": 16,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "left",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "zIndex": 2,
+          "id": "rhtfsgrfk"
         }
       ]
     },
     {
-      "id": 1754743803978,
+      "id": 1756413602716,
       "pageSettings": {
         "width": 794,
         "height": 1123,
@@ -3727,8 +3751,54 @@
       "elements": [
         {
           "type": "text",
-          "x": 40.18604651162792,
-          "y": 36.90697674418602,
+          "x": 405.1860465116279,
+          "y": 80,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Request For Proposals For:",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "3tnx05uke"
+        },
+        {
+          "type": "text",
+          "x": 404.1860465116279,
+          "y": 110,
+          "width": 354.65116279069775,
+          "height": 30.930232558139508,
+          "rotation": 0,
+          "zIndex": 4,
+          "properties": {
+            "text": "Proposal Title",
+            "fontSize": 20,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "textAlign": "right",
+            "listStyle": "none",
+            "lineHeight": 1.2,
+            "letterSpacing": 0
+          },
+          "id": "2uzagqz7f"
+        },
+        {
+          "type": "text",
+          "x": 20,
+          "y": 20.391825229034495,
           "width": 354.65116279069775,
           "height": 51.93023255813951,
           "rotation": 0,
@@ -3746,14 +3816,14 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "id": "9xkyniqyb"
+          "id": "y5kmwem4e"
         },
         {
           "type": "text",
-          "x": 608.5813953488372,
-          "y": 37.697674418604635,
+          "x": 525,
+          "y": 20,
           "width": 163.95348837209315,
-          "height": 50.93023255813951,
+          "height": 70.93023255813951,
           "rotation": 0,
           "zIndex": 4,
           "properties": {
@@ -3764,51 +3834,24 @@
             "bold": true,
             "italic": false,
             "underline": false,
-            "textAlign": "justify",
+            "textAlign": "left",
             "listStyle": "none",
             "lineHeight": 1.2,
-            "letterSpacing": 0.6
+            "letterSpacing": 0
           },
-          "id": "c7g4djs3s"
-        },
-        {
-          "type": "shape",
-          "shapeType": "rectangle",
-          "x": -25,
-          "y": 888.3953488372094,
-          "width": 742,
-          "height": 290.60465116279056,
-          "rotation": 0,
-          "zIndex": 1,
-          "properties": {
-            "fill": "#3d4d4e",
-            "stroke": "#354041",
-            "strokeWidth": 2,
-            "opacity": 1,
-            "rx": 25,
-            "strokeDasharray": "none",
-            "shadow": false,
-            "shadowBlur": 0,
-            "shadowColor": "#000",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          },
-          "id": "khjgubuc6"
+          "id": "4fq2v9ilp"
         },
         {
           "type": "text",
-          "x": 39.348837209302246,
-          "y": 667.1395348837209,
-          "width": 464,
-          "height": 165,
+          "x": 50,
+          "y": 178.78787878787878,
+          "width": 367.1176470588235,
+          "height": 37.78787878787878,
           "rotation": 0,
           "properties": {
-            "text": "Let’s Work\nTogether",
-            "fontSize": 72,
-            "fontFamily": "Verdana",
+            "text": "Attachment",
+            "fontSize": 24,
+            "fontFamily": "Times New Roman",
             "color": "#3d4d4e",
             "bold": true,
             "italic": false,
@@ -3819,47 +3862,20 @@
             "letterSpacing": 0
           },
           "zIndex": 2,
-          "id": "ih02pemsr"
-        },
-        {
-          "type": "shape",
-          "shapeType": "rightArrow",
-          "x": 407.13127042091116,
-          "y": 763.2929811555604,
-          "width": 83.00826446280996,
-          "height": 65.87603305785115,
-          "rotation": 324,
-          "zIndex": 3,
-          "properties": {
-            "fill": "#3d4d4e",
-            "stroke": "#111827",
-            "strokeWidth": 2,
-            "opacity": 1,
-            "rx": 0,
-            "strokeDasharray": "none",
-            "shadow": false,
-            "shadowBlur": 0,
-            "shadowColor": "#000",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          },
-          "id": "z577k9gw4"
+          "id": "1dkefjg2j"
         },
         {
           "type": "text",
-          "x": 39.48837209302323,
-          "y": 909.7441860465121,
-          "width": 253.48837209302326,
-          "height": 42.32558139534876,
+          "x": 50,
+          "y": 230,
+          "width": 687,
+          "height": 811,
           "rotation": 0,
           "properties": {
-            "text": "Contact Us",
-            "fontSize": 28,
-            "fontFamily": "Arial",
-            "color": "#ffffff",
+            "text": "Insert the Attachment here...",
+            "fontSize": 16,
+            "fontFamily": "Times New Roman",
+            "color": "#000000",
             "bold": true,
             "italic": false,
             "underline": false,
@@ -3868,142 +3884,16 @@
             "lineHeight": 1.2,
             "letterSpacing": 0
           },
-          "zIndex": 7,
-          "id": "qasubfgrg"
-        },
-        {
-          "id": "t9x54lbmm",
-          "type": "image",
-          "x": 48.403100775193806,
-          "y": 1036.9457364341085,
-          "width": 30,
-          "height": 30,
-          "rotation": 0,
-          "zIndex": 7,
-          "properties": {
-            "src": "template://web_1755762118645-424575935.svg",
-            "fit": "contain",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          }
-        },
-        {
-          "id": "46j7c7z7b",
-          "type": "image",
-          "x": 48.62790697674418,
-          "y": 994.0232558139537,
-          "width": 30,
-          "height": 30,
-          "rotation": 0,
-          "zIndex": 8,
-          "properties": {
-            "src": "template://mail_1755762219333-77842695.svg",
-            "fit": "contain",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          }
-        },
-        {
-          "id": "dm6x29vsq",
-          "type": "image",
-          "x": 48.4031007751938,
-          "y": 953.2248062015503,
-          "width": 30,
-          "height": 30,
-          "rotation": 0,
-          "zIndex": 9,
-          "properties": {
-            "src": "template://call_1755762205736-228464171.svg",
-            "fit": "contain",
-            "showLineHeightPanel": false,
-            "showCommonEffectsPanel": false,
-            "showSpecialEffectsPanel": false,
-            "showStrokeStylePanel": false,
-            "showShapeEffectsPanel": false
-          }
-        },
-        {
-          "type": "text",
-          "x": 92.1395348837209,
-          "y": 954.837209302326,
-          "width": 374.28571428571433,
-          "height": 32.248062015503706,
-          "rotation": 0,
-          "properties": {
-            "text": "Company No.",
-            "fontSize": 24,
-            "fontFamily": "Arial",
-            "color": "#ffffff",
-            "bold": false,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "zIndex": 7,
-          "id": "fc92cy58t"
-        },
-        {
-          "type": "text",
-          "x": 91.82945736434107,
-          "y": 995.6124031007756,
-          "width": 377.09856035437423,
-          "height": 32.248062015503706,
-          "rotation": 0,
-          "properties": {
-            "text": "Company Mail",
-            "fontSize": 24,
-            "fontFamily": "Arial",
-            "color": "#ffffff",
-            "bold": false,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "zIndex": 7,
-          "id": "dygbwlocr"
-        },
-        {
-          "type": "text",
-          "x": 89.968992248062,
-          "y": 1038.7131782945742,
-          "width": 378.29457364341084,
-          "height": 32.248062015503706,
-          "rotation": 0,
-          "properties": {
-            "text": "Company Website",
-            "fontSize": 24,
-            "fontFamily": "Arial",
-            "color": "#ffffff",
-            "bold": false,
-            "italic": false,
-            "underline": false,
-            "textAlign": "left",
-            "listStyle": "none",
-            "lineHeight": 1.2,
-            "letterSpacing": 0
-          },
-          "zIndex": 7,
-          "id": "aqmqb0fzi"
+          "zIndex": 2,
+          "id": "ryr2k6yjj"
         }
       ]
     }
   ],
-  "currentPage": 14,
+  "currentPage": 18,
   "_isHistoryRestoration": false,
   "metadata": {
-    "exportedAt": "2025-08-17T00:41:56.637Z",
+    "exportedAt": "2025-08-29T16:41:25.990Z",
     "version": "1.0",
     "appName": "Canva App"
   }
