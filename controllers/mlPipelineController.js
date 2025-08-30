@@ -480,7 +480,8 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       "pointOfContact": {
         "name": companyProfile_1.adminName || '',
         "email": companyProfile_1.email || '',
-      }
+      },
+      "targetRFP": rfp.title || '',
     };
 
     const data = {
