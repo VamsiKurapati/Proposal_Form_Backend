@@ -116,17 +116,17 @@ exports.postAllRFPs = async (req, res) => {
 
     for (const rfp of nestedRFPs) {
       transformedData.push({
-        title: rfp['RFP Title'] || '',
-        description: rfp['RFP Description'] || '',
+        title: rfp['RFP Title'] || "",
+        description: rfp['RFP Description'] || "",
         logo: 'None',
         budget: rfp['Budget'] || 'Not found',
-        deadline: rfp['Deadline'] || '',
-        organization: rfp['Organization'] || rfp['Issuing Organization'] || '',
+        deadline: rfp['Deadline'] || "",
+        organization: rfp['Organization'] || rfp['Issuing Organization'] || "",
         fundingType: 'Government',
-        organizationType: rfp['Industry'] || '',
-        link: rfp['URL'] || '',
-        contact: rfp['Contact Information'] || '',
-        timeline: rfp['Timeline'] || '',
+        organizationType: rfp['Industry'] || "",
+        link: rfp['URL'] || "",
+        contact: rfp['Contact Information'] || "",
+        timeline: rfp['Timeline'] || "",
       });
     }
 
@@ -358,7 +358,12 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     }
 
     // const subscription = await Subscription.findOne({ userId: userId });
-    // const currentRFPs = await Proposal.find({ companyMail: userEmail }).countDocuments();
+    // if (!subscription || subscription.end_date < new Date()) {
+    //   return res.status(400).json({ error: 'Subscription not found or expired' });
+    // }
+
+    // //Get no.of RFP proposals generated between subscription start date and end date
+    // const currentRFPs = await Proposal.find({ companyMail: userEmail, createdAt: { $gte: subscription.start_date, $lte: subscription.end_date } }).countDocuments();
     // if (subscription.max_rfp_proposal_generations <= currentRFPs) {
     //   return res.status(400).json({ error: 'You have reached the maximum number of RFP proposals' });
     // }
@@ -455,32 +460,32 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     console.log("Employee Data: ", employeeData_1);
 
     const rfp = {
-      "RFP Title": proposal.title || '',
-      "RFP Description": proposal.description || '',
+      "RFP Title": proposal.title || "",
+      "RFP Description": proposal.description || "",
       "Match Score": proposal.match || 0,
-      "Budget": proposal.budget || '',
-      "Deadline": proposal.deadline || '',
+      "Budget": proposal.budget || "",
+      "Deadline": proposal.deadline || "",
       "Issuing Organization": proposal.organization || "Not found",
-      "Industry": proposal.organizationType || '',
-      "URL": proposal.link || '',
-      "Contact Information": proposal.contact || '',
-      "Timeline": proposal.timeline || '',
+      "Industry": proposal.organizationType || "",
+      "URL": proposal.link || "",
+      "Contact Information": proposal.contact || "",
+      "Timeline": proposal.timeline || "",
     };
 
     console.log("RFP: ", rfp);
 
     const userData = {
       "_id": companyProfile_1._id,
-      "email": companyProfile_1.email || '',
-      "companyName": companyProfile_1.companyName || '',
-      "companyOverview": companyProfile_1.bio || '',
-      "yearOfEstablishment": companyProfile_1.establishedYear || '',
+      "email": companyProfile_1.email || "",
+      "companyName": companyProfile_1.companyName || "",
+      "companyOverview": companyProfile_1.bio || "",
+      "yearOfEstablishment": companyProfile_1.establishedYear || "",
       "employeeCount": companyProfile_1.numberOfEmployees || 0,
       "services": companyProfile_1.services || [],
-      "industry": companyProfile_1.industry || '',
-      "location": companyProfile_1.location || '',
-      "website": companyProfile_1.website || '',
-      "linkedIn": companyProfile_1.linkedIn || '',
+      "industry": companyProfile_1.industry || "",
+      "location": companyProfile_1.location || "",
+      "website": companyProfile_1.website || "",
+      "linkedIn": companyProfile_1.linkedIn || "",
       "certifications": certifications_1,
       "documents": companyDocuments_1,
       "caseStudies": caseStudies_1,
@@ -490,16 +495,16 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       "clientPortfolio": companyProfile_1.clients || [],
       "preferredIndustries": companyProfile_1.preferredIndustries || [],
       "pointOfContact": {
-        "name": companyProfile_1.adminName || '',
-        "email": companyProfile_1.email || '',
+        "name": companyProfile_1.adminName || "",
+        "email": companyProfile_1.email || "",
       },
     };
 
     console.log("User Data: ", userData);
 
     const data = {
-      user: userData,
-      rfp: rfp,
+      "user": userData,
+      "rfp": rfp,
     };
 
     console.log("Generating proposal for RFP");
@@ -514,8 +519,8 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
     console.log("Creating new proposal");
     const new_Proposal = new Proposal({
-      rfpId: proposal._id || '',
-      title: proposal.title || '',
+      rfpId: proposal._id || "",
+      title: proposal.title || "",
       client: proposal.organization || "Not found",
       initialProposal: processedProposal,
       generatedProposal: processedProposal,
@@ -540,7 +545,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     console.log("Creating new draft");
     const new_Draft = new DraftRFP({
       userEmail: userEmail,
-      rfpId: proposal._id || '',
+      rfpId: proposal._id || "",
       rfp: { ...proposal },
       generatedProposal: processedProposal,
       currentEditor: req.user._id,
@@ -553,7 +558,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       employeeId: req.user._id,
       proposalId: new_Proposal._id,
       grantId: null,
-      title: proposal.title || '',
+      title: proposal.title || "",
       startDate: new Date(),
       endDate: new Date(),
       status: "In Progress",
@@ -561,6 +566,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     await new_CalendarEvent.save();
 
     console.log("Proposal generated successfully");
+    db.close();
     res.status(200).json({ processedProposal, proposalId: new_Proposal._id });
   } catch (err) {
     console.error('Error in /sendDataForProposalGeneration:', err);
@@ -671,16 +677,16 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
 
     const userData = {
       "_id": companyProfile_1._id,
-      "email": companyProfile_1.email || '',
-      "companyName": companyProfile_1.companyName || '',
-      "companyOverview": companyProfile_1.bio || '',
-      "yearOfEstablishment": companyProfile_1.establishedYear || '',
+      "email": companyProfile_1.email || "",
+      "companyName": companyProfile_1.companyName || "",
+      "companyOverview": companyProfile_1.bio || "",
+      "yearOfEstablishment": companyProfile_1.establishedYear || "",
       "employeeCount": companyProfile_1.numberOfEmployees || 0,
       "services": companyProfile_1.services || [],
-      "industry": companyProfile_1.industry || '',
-      "location": companyProfile_1.location || '',
-      "website": companyProfile_1.website || '',
-      "linkedIn": companyProfile_1.linkedIn || '',
+      "industry": companyProfile_1.industry || "",
+      "location": companyProfile_1.location || "",
+      "website": companyProfile_1.website || "",
+      "linkedIn": companyProfile_1.linkedIn || "",
       "certifications": certifications_1,
       "documents": companyDocuments_1,
       "caseStudies": caseStudies_1,
@@ -690,8 +696,8 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
       "clientPortfolio": companyProfile_1.clients || [],
       "preferredIndustries": companyProfile_1.preferredIndustries || [],
       "pointOfContact": {
-        "name": companyProfile_1.adminName || '',
-        "email": companyProfile_1.email || '',
+        "name": companyProfile_1.adminName || "",
+        "email": companyProfile_1.email || "",
       }
     };
 
@@ -712,20 +718,20 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
 
       for (const rfp of rfpArray) {
         transformedData.push({
-          title: rfp['RFP Title'] || '',
-          description: rfp['RFP Description'] || '',
+          title: rfp['RFP Title'] || "",
+          description: rfp['RFP Description'] || "",
           logo: 'None',
           match: rfp['Match Score'] || 0,
           budget: rfp['Budget'] || 'Not found',
-          deadline: rfp['Deadline'] || '',
-          organization: rfp['Organization'] || rfp['Issuing Organization'] || '',
+          deadline: rfp['Deadline'] || "",
+          organization: rfp['Organization'] || rfp['Issuing Organization'] || "",
           fundingType: 'Government',
-          organizationType: rfp['Industry'] || '',
-          link: rfp['URL'] || '',
+          organizationType: rfp['Industry'] || "",
+          link: rfp['URL'] || "",
           type: 'Matched',
-          contact: rfp['Contact Information'] || '',
-          timeline: rfp['Timeline'] || '',
-          email: companyProfile_1.email || ''
+          contact: rfp['Contact Information'] || "",
+          timeline: rfp['Timeline'] || "",
+          email: companyProfile_1.email || ""
         });
       }
     }
@@ -745,6 +751,8 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
     }
 
     const result = await MatchedRFP.insertMany(transformedData);
+
+    db.close();
 
     res.status(200).json(result);
   } catch (err) {
@@ -877,18 +885,18 @@ exports.handleFileUploadAndSendForRFPExtraction = [
             console.log("Fields: ", fields);
 
             rfp = {
-              title: fields['RFP Title'] || req.file.originalname.replace('.pdf', '').replace('.txt', ''),
+              title: fields['RFP Title'] || req.file.originalname.replace('.pdf', "").replace('.txt', ""),
               description: fields['RFP Description'] || `RFP extracted from uploaded file: ${req.file.originalname}`,
               organization: fields['Issuing Organization'] || 'Unknown',
               organizationType: fields['Industry'] || 'Unknown',
-              link: fields['url'] || '',
+              link: fields['url'] || "",
               budget: fields['Budget or Funding Limit'] || 'Not specified',
               deadline: fields['Submission Deadline'] || 'Not specified',
-              contact: fields['Contact Information'] || '',
-              timeline: fields['Timeline / Project Schedule'] || '',
-              proposalInstructions: fields['Proposal Submission Instructions'] || '',
-              projectGoals: fields['Project Goals and Objectives'] || '',
-              scopeOfWork: fields['Scope of Work'] || ''
+              contact: fields['Contact Information'] || "",
+              timeline: fields['Timeline / Project Schedule'] || "",
+              proposalInstructions: fields['Proposal Submission Instructions'] || "",
+              projectGoals: fields['Project Goals and Objectives'] || "",
+              scopeOfWork: fields['Scope of Work'] || ""
             };
           }
         }
@@ -901,11 +909,11 @@ exports.handleFileUploadAndSendForRFPExtraction = [
           description: "No RFP Description found in the uploaded file",
           organization: 'Unknown',
           organizationType: 'Unknown',
-          link: '',
+          link: "",
           budget: 'Not specified',
           deadline: 'Not specified',
-          contact: '',
-          timeline: ''
+          contact: "",
+          timeline: ""
         };
       }
 
@@ -924,14 +932,14 @@ exports.handleFileUploadAndSendForRFPExtraction = [
       const newRFP = await MatchedRFP.create({
         title: rfp.title,
         description: enhancedDescription,
-        organization: rfp.organization || '',
-        organizationType: rfp.organizationType || '',
-        link: rfp.link || '',
+        organization: rfp.organization || "",
+        organizationType: rfp.organizationType || "",
+        link: rfp.link || "",
         email: userEmail,
         budget: rfp.budget || 'Not found',
-        deadline: rfp.deadline || '',
-        contact: rfp.contact || '',
-        timeline: rfp.timeline || '',
+        deadline: rfp.deadline || "",
+        contact: rfp.contact || "",
+        timeline: rfp.timeline || "",
         match: 100.00,
         logo: 'None',
         type: 'Uploaded',
@@ -1372,11 +1380,11 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
     }
 
     const subscription = await Subscription.findOne({ userId: req.user._id });
-    if (!subscription) {
-      return res.status(404).json({ error: 'Subscription not found' });
+    if (!subscription || subscription.end_date < new Date()) {
+      return res.status(404).json({ error: 'Subscription not found or expired' });
     }
 
-    const currentGrants = await GrantProposal.find({ companyMail: userEmail }).countDocuments();
+    const currentGrants = await GrantProposal.find({ companyMail: userEmail, createdAt: { $gte: subscription.start_date, $lte: subscription.end_date } }).countDocuments();
     if (subscription.max_grant_proposal_generations <= currentGrants) {
       return res.status(400).json({ error: 'You have reached the maximum number of grant proposals' });
     }
@@ -1464,16 +1472,16 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
 
     const userData = {
       "_id": companyProfile_1._id,
-      "email": companyProfile_1.email || '',
-      "companyName": companyProfile_1.companyName || '',
-      "companyOverview": companyProfile_1.bio || '',
-      "yearOfEstablishment": companyProfile_1.establishedYear || '',
+      "email": companyProfile_1.email || "",
+      "companyName": companyProfile_1.companyName || "",
+      "companyOverview": companyProfile_1.bio || "",
+      "yearOfEstablishment": companyProfile_1.establishedYear || "",
       "employeeCount": companyProfile_1.numberOfEmployees || 0,
       "services": companyProfile_1.services || [],
-      "industry": companyProfile_1.industry || '',
-      "location": companyProfile_1.location || '',
-      "website": companyProfile_1.website || '',
-      "linkedIn": companyProfile_1.linkedIn || '',
+      "industry": companyProfile_1.industry || "",
+      "location": companyProfile_1.location || "",
+      "website": companyProfile_1.website || "",
+      "linkedIn": companyProfile_1.linkedIn || "",
       "certifications": certifications_1,
       "documents": companyDocuments_1,
       "caseStudies": caseStudies_1,
@@ -1483,8 +1491,8 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       "clientPortfolio": companyProfile_1.clients || [],
       "preferredIndustries": companyProfile_1.preferredIndustries || [],
       "pointOfContact": {
-        "name": companyProfile_1.adminName || '',
-        "email": companyProfile_1.email || '',
+        "name": companyProfile_1.adminName || "",
+        "email": companyProfile_1.email || "",
       }
     };
 
@@ -1547,6 +1555,8 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
     });
 
     await new_CalendarEvent.save();
+
+    db.close();
 
     res.status(200).json(proposalData);
   } catch (err) {
