@@ -419,7 +419,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       };
     });
 
-    console.log("Company Documents: ", companyDocuments_1);
+    //console.log("Company Documents: ", companyDocuments_1);
 
     const caseStudies_1 = (companyProfile_1.caseStudies || []).map((study) => {
       return {
@@ -427,7 +427,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       };
     });
 
-    console.log("Case Studies: ", caseStudies_1);
+    //console.log("Case Studies: ", caseStudies_1);
 
     const pastProjects_1 = (companyProfile_1.proposals || []).map((project) => {
       return {
@@ -435,7 +435,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       };
     });
 
-    console.log("Past Projects: ", pastProjects_1);
+    //console.log("Past Projects: ", pastProjects_1);
 
     const certifications_1 = (companyProfile_1.licensesAndCertifications || []).map((certification) => {
       return {
@@ -445,7 +445,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       };
     });
 
-    console.log("Certifications: ", certifications_1);
+    //console.log("Certifications: ", certifications_1);
 
     const employeeData_1 = (companyProfile_1.employees || []).map((employee) => {
       return {
@@ -457,7 +457,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       };
     });
 
-    console.log("Employee Data: ", employeeData_1);
+    //console.log("Employee Data: ", employeeData_1);
 
     const rfp = {
       "RFP Title": proposal.title || "",
@@ -472,7 +472,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       "Timeline": proposal.timeline || "",
     };
 
-    console.log("RFP: ", rfp);
+    //console.log("RFP: ", rfp);
 
     const userData = {
       "_id": companyProfile_1._id,
@@ -487,7 +487,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       "website": companyProfile_1.website || "",
       "linkedIn": companyProfile_1.linkedIn || "",
       "certifications": certifications_1,
-      "documents": [],
+      "documents": companyDocuments_1,
       "caseStudies": caseStudies_1,
       "pastProjects": pastProjects_1,
       "employees_information": employeeData_1,
@@ -500,7 +500,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       },
     };
 
-    console.log("User Data: ", userData);
+    //console.log("User Data: ", userData);
 
     const data = {
       "user": userData,
@@ -508,16 +508,26 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     };
 
     console.log("Generating proposal for RFP");
-    console.log("Data: ", data);
-    const res_1 = await axios.post(`http://56.228.64.88:5000/new_rfp_proposal_generation`, data);
-    console.log("Proposal generated for RFP");
+    //console.log("Data: ", data);
+    //This is an ML model to generate a proposal for the RFP and it is supposed to take much time to generate a proposal so we are using a timeout of 30 minutes
+    const timeoutPromise = new Promise((resolve, reject) => {
+      setTimeout(() => {
+        reject(new Error('Request timed out'));
+      }, 1800000); // 30 minutes in milliseconds
+    });
 
-    const proposalData = res_1.data.proposal;
+    const res_1 = await Promise.race([
+      axios.post(`http://56.228.64.88:5000/new_rfp_proposal_generation`, data),
+      timeoutPromise
+    ]);
+    console.log("Proposal generated for RFP", res_1.data.result);
+
+    const proposalData = res_1.data.result;
 
     console.log("Replacing text in proposal");
     const processedProposal = replaceTextInJson(template_json, proposalData, userData, rfp);
 
-    console.log("Creating new proposal");
+    //console.log("Creating new proposal");
     const new_Proposal = new Proposal({
       rfpId: proposal._id || "",
       title: proposal.title || "",
@@ -542,7 +552,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
     await new_Proposal.save();
 
-    console.log("Creating new draft");
+    //console.log("Creating new draft");
     const new_Draft = new DraftRFP({
       userEmail: userEmail,
       rfpId: proposal._id || "",
@@ -552,7 +562,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     });
     await new_Draft.save();
 
-    console.log("Creating new calendar event");
+    //console.log("Creating new calendar event");
     const new_CalendarEvent = new CalendarEvent({
       companyId: companyProfile_1._id,
       employeeId: req.user._id,
@@ -565,7 +575,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     });
     await new_CalendarEvent.save();
 
-    console.log("Proposal generated successfully");
+    //console.log("Proposal generated successfully");
     db.close();
     res.status(200).json({ processedProposal, proposalId: new_Proposal._id });
   } catch (err) {
@@ -868,9 +878,9 @@ exports.handleFileUploadAndSendForRFPExtraction = [
         }
       }
 
-      console.log("API Response: ", apiResponse);
+      //console.log("API Response: ", apiResponse);
 
-      console.log("API Response Data: ", apiResponse.data);
+      //console.log("API Response Data: ", apiResponse.data);
 
       // Extract RFP data from API response
       let rfp = null;
@@ -882,7 +892,7 @@ exports.handleFileUploadAndSendForRFPExtraction = [
 
           if (structuredData && structuredData.structured_fields) {
             const fields = structuredData.structured_fields;
-            console.log("Fields: ", fields);
+            //console.log("Fields: ", fields);
 
             rfp = {
               title: fields['RFP Title'] || req.file.originalname.replace('.pdf', "").replace('.txt', ""),
@@ -1110,9 +1120,9 @@ exports.handleFileUploadAndSendForGrantExtraction = [
         }
       }
 
-      console.log("API Response: ", apiResponse);
+      //console.log("API Response: ", apiResponse);
 
-      console.log("API Response Data: ", apiResponse.data);
+      //console.log("API Response Data: ", apiResponse.data);
 
       // Extract Grant data from API response
       let grant = null;
@@ -1124,7 +1134,7 @@ exports.handleFileUploadAndSendForGrantExtraction = [
 
           if (structuredData && structuredData.structured_fields) {
             const fields = structuredData.structured_fields;
-            console.log("Fields: ", fields);
+            //console.log("Fields: ", fields);
 
             grant = fields;
           }
@@ -1502,12 +1512,12 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       project_inputs: formData,
     };
 
-    console.log("User Data: ", userData);
-    console.log("Grant Data: ", grant);
-    console.log("Form Data: ", formData);
+    //console.log("User Data: ", userData);
+    //console.log("Grant Data: ", grant);
+    //console.log("Form Data: ", formData);
 
     const res_1 = await axios.post(`http://56.228.64.88:5000/grant_proposal_generation`, data);
-    console.log("Res_1: ", res_1);
+    //console.log("Res_1: ", res_1);
     const proposalData = res_1.data.proposal;
 
     const new_Proposal = new GrantProposal({
@@ -1569,7 +1579,7 @@ exports.triggerGrant = async () => {
   try {
     const grants = await axios.get(`http://56.228.64.88:5000/grants/trigger`);
     const grant_data = await Grant.insertMany(grants);
-    console.log("Grant data: ", grant_data);
+    //console.log("Grant data: ", grant_data);
   } catch (err) {
     console.error('Error in /triggerGrant:', err);
   }
