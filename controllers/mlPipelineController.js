@@ -488,12 +488,16 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       rfp: rfp,
     };
 
+    console.log("Generating proposal for RFP");
     const res_1 = await axios.post(`http://56.228.64.88:5000/new_rfp_proposal_generation`, data);
+    console.log("Proposal generated for RFP");
 
     const proposalData = res_1.data.proposal;
 
+    console.log("Replacing text in proposal");
     const processedProposal = replaceTextInJson(template_json, proposalData, userData, rfp);
 
+    console.log("Creating new proposal");
     const new_Proposal = new Proposal({
       rfpId: proposal._id || '',
       title: proposal.title || '',
@@ -518,6 +522,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
     await new_Proposal.save();
 
+    console.log("Creating new draft");
     const new_Draft = new DraftRFP({
       userEmail: userEmail,
       rfpId: proposal._id || '',
@@ -527,6 +532,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     });
     await new_Draft.save();
 
+    console.log("Creating new calendar event");
     const new_CalendarEvent = new CalendarEvent({
       companyId: companyProfile_1._id,
       employeeId: req.user._id,
@@ -539,6 +545,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     });
     await new_CalendarEvent.save();
 
+    console.log("Proposal generated successfully");
     res.status(200).json({ processedProposal, proposalId: new_Proposal._id });
   } catch (err) {
     console.error('Error in /sendDataForProposalGeneration:', err);
