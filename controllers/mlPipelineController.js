@@ -509,17 +509,24 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
     console.log("Generating proposal for RFP");
     //console.log("Data: ", data);
-    //This is an ML model to generate a proposal for the RFP and it is supposed to take much time to generate a proposal so we are using a timeout of 30 minutes
+    //This is an ML model to generate a proposal for the RFP and it is supposed to take much time to generate a proposal so we are using a timeout of 20 minutes and whenever the proposal is generated, the timeout is cancelled
     const timeoutPromise = new Promise((resolve, reject) => {
       setTimeout(() => {
         reject(new Error('Request timed out'));
-      }, 1800000); // 30 minutes in milliseconds
+      }, 1200000); // 20 minutes in milliseconds
     });
 
-    const res_1 = await Promise.race([
-      axios.post(`http://56.228.64.88:5000/new_rfp_proposal_generation`, data),
-      timeoutPromise
-    ]);
+    let res_1 = null;
+    try {
+      res_1 = await Promise.race([
+        axios.post(`http://56.228.64.88:5000/new_rfp_proposal_generation`, data),
+        timeoutPromise
+      ]);
+    } catch (err) {
+      console.error('Request timed out');
+      res_1 = { data: { result: null } };
+    }
+
     console.log("Proposal generated for RFP", res_1.data.result);
 
     const proposalData = res_1.data.result;
