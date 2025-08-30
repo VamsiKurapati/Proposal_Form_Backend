@@ -344,9 +344,14 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     const db = mongoose.connection.db;
 
     //Extract the company Documents from upload.chunks and save them in the companyProfile_1.companyDocuments
-    const files = await db.collection('uploads.files')
-      .find({ _id: { $in: companyProfile_1.documents.map(doc => doc.fileId) } })
-      .toArray();
+    let files = [];
+    if (companyProfile_1.documents.length > 0) {
+      files = await db.collection('uploads.files')
+        .find({ _id: { $in: companyProfile_1.documents.map(doc => doc.fileId) } })
+        .toArray();
+    } else {
+      files = [];
+    }
 
     const filesWithBase64 = await Promise.all(
       files.map(async (file) => {
