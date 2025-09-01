@@ -100,7 +100,7 @@ exports.login = async (req, res) => {
     );
 
     if (user.role === "SuperAdmin" || user.role === "company") {
-      const subscription = await Subscription.findOne({ userId: user._id });
+      const subscription = await Subscription.findOne({ user_id: user._id });
       let subscriptionData = {};
       if (!subscription || subscription.end_date < new Date()) {
         subscriptionData = {
@@ -128,7 +128,7 @@ exports.login = async (req, res) => {
       }
 
       const User_1 = await User.findOne({ email: companyProfile.companyEmail });
-      const subscription = await Subscription.findOne({ userId: User_1._id });
+      const subscription = await Subscription.findOne({ user_id: User_1._id });
 
       let subscriptionData = {};
       if (!subscription || subscription.end_date < new Date()) {
