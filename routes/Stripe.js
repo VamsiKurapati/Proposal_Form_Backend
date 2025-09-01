@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const stripeController = require('../controllers/stripeController');
 const jwt = require('jsonwebtoken');
+
+const { createPaymentIntent, activateSubscription, handleWebhook } = require('../controllers/stripeController');
 
 // Simple token verification middleware
 const verifyToken = (req, res, next) => {
@@ -46,16 +47,12 @@ const verifyToken = (req, res, next) => {
 router.use(verifyToken);
 
 // Payment Intent Routes
-router.post('/create-payment-intent', stripeController.createPaymentIntent);
+router.post('/create-payment-intent', createPaymentIntent);
 
 // Subscription Management Routes
-router.post('/activate-subscription', stripeController.activateSubscription);
+router.post('/activate-subscription', activateSubscription);
 
-// Auto Renewal Management Routes
-router.post('/enable-auto-renewal', stripeController.enableAutoRenewal);
-router.post('/cancel-auto-renewal', stripeController.cancelAutoRenewal);
-
-// Stripe Checkout for auto-renewing subscriptions
-router.post('/create-checkout-session', stripeController.createCheckoutSession);
+// Webhook Routes
+router.post('/webhook', handleWebhook);
 
 module.exports = router; 
