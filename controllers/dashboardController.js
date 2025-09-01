@@ -82,14 +82,14 @@ exports.getDashboardData = async (req, res) => {
 
             const employees = companyProfile.employees || [];
 
-            const subscription = await Subscription.findOne({ userId: user._id });
-
+            const subscription = await Subscription.find({ user_id: user._id }).sort({ created_at: -1 }).limit(1).lean();
+            // console.log(subscription);
             const sub_data = {
-                maxRFPs: subscription ? subscription.max_rfp_proposal_generations : 0,
-                maxGrants: subscription ? subscription.max_grant_proposal_generations : 0,
+                maxRFPs: subscription ? subscription[0].max_rfp_proposal_generations : 0,
+                maxGrants: subscription ? subscription[0].max_grant_proposal_generations : 0,
                 currentRFPs: proposals.length,
                 currentGrants: grantProposals.length,
-                plan_name: subscription ? subscription.plan_name : "None",
+                plan_name: subscription ? subscription[0].plan_name : "None",
             };
 
             const data = {
@@ -194,14 +194,15 @@ exports.getDashboardData = async (req, res) => {
 
             const user = await User.findOne({ email: companyProfile.email });
 
-            const subscription = await Subscription.findOne({ userId: user._id });
+            const subscription = await Subscription.find({ user_id: user._id }).sort({ created_at: -1 }).limit(1).lean();
+            // console.log(subscription);
 
             const sub_data = {
-                maxRFPs: subscription ? subscription.max_rfp_proposal_generations : 0,
-                maxGrants: subscription ? subscription.max_grant_proposal_generations : 0,
+                maxRFPs: subscription ? subscription[0].max_rfp_proposal_generations : 0,
+                maxGrants: subscription ? subscription[0].max_grant_proposal_generations : 0,
                 currentRFPs: proposals.length,
                 currentGrants: grantProposals.length,
-                plan_name: subscription ? subscription.plan_name : "None",
+                plan_name: subscription ? subscription[0].plan_name : "None",
             };
 
             const data = {

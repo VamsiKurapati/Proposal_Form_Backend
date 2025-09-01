@@ -100,9 +100,9 @@ exports.login = async (req, res) => {
     );
 
     if (user.role === "SuperAdmin" || user.role === "company") {
-      console.log(user._id);
+      // console.log(user._id);
       const subscription = await Subscription.find({ user_id: user._id }).sort({ created_at: -1 }).limit(1).lean();
-      console.log(subscription);
+      // console.log(subscription);
       let subscriptionData = {};
       if (!subscription || subscription[0].end_date < new Date()) {
         subscriptionData = {
@@ -129,10 +129,10 @@ exports.login = async (req, res) => {
         return res.status(404).json({ message: "Company profile not found" });
       }
 
-      const User_1 = await User.findOne({ email: companyProfile.companyEmail });
-      console.log(User_1._id);
+      const User_1 = await User.findOne({ email: companyProfile.email });
+      // console.log(User_1._id);
       const subscription = await Subscription.find({ user_id: User_1._id }).sort({ created_at: -1 }).limit(1).lean();
-      console.log(subscription);
+      // console.log(subscription);
 
       let subscriptionData = {};
       if (!subscription || subscription[0].end_date < new Date()) {
