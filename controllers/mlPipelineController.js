@@ -509,6 +509,8 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       "rfp": rfp,
     };
 
+    console.log("Data sent to ML model: ", data);
+
     console.log("Generating proposal for RFP");
     //console.log("Data: ", data);
     //This is an ML model to generate a proposal for the RFP and it is supposed to take much time to generate a proposal so we are using a timeout of 20 minutes and whenever the proposal is generated, the timeout is cancelled
