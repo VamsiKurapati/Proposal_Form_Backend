@@ -1,5 +1,6 @@
 const Support = require('../models/Support');
 const mongoose = require('mongoose');
+const Notification = require('../models/Notification');
 
 // Create ticket API
 exports.createTicket = async (req, res) => {
@@ -41,6 +42,15 @@ exports.createTicket = async (req, res) => {
     });
 
     const savedTicket = await ticket.save();
+
+    const notification = new Notification({
+      type: "Support",
+      title: "New support ticket created",
+      description: "A support ticket has been created",
+      created_at: new Date(),
+    });
+    await notification.save();
+
     res.status(201).json({ message: "Ticket created successfully", ticket: savedTicket });
   } catch (err) {
     res.status(500).json({ message: "Error creating ticket", error: err.message });
@@ -85,6 +95,14 @@ exports.reopenSupportTicket = async (req, res) => {
     ticket.status = 'Created';
     ticket.isOpen = true;
     await ticket.save();
+
+    const notification = new Notification({
+      type: "Support",
+      title: "Support ticket re-opened",
+      description: "A support ticket has been re-opened",
+      created_at: new Date(),
+    });
+    await notification.save();
 
     res.json({ message: "Ticket status updated to Re-Opened", ticket });
   } catch (err) {

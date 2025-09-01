@@ -260,6 +260,14 @@ const activateSubscription = async (req, res) => {
             paid_at: new Date()
         });
 
+        const notification = new Notification({
+            type: "Subscription",
+            title: "Subscription activated",
+            description: "A subscription has been activated for " + req.user.email + " for the plan " + plan.name,
+            created_at: new Date(),
+        });
+        await notification.save();
+
         res.status(200).json({
             success: true,
             message: 'Subscription activated successfully',

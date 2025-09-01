@@ -8,6 +8,7 @@ const { GridFsStorage } = require("multer-gridfs-storage");
 const crypto = require("crypto");
 const path = require("path");
 const Subscription = require("../models/Subscription");
+const Notification = require("../models/Notification");
 
 const storage = new GridFsStorage({
   url: process.env.MONGO_URI,
@@ -63,6 +64,14 @@ exports.signupWithProfile = [
         const companyProfile = new CompanyProfile(profileData);
         await companyProfile.save();
       }
+
+      const notification = new Notification({
+        type: "User",
+        title: "New user registered",
+        description: "A new user has registered to the platform",
+        created_at: new Date(),
+      });
+      await notification.save();
 
       res.status(201).json({ message: "Signup and profile created successfully" });
     } catch (err) {
