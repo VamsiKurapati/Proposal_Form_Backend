@@ -21,7 +21,7 @@ router.put('/updateSubscriptionPlanPrice/:id', verifyUser(["SuperAdmin"]), updat
 
 
 //payment
-router.get('/getPaymentsSummaryAndData', verifyUser(["SuperAdmin"]), getPaymentsSummaryAndData);
+router.get('/getPaymentStatsAndData', verifyUser(["SuperAdmin"]), getPaymentsSummaryAndData);
 
 
 

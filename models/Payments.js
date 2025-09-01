@@ -15,19 +15,6 @@ const paymentSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  currency: {
-    type: String,  // INR, US
-    required: true
-  },
-  payment_method: {
-    type: String,
-    enum: ['card', 'paypal', 'upi', 'stripe'],
-    required: true
-  },
-  transaction_id: {
-    type: String,
-    required: true
-  },
   status: {
     type: String,
     enum: ['Success', 'Failed', 'Pending', 'Refunded', 'Pending Refund'],
@@ -38,10 +25,6 @@ const paymentSchema = new mongoose.Schema({
     required: false,
     default: null
   },
-  created_at: {
-    type: Date,
-    default: Date.now
-  }
 }, { timestamps: true });
 
 module.exports = mongoose.model("Payment", paymentSchema);

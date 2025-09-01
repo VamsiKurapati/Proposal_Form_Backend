@@ -20,8 +20,10 @@ const GrantProposal = require('../models/GrantProposal');
 const axios = require('axios');
 
 const { replaceTextInJson } = require('../utils/json_replacer');
+const { replaceTextInJson_Grant } = require('../utils/grant_json_replacer');
 const path = require('path');
 const template_json = path.join(__dirname, "template.json");
+const grant_template_json = path.join(__dirname, "grant_template.json");
 
 const { GridFsStorage } = require("multer-gridfs-storage");
 const multer = require("multer");
@@ -1255,11 +1257,11 @@ exports.saveGrant = async (req, res) => {
       return res.status(400).json({ message: "Grant ID is required" });
     }
 
-    const grant = await Grant.findById(grantId);
+    const grant = await Grant.findOne({ email: userEmail, grantId: grantId });
     const new_SavedGrant = new SavedGrant({
       grantId: grant._id,
       userEmail: userEmail,
-      grant_data: grant,
+      grant_data: grant.grant_data,
     });
     await new_SavedGrant.save();
     res.status(200).json({ message: "Grant saved successfully" });
@@ -1281,7 +1283,7 @@ exports.unsaveGrant = async (req, res) => {
       return res.status(400).json({ message: "Grant ID is required" });
     }
 
-    const grant = await SavedGrant.findById(grantId);
+    const grant = await SavedGrant.findOne({ userEmail: userEmail, grantId: grantId });
     if (!grant) {
       return res.status(404).json({ message: "Grant not found" });
     }
@@ -1301,13 +1303,13 @@ exports.saveDraftGrant = async (req, res) => {
     }
 
     const { grantId, formData } = req.body;
-    const grant = await Grant.findById(grantId);
+    const grant = await Grant.findOne({ email: userEmail, grantId: grantId });
     const new_DraftGrant = new DraftGrant({
       grantId: grant._id,
       email: userEmail,
-      grant_data: grant,
+      grant_data: grant.grant_data,
       project_inputs: formData,
-      proposal: grant.generatedProposal[0] || null,
+      proposal: grant.generatedProposal || null,
     });
     await new_DraftGrant.save();
     res.status(200).json({ message: "Draft grant saved successfully" });
@@ -1319,7 +1321,7 @@ exports.saveDraftGrant = async (req, res) => {
 exports.unsaveDraftGrant = async (req, res) => {
   try {
     const { draftGrantId } = req.body;
-    const draftGrant = await DraftGrant.findById(draftGrantId);
+    const draftGrant = await DraftGrant.findOne({ _id: draftGrantId });
     await draftGrant.deleteOne();
     res.status(200).json({ message: "Draft grant unsaved successfully" });
   } catch (error) {
@@ -1365,8 +1367,24 @@ exports.getSavedAndDraftGrants = async (req, res) => {
     }
 
     const savedGrants = await SavedGrant.find({ userEmail: userEmail }).sort({ createdAt: -1 }).lean();
+    const savedGrants_1 = savedGrants.map((grant) => {
+      return {
+        ...grant.grant_data,
+        _id: grant._id,
+      };
+    });
+
+
     const draftGrants = await DraftGrant.find({ userEmail: userEmail }).sort({ createdAt: -1 }).lean();
-    res.status(200).json({ savedGrants, draftGrants });
+    const draftGrants_1 = draftGrants.map((grant) => {
+      return {
+        ...grant.grant_data,
+        _id: grant._id,
+        generatedProposal: grant.generatedProposal,
+        currentEditor: grant.currentEditor,
+      };
+    });
+    res.status(200).json({ savedGrants: savedGrants_1, draftGrants: draftGrants_1 });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -1528,15 +1546,16 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
 
     const res_1 = await axios.post(`http://56.228.64.88:5000/grant_proposal_generation`, data);
     //console.log("Res_1: ", res_1);
-    const proposalData = res_1.data.proposal;
-
+    const grant_result = res_1.data.grant_result;
+    console.log("Grant Result: ", grant_result);
+    const grant_proposal_data = replaceTextInJson_Grant(grant_template_json, userData, grant, grant_result);
+    console.log("Grant Proposal Data: ", grant_proposal_data);
     const new_Proposal = new GrantProposal({
       grantId: grant._id,
-      proposal: proposalData,
       companyMail: userEmail,
       deadline: grant.ESTIMATED_APPLICATION_DUE_DATE || "Not Provided",
-      initialProposal: proposalData || null,
-      generatedProposal: proposalData || null,
+      initialProposal: grant_proposal_data || null,
+      generatedProposal: grant_proposal_data || null,
       project_inputs: formData,
       status: "In Progress",
       submittedAt: new Date(),
@@ -1558,7 +1577,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       grantId: grant._id,
       userEmail: userEmail,
       grant: grant,
-      generatedProposal: proposalData,
+      generatedProposal: grant_proposal_data,
       currentEditor: req.user._id,
     });
     await new_Draft.save();
@@ -1578,7 +1597,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
 
     db.close();
 
-    res.status(200).json(proposalData);
+    res.status(200).json(grant_proposal_data);
   } catch (err) {
     console.error('Error in /sendDataForProposalGeneration:', err);
     res.status(500).json({ error: 'Failed to send data for proposal generation' });

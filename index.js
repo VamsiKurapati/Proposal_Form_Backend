@@ -12,12 +12,11 @@ const dashboardRoute = require('./routes/Dashboard.js');
 const superAdminRoute = require('./routes/SuperAdmin.js');
 const supportRoute = require('./routes/SupportTicket.js');
 const imageRoute = require('./routes/Image.js');
-// const stripeRoute = require('./routes/Stripe.js');
+const stripeRoute = require('./routes/Stripe.js');
 const SubscriptionPlan = require('./models/SubscriptionPlan.js');
 const Subscription = require('./models/Subscription.js');
 const nodemailer = require('nodemailer');
-
-
+const stripeController = require('./controllers/stripeController');
 
 const getSubscriptionPlansData = async (req, res) => {
   try {
@@ -96,6 +95,9 @@ const sendEmail = async (req, res) => {
 const dbConnect = require('./utils/dbConnect.js');
 require('./utils/cronJob.js');
 
+// Stripe webhook must be defined BEFORE express.json() so body is not parsed
+app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), stripeController.handleWebhook);
+
 app.use(express.json());
 
 // CORS Configuration
@@ -125,7 +127,7 @@ app.use('/api/support', supportRoute);
 
 app.use('/api/image', imageRoute);
 
-// app.use('/api/stripe', stripeRoute);
+app.use('/api/stripe', stripeRoute);
 
 
 

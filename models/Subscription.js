@@ -12,8 +12,10 @@ const subscriptionSchema = new mongoose.Schema({
   max_viewers: { type: Number, required: true },
   max_rfp_proposal_generations: { type: Number, required: true },
   max_grant_proposal_generations: { type: Number, required: true },
+  auto_renewal: { type: Boolean, default: true },
+  stripeSubscriptionId: { type: String, default: null },
+  stripePriceId: { type: String, default: null }
 }, { timestamps: true });
-
 
 
 module.exports = mongoose.model("Subscription", subscriptionSchema);
