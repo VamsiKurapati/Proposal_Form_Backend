@@ -509,7 +509,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       "rfp": rfp,
     };
 
-    console.log("Data sent to ML model: ", data);
+    // console.log("Data sent to ML model: ", data);
 
     console.log("Generating proposal for RFP");
     //console.log("Data: ", data);
@@ -593,7 +593,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     db.close();
     res.status(200).json({ processedProposal, proposalId: new_Proposal._id });
   } catch (err) {
-    console.error('Error in /sendDataForProposalGeneration:', err);
+    console.error('Error in /sendDataForProposalGeneration:', err.message);
     res.status(500).json({ error: 'Failed to send data for proposal generation' });
   }
 };
@@ -780,7 +780,7 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
 
     res.status(200).json(result);
   } catch (err) {
-    console.error('Error in /sendDataForRFPDiscovery:', err);
+    console.error('Error in /sendDataForRFPDiscovery:', err.message);
     res.status(500).json({ error: 'Failed to send data for RFP discovery' });
   }
 };
