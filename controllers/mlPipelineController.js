@@ -417,7 +417,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
     const companyDocuments_1 = companyProfile_1.documents.map((doc) => {
       return {
-        [`"${doc.name}.${doc.type}"`]: `"${filesMap[doc.fileId.toString()].base64}"`,
+        [`${doc.name}.${doc.type}`]: `${filesMap[doc.fileId.toString()].base64}`,
       };
     });
 
@@ -425,7 +425,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
     const caseStudies_1 = (companyProfile_1.caseStudies || []).map((study) => {
       return {
-        [`"${study.title}"`]: `"${study.about}"`,
+        [`${study.title}`]: `${study.about}`,
       };
     });
 
@@ -433,7 +433,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
     const pastProjects_1 = (companyProfile_1.proposals || []).map((project) => {
       return {
-        "name": `"${project.title}"`,
+        "name": `${project.title}`,
       };
     });
 
@@ -441,9 +441,9 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
     const certifications_1 = (companyProfile_1.licensesAndCertifications || []).map((certification) => {
       return {
-        "name": `"${certification.name}"`,
-        "issuer": `"${certification.issuer}"`,
-        "validTill": `"${certification.validTill}"`,
+        "name": `${certification.name}`,
+        "issuer": `${certification.issuer}`,
+        "validTill": `${certification.validTill}`,
       };
     });
 
@@ -451,54 +451,55 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
     const employeeData_1 = (companyProfile_1.employees || []).map((employee) => {
       return {
-        "name": `"${employee.name}"`,
-        "jobTitle": `"${employee.jobTitle}"`,
-        "highestQualification": `"${employee.highestQualification}"`,
-        "skills": (employee.skills || []).map(skill => `"${skill}"`),
-        "email": `"${employee.email}"`,
+        "name": `${employee.name}`,
+        "jobTitle": `${employee.jobTitle}`,
+        "highestQualification": `${employee.highestQualification}`,
+        "skills": (employee.skills || []).map(skill => `${skill}`),
+        "email": `${employee.email}`,
       };
     });
 
     //console.log("Employee Data: ", employeeData_1);
 
     const rfp = {
-      "RFP Title": `"${proposal.title || ""}"`,
-      "RFP Description": `"${proposal.description || ""}"`,
-      "Match Score": `"${proposal.match || 0}"`,
-      "Budget": `"${proposal.budget || ""}"`,
-      "Deadline": `"${proposal.deadline || ""}"`,
-      "Issuing Organization": `"${proposal.organization || "Not found"}"`,
-      "Industry": `"${proposal.organizationType || ""}"`,
-      "URL": `"${proposal.link || ""}"`,
-      "Contact Information": `"${proposal.contact || ""}"`,
-      "Timeline": `"${proposal.timeline || ""}"`,
+      "RFP Title": `${proposal.title || ""}`,
+      "RFP Description": `${proposal.description || ""}`,
+      "Match Score": `${proposal.match || 0}`,
+      "Budget": `${proposal.budget || ""}`,
+      "Deadline": `${proposal.deadline || ""}`,
+      "Issuing Organization": `${proposal.organization || "Not found"}`,
+      "Industry": `${proposal.organizationType || ""}`,
+      "URL": `${proposal.link || ""}`,
+      "Contact Information": `${proposal.contact || ""}`,
+      "Timeline": `${proposal.timeline || ""}`,
     };
 
     //console.log("RFP: ", rfp);
 
     const userData = {
-      "_id": `"${companyProfile_1._id}"`,
-      "email": `"${companyProfile_1.email || ""}"`,
-      "companyName": `"${companyProfile_1.companyName || ""}"`,
-      "companyOverview": `"${companyProfile_1.bio || ""}"`,
-      "yearOfEstablishment": `"${companyProfile_1.establishedYear || ""}"`,
-      "employeeCount": `"${companyProfile_1.numberOfEmployees || 0}"`,
-      "services": (companyProfile_1.services || []).map(service => `"${service}"`),
-      "industry": `"${companyProfile_1.industry || ""}"`,
-      "location": `"${companyProfile_1.location || ""}"`,
-      "website": `"${companyProfile_1.website || ""}"`,
-      "linkedIn": `"${companyProfile_1.linkedIn || ""}"`,
+      "_id": `${companyProfile_1._id}`,
+      "email": `${companyProfile_1.email || ""}`,
+      "companyName": `${companyProfile_1.companyName || ""}`,
+      "companyOverview": `${companyProfile_1.bio || ""}`,
+      "yearOfEstablishment": `${companyProfile_1.establishedYear || ""}`,
+      "employeeCount": `${companyProfile_1.numberOfEmployees || 0}`,
+      "services": (companyProfile_1.services || []).map(service => `${service}`),
+      "industry": `${companyProfile_1.industry || ""}`,
+      "location": `${companyProfile_1.location || ""}`,
+      "website": `${companyProfile_1.website || ""}`,
+      "linkedIn": `${companyProfile_1.linkedIn || ""}`,
       "certifications": certifications_1,
-      "documents": companyDocuments_1,
+      // "documents": companyDocuments_1,
+      "documents": [],
       "caseStudies": caseStudies_1,
       "pastProjects": pastProjects_1,
       "employees_information": employeeData_1,
-      "awards": (companyProfile_1.awards || []).map(award => `"${award}"`),
-      "clientPortfolio": (companyProfile_1.clients || []).map(client => `"${client}"`),
-      "preferredIndustries": (companyProfile_1.preferredIndustries || []).map(industry => `"${industry}"`),
+      "awards": (companyProfile_1.awards || []).map(award => `${award}`),
+      "clientPortfolio": (companyProfile_1.clients || []).map(client => `${client}`),
+      "preferredIndustries": (companyProfile_1.preferredIndustries || []).map(industry => `${industry}`),
       "pointOfContact": {
-        "name": `"${companyProfile_1.adminName || ""}"`,
-        "email": `"${companyProfile_1.email || ""}"`,
+        "name": `${companyProfile_1.adminName || ""}`,
+        "email": `${companyProfile_1.email || ""}`,
       },
     };
 
@@ -593,7 +594,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     db.close();
     res.status(200).json({ processedProposal, proposalId: new_Proposal._id });
   } catch (err) {
-    console.error('Error in /sendDataForProposalGeneration:', err.message);
+    console.error('Error in /sendDataForProposalGeneration:', err);
     res.status(500).json({ error: 'Failed to send data for proposal generation' });
   }
 };
@@ -665,63 +666,63 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
 
     const companyDocuments_1 = companyProfile_1.documents.map((doc) => {
       return {
-        [`"${doc.name}.${doc.type}"`]: `"${filesMap[doc.fileId.toString()].base64}"`,
+        [`${doc.name}.${doc.type}`]: `${filesMap[doc.fileId.toString()].base64}`,
       };
     });
 
     const caseStudies_1 = (companyProfile_1.caseStudies || []).map((study) => {
       return {
-        [`"${study.title}"`]: `"${study.about}"`,
+        [`${study.title}`]: `${study.about}`,
       };
     });
 
     const pastProjects_1 = (companyProfile_1.proposals || []).map((project) => {
       return {
-        "name": `"${project.title}"`,
+        "name": `${project.title}`,
       };
     });
 
     const certifications_1 = (companyProfile_1.licensesAndCertifications || []).map((certification) => {
       return {
-        "name": `"${certification.name}"`,
-        "issuer": `"${certification.issuer}"`,
-        "validTill": `"${certification.validTill}"`,
+        "name": `${certification.name}`,
+        "issuer": `${certification.issuer}`,
+        "validTill": `${certification.validTill}`,
       };
     });
 
     const employeeData_1 = (companyProfile_1.employees || []).map((employee) => {
       return {
-        "name": `"${employee.name}"`,
-        "jobTitle": `"${employee.jobTitle}"`,
-        "highestQualification": `"${employee.highestQualification}"`,
-        "skills": (employee.skills || []).map(skill => `"${skill}"`),
-        "email": `"${employee.email}"`,
+        "name": `${employee.name}`,
+        "jobTitle": `${employee.jobTitle}`,
+        "highestQualification": `${employee.highestQualification}`,
+        "skills": (employee.skills || []).map(skill => `${skill}`),
+        "email": `${employee.email}`,
       };
     });
 
     const userData = {
-      "_id": `"${companyProfile_1._id}"`,
-      "email": `"${companyProfile_1.email || ""}"`,
-      "companyName": `"${companyProfile_1.companyName || ""}"`,
-      "companyOverview": `"${companyProfile_1.bio || ""}"`,
+      "_id": `${companyProfile_1._id}`,
+      "email": `${companyProfile_1.email || ""}`,
+      "companyName": `${companyProfile_1.companyName || ""}`,
+      "companyOverview": `${companyProfile_1.bio || ""}`,
       "yearOfEstablishment": companyProfile_1.establishedYear || "",
-      "employeeCount": `"${companyProfile_1.numberOfEmployees || 0}"`,
-      "services": (companyProfile_1.services || []).map(service => `"${service}"`),
-      "industry": `"${companyProfile_1.industry || ""}"`,
-      "location": `"${companyProfile_1.location || ""}"`,
-      "website": `"${companyProfile_1.website || ""}"`,
-      "linkedIn": `"${companyProfile_1.linkedIn || ""}"`,
+      "employeeCount": `${companyProfile_1.numberOfEmployees || 0}`,
+      "services": (companyProfile_1.services || []).map(service => `${service}`),
+      "industry": `${companyProfile_1.industry || ""}`,
+      "location": `${companyProfile_1.location || ""}`,
+      "website": `${companyProfile_1.website || ""}`,
+      "linkedIn": `${companyProfile_1.linkedIn || ""}`,
       "certifications": certifications_1,
       "documents": companyDocuments_1,
       "caseStudies": caseStudies_1,
       "pastProjects": pastProjects_1,
       "employees_information": employeeData_1,
-      "awards": (companyProfile_1.awards || []).map(award => `"${award}"`),
-      "clientPortfolio": (companyProfile_1.clients || []).map(client => `"${client}"`),
-      "preferredIndustries": (companyProfile_1.preferredIndustries || []).map(industry => `"${industry}"`),
+      "awards": (companyProfile_1.awards || []).map(award => `${award}`),
+      "clientPortfolio": (companyProfile_1.clients || []).map(client => `${client}`),
+      "preferredIndustries": (companyProfile_1.preferredIndustries || []).map(industry => `${industry}`),
       "pointOfContact": {
-        "name": `"${companyProfile_1.adminName || ""}"`,
-        "email": `"${companyProfile_1.email || ""}"`,
+        "name": `${companyProfile_1.adminName || ""}`,
+        "email": `${companyProfile_1.email || ""}`,
       }
     };
 
@@ -780,7 +781,7 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
 
     res.status(200).json(result);
   } catch (err) {
-    console.error('Error in /sendDataForRFPDiscovery:', err.message);
+    console.error('Error in /sendDataForRFPDiscovery:', err);
     res.status(500).json({ error: 'Failed to send data for RFP discovery' });
   }
 };
