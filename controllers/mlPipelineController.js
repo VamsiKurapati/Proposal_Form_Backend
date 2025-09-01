@@ -921,7 +921,8 @@ exports.handleFileUploadAndSendForRFPExtraction = [
               timeline: fields['Timeline / Project Schedule'] || "",
               proposalInstructions: fields['Proposal Submission Instructions'] || "",
               projectGoals: fields['Project Goals and Objectives'] || "",
-              scopeOfWork: fields['Scope of Work'] || ""
+              scopeOfWork: fields['Scope of Work'] || "",
+              logo: "None"
             };
           }
         }
@@ -938,7 +939,8 @@ exports.handleFileUploadAndSendForRFPExtraction = [
           budget: 'Not specified',
           deadline: 'Not specified',
           contact: "",
-          timeline: ""
+          timeline: "",
+          logo: "None"
         };
       }
 
