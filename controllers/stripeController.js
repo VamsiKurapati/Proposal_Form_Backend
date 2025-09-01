@@ -454,28 +454,13 @@ const handleInvoiceEvent = async (invoice, eventType) => {
     }
 };
 
-//Cron Job to check if the subscription is expired and cancel it and enable auto renewal for the subscriptions
-const checkSubscriptionExpiry = async () => {
-    const subscriptions = await Subscription.find({});
-    for (const subscription of subscriptions) {
-        if (!subscription.auto_renewal && subscription.end_date < new Date()) {
-            //Cancel the subscription
-            subscription.canceled_at = new Date();
-            subscription.auto_renewal = false;
-            await subscription.save();
-        } else if (subscription.auto_renewal && subscription.end_date < new Date()) {
-            //Try the auto renewal process
-
-        }
-    }
-};
-
 module.exports = {
     createPaymentIntent,
     activateSubscription,
-    enableAutoRenewal,
-    cancelAutoRenewal,
-    createCheckoutSession,
-    handleWebhook,
-    checkSubscriptionExpiry
+    handleCheckoutSessionCompleted,
+    handleStripeSubscriptionEvent,
+    handleInvoiceEvent,
+    handlePaymentIntentSucceeded,
+    handlePaymentIntentFailed,
+    handleWebhook
 };
