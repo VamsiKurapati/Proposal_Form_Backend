@@ -100,16 +100,17 @@ exports.login = async (req, res) => {
     );
 
     if (user.role === "SuperAdmin" || user.role === "company") {
-      const subscription = await Subscription.findOne({ user_id: user._id });
+      console.log(user._id);
+      const subscription = await Subscription.find({ user_id: user._id }).sort({ created_at: -1 }).limit(1);
       let subscriptionData = {};
-      if (!subscription || subscription.end_date < new Date()) {
+      if (!subscription || subscription[0].end_date < new Date()) {
         subscriptionData = {
           plan_name: "None",
           max_rfp_proposal_generations: 0,
           max_grant_proposal_generations: 0,
         };
       } else {
-        subscriptionData = subscription;
+        subscriptionData = subscription[0];
       }
       return res.status(200).json({ token, user: userWithoutPassword, subscription: subscriptionData });
     } else if (user.role === "employee") {
@@ -128,17 +129,18 @@ exports.login = async (req, res) => {
       }
 
       const User_1 = await User.findOne({ email: companyProfile.companyEmail });
-      const subscription = await Subscription.findOne({ user_id: User_1._id });
+      console.log(User_1._id);
+      const subscription = await Subscription.find({ user_id: User_1._id }).sort({ created_at: -1 }).limit(1);
 
       let subscriptionData = {};
-      if (!subscription || subscription.end_date < new Date()) {
+      if (!subscription || subscription[0].end_date < new Date()) {
         subscriptionData = {
           plan_name: "None",
           max_rfp_proposal_generations: 0,
           max_grant_proposal_generations: 0,
         };
       } else {
-        subscriptionData = subscription;
+        subscriptionData = subscription[0];
       }
       return res.status(200).json({ token, user: data, subscription: subscriptionData });
     } else {
