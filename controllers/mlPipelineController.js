@@ -591,7 +591,6 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     await new_CalendarEvent.save();
 
     //console.log("Proposal generated successfully");
-    db.close();
     res.status(200).json({ processedProposal, proposalId: new_Proposal._id });
   } catch (err) {
     console.error('Error in /sendDataForProposalGeneration:', err);
@@ -776,8 +775,6 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
     }
 
     const result = await MatchedRFP.insertMany(transformedData);
-
-    db.close();
 
     res.status(200).json(result);
   } catch (err) {
@@ -1263,6 +1260,10 @@ exports.saveGrant = async (req, res) => {
     }
 
     const grant = await Grant.findOne({ email: userEmail, grantId: grantId });
+    if (!grant) {
+      return res.status(404).json({ message: "Grant not found" });
+    }
+    console.log("Grant: ", grant);
     const new_SavedGrant = new SavedGrant({
       grantId: grant._id,
       userEmail: userEmail,
@@ -1599,8 +1600,6 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
     });
 
     await new_CalendarEvent.save();
-
-    db.close();
 
     res.status(200).json(grant_proposal_data);
   } catch (err) {
