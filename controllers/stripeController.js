@@ -16,7 +16,7 @@ const STRIPE_CONFIG = {
 const createPaymentIntent = async (req, res) => {
     try {
         const { planId, billingCycle } = req.body;
-        const userId = req.user.id;
+        const userId = req.user._id;
 
         //Enable only companies to create payment intent
         if (req.user.role !== 'company') {
