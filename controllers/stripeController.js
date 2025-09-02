@@ -117,7 +117,7 @@ const createPaymentIntent = async (req, res) => {
 const activateSubscription = async (req, res) => {
     try {
         const { paymentIntentId, planId, billingCycle } = req.body;
-        const userId = req.user.id;
+        const userId = req.user._id;
 
         // Validate required fields
         if (!paymentIntentId || !planId || !billingCycle) {
