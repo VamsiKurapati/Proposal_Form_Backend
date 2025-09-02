@@ -48,12 +48,12 @@ exports.updateCompanyStatus = async (req, res) => {
 // Get Notification Data
 exports.getNotificationData = async (req, res) => {
   try {
-    const notifications = await Notification.find();
+    const notifications = await Notification.find().sort({ createdAt: -1 });
     res.json(notifications);
   } catch (err) {
     res.status(500).json({ message: "Error fetching notification data", error: err.message });
   }
-}
+};
 
 
 // Controller to get support ticket type counts and all support tickets in one API call
