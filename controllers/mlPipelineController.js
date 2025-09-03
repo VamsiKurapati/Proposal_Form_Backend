@@ -1267,7 +1267,7 @@ exports.saveGrant = async (req, res) => {
     const new_SavedGrant = new SavedGrant({
       grantId: grant._id,
       userEmail: userEmail,
-      grant_data: grant.grant_data,
+      grant_data: grant,
     });
     await new_SavedGrant.save();
     res.status(200).json({ message: "Grant saved successfully" });
