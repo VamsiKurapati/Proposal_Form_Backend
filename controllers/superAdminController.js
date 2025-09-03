@@ -5,6 +5,9 @@ const Support = require("../models/Support");
 const SubscriptionPlan = require("../models/SubscriptionPlan");
 const Payment = require("../models/Payments");
 const Subscription = require("../models/Subscription");
+const nodemailer = require('nodemailer');
+const User = require("../models/User");
+const CustomPlan = require("../models/CustomPlan");
 
 
 // Merged Company Stats and Company Data API
@@ -371,6 +374,18 @@ exports.updateSubscriptionPlanPrice = async (req, res) => {
   }
 };
 
+// Controller to update the isContact of a subscription plan
+exports.updateSubscriptionPlanIsContact = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { isContact } = req.body;
+    const updatedSubscriptionPlan = await SubscriptionPlan.findByIdAndUpdate(id, { isContact }, { new: true });
+    res.json(updatedSubscriptionPlan);
+  } catch (err) {
+    res.status(500).json({ message: "Error updating subscription plan isContact", error: err.message });
+  }
+};
+
 // Priority Cron Job
 exports.priorityCronJob = async (req, res) => {
   try {
@@ -390,5 +405,155 @@ exports.priorityCronJob = async (req, res) => {
     res.json({ message: "Priority updated successfully" });
   } catch (err) {
     res.status(500).json({ message: "Error updating priority", error: err.message });
+  }
+};
+
+
+
+
+// Custom Plan
+exports.sendEmail = async (req, res) => {
+  const { email, price, planType, maxEditors, maxViewers, maxRFPProposalGenerations, maxGrantProposalGenerations } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+  const customPlan = new CustomPlan({ userId: user._id, email, price, planType, maxEditors, maxViewers, maxRFPProposalGenerations, maxGrantProposalGenerations });
+  await customPlan.save();
+
+  const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
+    auth: {
+      user: process.env.MAIL_USER,
+      pass: process.env.MAIL_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: email,
+    to: process.env.MAIL_USER,
+    subject: `Custom Subscription Plan Request from ${email || "Unknown Email"}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
+        <h2 style="color: #2563EB;">Custom Subscription Plan Request</h2>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Price:</strong> ${price || "Not provided"}</p>
+        <p><strong>Plan Type:</strong> ${planType || "Not provided"}</p>   
+        <p><strong>Max Editors:</strong> ${maxEditors || "Not specified"}</p>
+        <p><strong>Max Viewers:</strong> ${maxViewers || "Not specified"}</p>
+        <p><strong>Max RFP Proposal Generations:</strong> ${maxRFPProposalGenerations || "Not specified"}</p>
+        <p><strong>Max Grant Proposal Generations:</strong> ${maxGrantProposalGenerations || "Not specified"}</p>
+        <hr />
+        <p style="font-size: 12px; color: #666;">This email was generated from the Custom Plan Request form on your website.</p>
+      </div>
+    `,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email sent: " + info.response);
+    res.status(200).json({ message: "Email sent successfully!" });
+  } catch (error) {
+    console.error("Error sending email:", error);
+    res.status(500).json({ message: "Failed to send email." });
+  }
+};
+
+
+
+// Get Custom Plan Data
+exports.getCustomPlanData = async (req, res) => {
+  const customPlans = await CustomPlan.find();
+
+  // For each custom plan, fetch the corresponding companyName from CompanyProfile using the email
+  const customPlansWithCompanyName = await Promise.all(
+    customPlans.map(async (plan) => {
+      const companyProfile = await CompanyProfile.findOne({ email: plan.email });
+      return {
+        ...plan.toObject(),
+        companyName: companyProfile ? companyProfile.companyName : null,
+      };
+    })
+  );
+  res.json(customPlansWithCompanyName);  
+};
+
+exports.deleteCustomPlan = async (req, res) => {
+  const { id } = req.params;
+  await CustomPlan.findByIdAndDelete(id);
+  res.status(200).json({ message: "Custom plan deleted successfully" });
+};
+
+
+
+exports.createCustomPlan = async (req, res) => {
+  try {
+    const {
+      email,
+      price,
+      planType,
+      maxEditors,
+      maxViewers,
+      maxRFPProposalGenerations,
+      maxGrantProposalGenerations,
+      transaction_id,
+      companyName,
+      payment_method,
+    } = req.body;
+
+    // 1. Validate user by email
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found for the given email" });
+    }
+
+    // 2. Calculate subscription dates
+    const startDate = new Date();
+    const endDate = new Date(startDate);
+    if (planType === "monthly") {
+      endDate.setMonth(startDate.getMonth() + 1);
+    } else if (planType === "yearly") {
+      endDate.setFullYear(startDate.getFullYear() + 1);
+    }
+
+    // 3. Create Subscription record
+    const subscription = await Subscription.create({
+      user_id: user._id,
+      plan_name: planType,
+      plan_price: price,
+      start_date: startDate,
+      end_date: endDate,
+      renewal_date: planType === "monthly" ? endDate : null,
+      max_editors: maxEditors,
+      max_viewers: maxViewers,
+      max_rfp_proposal_generations: maxRFPProposalGenerations,
+      max_grant_proposal_generations: maxGrantProposalGenerations,
+      auto_renewal: true,
+    });
+
+    // 4. Create Payment record
+    const payment = await Payment.create({
+      user_id: user._id,
+      subscription_id: subscription._id,
+      price: price,
+      status: "Success",
+      paid_at: new Date(),
+      transaction_id: transaction_id || null,
+      companyName: companyName || null,
+      payment_method: payment_method || "Manual Entry",
+    });
+
+    // 5. Return success response
+    res.status(201).json({
+      message: "Custom subscription and payment created successfully",
+      subscription,
+      payment,
+    });
+  } catch (error) {
+    console.error("Error creating custom plan:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };

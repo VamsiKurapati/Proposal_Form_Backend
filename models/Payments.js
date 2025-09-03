@@ -25,6 +25,21 @@ const paymentSchema = new mongoose.Schema({
     required: false,
     default: null
   },
+  transaction_id: {
+    type: String,
+    required: false,
+    default: null
+  },
+  companyName: {
+    type: String,
+    required: false,
+    default: null
+  },
+  payment_method: {
+    type: String,
+    required: false,
+    default: null
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model("Payment", paymentSchema);
