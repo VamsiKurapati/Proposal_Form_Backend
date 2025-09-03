@@ -1259,7 +1259,7 @@ exports.saveGrant = async (req, res) => {
       return res.status(400).json({ message: "Grant ID is required" });
     }
 
-    const grant = await Grant.findOne({ email: userEmail, grantId: grantId });
+    const grant = await Grant.findOne({ _id: grantId });
     if (!grant) {
       return res.status(404).json({ message: "Grant not found" });
     }
