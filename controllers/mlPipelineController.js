@@ -110,6 +110,8 @@ const formatFileSize = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
+
+
 exports.postAllRFPs = async (req, res) => {
   try {
     const nestedRFPs = req.body;
@@ -513,27 +515,58 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     // console.log("Data sent to ML model: ", data);
 
     console.log("Generating proposal for RFP");
-    //console.log("Data: ", data);
-    //This is an ML model to generate a proposal for the RFP and it is supposed to take much time to generate a proposal so we are using a timeout of 20 minutes and whenever the proposal is generated, the timeout is cancelled
-    // const timeoutPromise = new Promise((resolve, reject) => {
-    //   setTimeout(() => {
-    //     reject(new Error('Request timed out'));
-    //   }, 1200000); // 20 minutes in milliseconds
-    // });
 
-    // let res_1 = null;
-    // try {
-    //   res_1 = await Promise.race([
-    //     axios.post(`http://56.228.64.88:5000/new_rfp_proposal_generation`, data),
-    //     timeoutPromise
-    //   ]);
-    // } catch (err) {
-    //   console.error('Request timed out');
-    //   res_1 = { data: { result: null } };
-    // }
+    // Calculate and log payload size
+    const payloadSize = JSON.stringify(data).length;
+    console.log("Payload size:", payloadSize, "bytes");
 
+    // Check if payload is too large (e.g., > 1MB)
+    const MAX_PAYLOAD_SIZE = 1024 * 1024; // 1MB
+    if (payloadSize > MAX_PAYLOAD_SIZE) {
+      console.warn(`Payload size (${payloadSize} bytes) exceeds recommended limit (${MAX_PAYLOAD_SIZE} bytes)`);
 
-    const res_1 = await axios.post(`http://56.228.64.88:5000/new_rfp_proposal_generation`, data);
+      // Optimize payload by reducing data size
+      const optimizedData = {
+        user: {
+          ...data.user,
+          // Truncate long text fields if needed
+          companyOverview: data.user.companyOverview?.substring(0, 2000) || "",
+          // Limit case studies to first 3
+          caseStudies: data.user.caseStudies?.slice(0, 3) || [],
+          // Limit past projects to first 5
+          pastProjects: data.user.pastProjects?.slice(0, 5) || [],
+          // Limit employees to first 10
+          employees_information: data.user.employees_information?.slice(0, 10) || []
+        },
+        rfp: data.rfp
+      };
+
+      const optimizedPayloadSize = JSON.stringify(optimizedData).length;
+      console.log("Optimized payload size:", optimizedPayloadSize, "bytes");
+
+      if (optimizedPayloadSize < payloadSize) {
+        console.log("Using optimized payload");
+        data = optimizedData;
+      }
+    }
+
+    // Call ML service with timeout and better error handling
+    const res_1 = await axios.post(`http://56.228.64.88:5000/new_rfp_proposal_generation`, data, {
+      timeout: 300000, // 5 minutes timeout
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    });
+
+    // Check if ML service returned valid data
+    if (!res_1 || !res_1.data || !res_1.data.result) {
+      console.error("ML service returned invalid response:", res_1);
+      return res.status(500).json({
+        error: 'ML service returned invalid response. Please try again later.',
+        details: 'The proposal generation service is currently unavailable or returned an empty response.'
+      });
+    }
 
     console.log("Proposal generated for RFP", res_1.data.result);
 
@@ -594,7 +627,27 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     res.status(200).json({ processedProposal, proposalId: new_Proposal._id });
   } catch (err) {
     console.error('Error in /sendDataForProposalGeneration:', err);
-    res.status(500).json({ error: 'Failed to send data for proposal generation' });
+
+    // Provide more specific error messages based on error type
+    if (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'ENOTFOUND') {
+      return res.status(503).json({
+        error: 'Proposal generation service is unavailable',
+        details: 'Unable to connect to the proposal generation service. Please try again later.'
+      });
+    }
+
+    if (err.response?.status === 500) {
+      return res.status(502).json({
+        error: 'Proposal generation service error',
+        details: 'The proposal generation service encountered an internal error. Please try again later.'
+      });
+    }
+
+    // Generic error response
+    res.status(500).json({
+      error: 'Failed to send data for proposal generation',
+      details: err.message || 'An unexpected error occurred'
+    });
   }
 };
 
