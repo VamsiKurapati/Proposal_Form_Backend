@@ -433,8 +433,8 @@ exports.sendEmail = async (req, res) => {
   });
 
   const mailOptions = {
-    from: email,
-    to: process.env.MAIL_USER,
+    from: process.env.MAIL_USER,
+    to: email,
     subject: `Custom Subscription Plan Request from ${email || "Unknown Email"}`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
@@ -503,6 +503,9 @@ exports.createCustomPlan = async (req, res) => {
       companyName,
       payment_method,
     } = req.body;
+
+    // Find and delete any existing CustomPlan with the same email before creating a new one
+    await CustomPlan.deleteMany({ email });
 
     // 1. Validate user by email
     const user = await User.findOne({ email });
