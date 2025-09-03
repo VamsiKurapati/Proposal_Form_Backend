@@ -28,6 +28,7 @@
     "multer-gridfs-storage": "github:meme8383/multer-gridfs-storage#f82252c",
     "node-cron": "^4.2.1",
     "nodemailer": "^7.0.5",
+    "pako": "^2.1.0",
     "path": "^0.12.7",
     "puppeteer": "^24.17.0",
     "puppeteer-core": "^10.4.0",
