@@ -1,6 +1,7 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const Subscription = require('../models/Subscription');
 const SubscriptionPlan = require('../models/SubscriptionPlan');
+const Notification = require('../models/Notification');
 const User = require('../models/User');
 const Payment = require('../models/Payments');
 
@@ -16,7 +17,7 @@ const STRIPE_CONFIG = {
 const createPaymentIntent = async (req, res) => {
     try {
         const { planId, billingCycle } = req.body;
-        const userId = req.user.id;
+        const userId = req.user._id;
 
         //Enable only companies to create payment intent
         if (req.user.role !== 'company') {
@@ -117,7 +118,7 @@ const createPaymentIntent = async (req, res) => {
 const activateSubscription = async (req, res) => {
     try {
         const { paymentIntentId, planId, billingCycle } = req.body;
-        const userId = req.user.id;
+        const userId = req.user._id;
 
         // Validate required fields
         if (!paymentIntentId || !planId || !billingCycle) {
@@ -257,7 +258,10 @@ const activateSubscription = async (req, res) => {
             subscription_id: subscription._id,
             price: billingCycle === STRIPE_CONFIG.BILLING_CYCLES.YEARLY ? plan.yearlyPrice : plan.monthlyPrice,
             status: 'Success',
-            paid_at: new Date()
+            paid_at: new Date(),
+            transaction_id: paymentIntentId,
+            companyName: req.user.fullName,
+            payment_method: 'stripe',
         });
 
         const notification = new Notification({
@@ -444,7 +448,10 @@ const handleInvoiceEvent = async (invoice, eventType) => {
                 payment_method: 'stripe',
                 transaction_id: invoice.payment_intent || invoice.id,
                 status: 'Success',
-                paid_at: new Date(invoice.status_transitions?.paid_at ? invoice.status_transitions.paid_at * 1000 : Date.now())
+                paid_at: new Date(invoice.status_transitions?.paid_at ? invoice.status_transitions.paid_at * 1000 : Date.now()),
+                transaction_id: invoice.payment_intent || invoice.id,
+                companyName: req.user.fullName,
+                payment_method: 'stripe'
             });
         } else if (eventType === 'invoice.payment_failed') {
             await Payment.create({
@@ -454,7 +461,10 @@ const handleInvoiceEvent = async (invoice, eventType) => {
                 currency: invoice.currency?.toUpperCase() || 'USD',
                 payment_method: 'stripe',
                 transaction_id: invoice.payment_intent || invoice.id,
-                status: 'Failed'
+                status: 'Failed',
+                paid_at: new Date(invoice.status_transitions?.paid_at ? invoice.status_transitions.paid_at * 1000 : Date.now()),
+                companyName: req.user.fullName,
+                payment_method: 'stripe'
             });
         }
     } catch (err) {
