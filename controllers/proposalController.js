@@ -12,12 +12,12 @@ require('dotenv').config();
 exports.basicComplianceCheck = async (req, res) => {
   try {
     const { jsonData, proposalId, isCompressed } = req.body;
-    console.log("Proposal: ", jsonData);
-    console.log("Proposal ID: ", proposalId);
-    console.log("Is compressed: ", isCompressed);
+    // console.log("Proposal: ", jsonData);
+    // console.log("Proposal ID: ", proposalId);
+    // console.log("Is compressed: ", isCompressed);
 
     const new_proposal = await Proposal.findById(proposalId);
-    console.log("New proposal: ", new_proposal);
+    // console.log("New proposal: ", new_proposal);
 
     const decompressedProposal = isCompressed ? decompress(jsonData) : jsonData;
     const structuredJson = getStructuredJson(decompressedProposal, new_proposal.initialProposal);
@@ -25,11 +25,10 @@ exports.basicComplianceCheck = async (req, res) => {
     const resProposal = await axios.post('http://56.228.64.88:5000/basic-compliance', structuredJson, {
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json'
       }
     });
 
-    console.log("Response: ", resProposal);
+    // console.log("Response: ", resProposal);
 
     const data = resProposal.data.report;
 
@@ -38,7 +37,7 @@ exports.basicComplianceCheck = async (req, res) => {
 
     const compliance_data = firstValue["compliance_flags"];
 
-    console.log("Compliance data: ", compliance_data);
+    // console.log("Compliance data: ", compliance_data);
 
     res.status(200).json(compliance_data);
   } catch (error) {
@@ -51,11 +50,11 @@ exports.basicComplianceCheck = async (req, res) => {
 exports.advancedComplianceCheck = async (req, res) => {
   try {
     const { jsonData, proposalId, isCompressed } = req.body;
-    console.log("Proposal: ", jsonData);
-    console.log("Is compressed: ", isCompressed);
+    // console.log("Proposal: ", jsonData);
+    // console.log("Is compressed: ", isCompressed);
     const decompressedProposal = isCompressed ? decompress(jsonData) : jsonData;
     const new_proposal = await Proposal.findById(proposalId);
-    console.log("New proposal: ", new_proposal);
+    // console.log("New proposal: ", new_proposal);
     const structuredJson = getStructuredJson(decompressedProposal, new_proposal.initialProposal);
 
     const rfp = await MatchedRFP.findById(new_proposal.rfpId) || await RFP.findById(new_proposal.rfpId);
@@ -65,25 +64,24 @@ exports.advancedComplianceCheck = async (req, res) => {
       "proposal": structuredJson
     }];
 
-    console.log("Initial proposal: ", initialProposal_1);
+    // console.log("Initial proposal: ", initialProposal_1);
 
     const resProposal = await axios.post('http://56.228.64.88:5000/advance-compliance', initialProposal_1, {
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json'
       }
     });
 
-    console.log("Response: ", resProposal);
+    // console.log("Response: ", resProposal);
 
     const data = resProposal.data.report;
 
     const present_data = data.present_information;
     const missing_data = data.missing_information;
     const requested_data = data.requested_information;
-    console.log("Present data: ", present_data);
-    console.log("Missing data: ", missing_data);
-    console.log("Requested data: ", requested_data);
+    // console.log("Present data: ", present_data);
+    // console.log("Missing data: ", missing_data);
+    // console.log("Requested data: ", requested_data);
 
     res.status(200).json({ present_data, missing_data, requested_data });
   } catch (error) {
@@ -96,7 +94,7 @@ exports.advancedComplianceCheck = async (req, res) => {
 exports.generatePDF = async (req, res) => {
   try {
     const { jsonData, isCompressed } = req.body;
-    console.log("Project: ", jsonData);
+    // console.log("Project: ", jsonData);
     const decompressedProject = isCompressed ? decompress(jsonData) : jsonData;
     const pdf = await axios.post('http://56.228.64.88:5000/download-pdf', decompressedProject, {
       headers: {
@@ -135,11 +133,11 @@ exports.deleteExpiredProposals = async () => {
     });
 
     if (expiredProposals.length === 0) {
-      console.log('No expired proposals found to delete.');
+      // console.log('No expired proposals found to delete.');
       return;
     }
 
-    console.log(`Found ${expiredProposals.length} expired proposals to delete.`);
+    // console.log(`Found ${expiredProposals.length} expired proposals to delete.`);
 
     // Delete each expired proposal and its associated files
     for (const proposal of expiredProposals) {
@@ -153,7 +151,7 @@ exports.deleteExpiredProposals = async () => {
           for (const file of proposal.uploadedDocuments) {
             try {
               await bucket.delete(new mongoose.Types.ObjectId(file.fileId));
-              console.log(`Deleted file: ${file.fileId}`);
+              // console.log(`Deleted file: ${file.fileId}`);
             } catch (err) {
               console.error(`Failed to delete file ${file.fileId}:`, err.message);
             }
@@ -162,7 +160,7 @@ exports.deleteExpiredProposals = async () => {
 
         // Delete the proposal from database
         await Proposal.findByIdAndDelete(proposal._id);
-        console.log(`Deleted proposal: ${proposal._id} - ${proposal.title}`);
+        // console.log(`Deleted proposal: ${proposal._id} - ${proposal.title}`);
 
       } catch (err) {
         console.error(`Failed to delete proposal ${proposal._id}:`, err.message);
