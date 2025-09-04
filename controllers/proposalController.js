@@ -17,10 +17,8 @@ exports.basicComplianceCheck = async (req, res) => {
     const new_proposal = await Proposal.findById(proposalId);
 
     const decompressedProposal = isCompressed ? decompress(jsonData) : jsonData;
-    console.log("Decompressed Proposal: ", decompressedProposal);
 
     const structuredJson = getStructuredJson(decompressedProposal, new_proposal.initialProposal);
-    console.log("Structured JSON: ", structuredJson);
 
     const resProposal = await axios.post('http://56.228.64.88:5000/basic-compliance', structuredJson, {
       headers: {
@@ -48,12 +46,10 @@ exports.advancedComplianceCheck = async (req, res) => {
     const { jsonData, proposalId, isCompressed } = req.body;
 
     const decompressedProposal = isCompressed ? decompress(jsonData) : jsonData;
-    console.log("Decompressed Proposal: ", decompressedProposal);
 
     const new_proposal = await Proposal.findById(proposalId);
 
     const structuredJson = getStructuredJson(decompressedProposal, new_proposal.initialProposal);
-    console.log("Structured JSON: ", structuredJson);
 
     const rfp = await MatchedRFP.findById(new_proposal.rfpId) || await RFP.findById(new_proposal.rfpId);
 
@@ -88,7 +84,6 @@ exports.advancedComplianceCheck = async (req, res) => {
 
     const compliance_dataBasicCompliance = firstValue["compliance_flags"];
 
-    console.log("Basic compliance data: ", compliance_dataBasicCompliance);
 
     const resProposal = await axios.post('http://56.228.64.88:5000/advance-compliance', initialProposal_1, {
       headers: {
@@ -98,7 +93,6 @@ exports.advancedComplianceCheck = async (req, res) => {
 
     const dataAdvancedCompliance = resProposal.data.report;
 
-    console.log("Advanced compliance data: ", dataAdvancedCompliance);
 
     res.status(200).json({ compliance_dataBasicCompliance, dataAdvancedCompliance });
   } catch (error) {
@@ -111,7 +105,6 @@ exports.advancedComplianceCheck = async (req, res) => {
 exports.generatePDF = async (req, res) => {
   try {
     const { jsonData, isCompressed } = req.body;
-    // console.log("Project: ", jsonData);
     const decompressedProject = isCompressed ? decompress(jsonData) : jsonData;
     const pdf = await axios.post('http://56.228.64.88:5000/download-pdf', decompressedProject, {
       headers: {
