@@ -3,6 +3,7 @@ const Proposal = require('../models/Proposal');
 const axios = require('axios');
 const MatchedRFP = require('../models/MatchedRFP');
 const RFP = require('../models/RFP');
+const DraftRFP = require('../models/DraftRFP');
 
 const { getStructuredJson } = require('../utils/get_structured_json');
 const { decompress } = require('../utils/decompress');
@@ -193,15 +194,15 @@ exports.deleteExpiredProposals = async () => {
 
 exports.autoSaveProposal = async (req, res) => {
   try {
-    const { proposalId, compressedProject } = req.body;
-    const decompressedProject = decompress(compressedProject);
+    const { proposalId, jsonData, isCompressed } = req.body;
+    const decompressedProject = isCompressed ? decompress(jsonData) : jsonData;
 
     const new_proposal = await Proposal.findById(proposalId);
 
     new_proposal.generatedProposal = decompressedProject;
     await new_proposal.save();
 
-    const new_draft_proposal = await DraftProposal.findOne({ proposalId: proposalId });
+    const new_draft_proposal = await DraftRFP.findOne({ proposalId: proposalId });
 
     if (new_draft_proposal) {
       new_draft_proposal.generatedProposal = decompressedProject;
