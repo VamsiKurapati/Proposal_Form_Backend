@@ -50,21 +50,42 @@ exports.basicComplianceCheck = async (req, res) => {
 exports.advancedComplianceCheck = async (req, res) => {
   try {
     const { jsonData, proposalId, isCompressed } = req.body;
-    // console.log("Proposal: ", jsonData);
-    // console.log("Is compressed: ", isCompressed);
+
     const decompressedProposal = isCompressed ? decompress(jsonData) : jsonData;
+
     const new_proposal = await Proposal.findById(proposalId);
-    // console.log("New proposal: ", new_proposal);
+
     const structuredJson = getStructuredJson(decompressedProposal, new_proposal.initialProposal);
 
     const rfp = await MatchedRFP.findById(new_proposal.rfpId) || await RFP.findById(new_proposal.rfpId);
 
     const initialProposal_1 = [{
-      "rfp": rfp,
-      "proposal": structuredJson
+      "rfp": {
+        "RFP Title": rfp.title,
+        "RFP Description": rfp.description,
+        "Issuing Organization": rfp.organization,
+        "Industry": rfp.organizationType,
+        "Proposal Submission Instructions": "Not found",
+        "Submission Deadline": rfp.deadline,
+        "Contact Information": rfp.contact,
+        "Project Goals and Objectives": "Not found",
+        "Scope of Work": "Not found",
+        "Timeline / Project Schedule": rfp.timeline,
+        "Budget or Funding Limit": rfp.budget,
+        "Evaluation Criteria": "Not found",
+        "Proposal Format/Structure": "Not found",
+        "Eligibility Requirements": "Not found",
+        "Appendices or Annexures": "Not found",
+        "Requested Proposal Information": "Not found",
+      },
+      "proposal": {
+        structuredJson,
+        "email": new_proposal.companyMail,
+        "rfpTitle": rfp.title
+      }
     }];
 
-    // console.log("Initial proposal: ", initialProposal_1);
+    console.log("Initial proposal: ", initialProposal_1);
 
     const resProposal = await axios.post('http://56.228.64.88:5000/advance-compliance', initialProposal_1, {
       headers: {
