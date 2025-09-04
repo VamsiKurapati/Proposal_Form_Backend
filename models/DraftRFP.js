@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 
 const DraftRFPSchema = new mongoose.Schema({
     userEmail: { type: String, required: true },
-    rfpId: { type: String, required: true },
+    rfpId: { type: mongoose.Schema.Types.ObjectId, ref: "RFP", required: true },
+    proposalId: { type: mongoose.Schema.Types.ObjectId, ref: "Proposal", required: true },
     rfp: {
         title: String,
         description: String,
