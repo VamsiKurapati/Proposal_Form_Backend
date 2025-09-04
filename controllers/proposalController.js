@@ -61,27 +61,19 @@ exports.advancedComplianceCheck = async (req, res) => {
 
     const initialProposal_1 = [{
       "rfp": {
-        "RFP Title": rfp.title,
-        "RFP Description": rfp.description,
-        "Issuing Organization": rfp.organization,
-        "Industry": rfp.organizationType,
-        "Proposal Submission Instructions": "Not found",
-        "Submission Deadline": rfp.deadline,
-        "Contact Information": rfp.contact,
-        "Project Goals and Objectives": "Not found",
-        "Scope of Work": "Not found",
-        "Timeline / Project Schedule": rfp.timeline,
-        "Budget or Funding Limit": rfp.budget,
-        "Evaluation Criteria": "Not found",
-        "Proposal Format/Structure": "Not found",
-        "Eligibility Requirements": "Not found",
-        "Appendices or Annexures": "Not found",
-        "Requested Proposal Information": "Not found",
+        "RFP Title": rfp.title || "Not found",
+        "RFP Description": rfp.description || "Not found",
+        "Match Score": rfp.match || 0,
+        "Budget": rfp.budget || "Not found",
+        "Deadline": rfp.deadline || "Not found",
+        "Issuing Organization": rfp.organization || "Not found",
+        "Industry": rfp.organizationType || "Not found",
+        "URL": rfp.link || "Not found",
+        "Contact Information": rfp.contact || "Not found",
+        "Timeline": rfp.timeline || "Not found",
       },
       "proposal": {
-        ...structuredJson,
-        "email": new_proposal.companyMail,
-        "rfpTitle": rfp.title
+        ...structuredJson
       }
     }];
 
