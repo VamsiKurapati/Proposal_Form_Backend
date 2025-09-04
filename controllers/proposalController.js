@@ -59,7 +59,7 @@ exports.advancedComplianceCheck = async (req, res) => {
 
     const rfp = await MatchedRFP.findById(new_proposal.rfpId) || await RFP.findById(new_proposal.rfpId);
 
-    const initialProposal_1 = [{
+    const initialProposal_1 = {
       "rfp": {
         "RFP Title": rfp.title || "Not found",
         "RFP Description": rfp.description || "Not found",
@@ -75,7 +75,7 @@ exports.advancedComplianceCheck = async (req, res) => {
       "proposal": {
         ...structuredJson
       }
-    }];
+    };
 
     console.log("Initial proposal: ", initialProposal_1);
 
