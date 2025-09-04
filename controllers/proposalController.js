@@ -77,8 +77,6 @@ exports.advancedComplianceCheck = async (req, res) => {
       }
     };
 
-    console.log("Initial proposal: ", initialProposal_1);
-
     const resBasicCompliance = await axios.post('http://56.228.64.88:5000/basic-compliance', initialProposal_1, {
       headers: {
         'Content-Type': 'application/json',
@@ -92,7 +90,7 @@ exports.advancedComplianceCheck = async (req, res) => {
 
     const compliance_dataBasicCompliance = firstValue["compliance_flags"];
 
-
+    console.log("Basic compliance data: ", compliance_dataBasicCompliance);
 
     const resProposal = await axios.post('http://56.228.64.88:5000/advance-compliance', initialProposal_1, {
       headers: {
@@ -100,18 +98,11 @@ exports.advancedComplianceCheck = async (req, res) => {
       }
     });
 
-    // console.log("Response: ", resProposal);
+    const dataAdvancedCompliance = resProposal.data.report;
 
-    const data = resProposal.data.report;
+    console.log("Advanced compliance data: ", dataAdvancedCompliance);
 
-    const present_data = data.present_information;
-    const missing_data = data.missing_information;
-    const requested_data = data.requested_information;
-    // console.log("Present data: ", present_data);
-    // console.log("Missing data: ", missing_data);
-    // console.log("Requested data: ", requested_data);
-
-    res.status(200).json({ present_data, missing_data, requested_data, compliance_dataBasicCompliance });
+    res.status(200).json({ compliance_dataBasicCompliance, dataAdvancedCompliance });
   } catch (error) {
     console.error('Error in advancedComplianceCheck:', error);
     console.error('Error stack:', error.stack);
