@@ -90,11 +90,11 @@ function getStructuredJson(generatedJsonData, initialGeneratedJsonData) {
     resultData[fieldName] = textContent;
   });
 
-  console.log("First Dictionary (ID to Field Mapping):");
-  console.log(idTextMap);
+  // console.log("First Dictionary (ID to Field Mapping):");
+  // console.log(idTextMap);
 
-  console.log("\nSecond Dictionary (Field to Text Content):");
-  console.log(resultData);
+  // console.log("\nSecond Dictionary (Field to Text Content):");
+  // console.log(resultData);
 
   return resultData;
 }
