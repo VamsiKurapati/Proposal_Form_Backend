@@ -13,15 +13,12 @@ require('dotenv').config();
 exports.basicComplianceCheck = async (req, res) => {
   try {
     const { jsonData, proposalId, isCompressed } = req.body;
-    // console.log("Proposal: ", jsonData);
-    // console.log("Proposal ID: ", proposalId);
-    // console.log("Is compressed: ", isCompressed);
 
     const new_proposal = await Proposal.findById(proposalId);
-    // console.log("New proposal: ", new_proposal);
 
     const decompressedProposal = isCompressed ? decompress(jsonData) : jsonData;
     const structuredJson = getStructuredJson(decompressedProposal, new_proposal.initialProposal);
+    console.log("Structured JSON: ", structuredJson);
 
     const resProposal = await axios.post('http://56.228.64.88:5000/basic-compliance', structuredJson, {
       headers: {
@@ -29,16 +26,12 @@ exports.basicComplianceCheck = async (req, res) => {
       }
     });
 
-    // console.log("Response: ", resProposal);
-
     const data = resProposal.data.report;
 
     const firstKey = Object.keys(data)[0];
     const firstValue = data[firstKey];
 
     const compliance_data = firstValue["compliance_flags"];
-
-    // console.log("Compliance data: ", compliance_data);
 
     res.status(200).json(compliance_data);
   } catch (error) {
