@@ -2,22 +2,32 @@ const mongoose = require('mongoose');
 const Proposal = require('../models/Proposal');
 const axios = require('axios');
 const MatchedRFP = require('../models/MatchedRFP');
+const RFP = require('../models/RFP');
 
 const { getStructuredJson } = require('../utils/get_structured_json');
+const { decompress } = require('../utils/decompress');
 
 require('dotenv').config();
 
 exports.basicComplianceCheck = async (req, res) => {
   try {
-    const { proposal, proposalId } = req.body;
-    console.log("Proposal: ", proposal);
+    const { jsonData, proposalId, isCompressed } = req.body;
+    console.log("Proposal: ", jsonData);
     console.log("Proposal ID: ", proposalId);
+    console.log("Is compressed: ", isCompressed);
 
     const new_proposal = await Proposal.findById(proposalId);
     console.log("New proposal: ", new_proposal);
-    const structuredJson = getStructuredJson(proposal, new_proposal.initialProposal);
 
-    const resProposal = await axios.post('http://56.228.64.88:5000/basic-compliance', structuredJson);
+    const decompressedProposal = isCompressed ? decompress(jsonData) : jsonData;
+    const structuredJson = getStructuredJson(decompressedProposal, new_proposal.initialProposal);
+
+    const resProposal = await axios.post('http://56.228.64.88:5000/basic-compliance', structuredJson, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    });
 
     console.log("Response: ", resProposal);
 
@@ -40,14 +50,15 @@ exports.basicComplianceCheck = async (req, res) => {
 
 exports.advancedComplianceCheck = async (req, res) => {
   try {
-    const { proposal, proposalId } = req.body;
-    console.log("Proposal: ", proposal);
-
+    const { jsonData, proposalId, isCompressed } = req.body;
+    console.log("Proposal: ", jsonData);
+    console.log("Is compressed: ", isCompressed);
+    const decompressedProposal = isCompressed ? decompress(jsonData) : jsonData;
     const new_proposal = await Proposal.findById(proposalId);
     console.log("New proposal: ", new_proposal);
-    const structuredJson = getStructuredJson(proposal, new_proposal.initialProposal);
+    const structuredJson = getStructuredJson(decompressedProposal, new_proposal.initialProposal);
 
-    const rfp = await MatchedRFP.find({ title: new_proposal.rfpTitle }).limit(1);
+    const rfp = await MatchedRFP.findById(new_proposal.rfpId) || await RFP.findById(new_proposal.rfpId);
 
     const initialProposal_1 = [{
       "rfp": rfp,
@@ -56,7 +67,12 @@ exports.advancedComplianceCheck = async (req, res) => {
 
     console.log("Initial proposal: ", initialProposal_1);
 
-    const resProposal = await axios.post('http://56.228.64.88:5000/advance-compliance', initialProposal_1);
+    const resProposal = await axios.post('http://56.228.64.88:5000/advance-compliance', initialProposal_1, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    });
 
     console.log("Response: ", resProposal);
 
@@ -79,10 +95,16 @@ exports.advancedComplianceCheck = async (req, res) => {
 
 exports.generatePDF = async (req, res) => {
   try {
-    const { project } = req.body;
-    console.log("Project: ", project);
-
-    const pdf = await axios.post('http://56.228.64.88:5000/download-pdf', project, { responseType: "arraybuffer" });
+    const { jsonData, isCompressed } = req.body;
+    console.log("Project: ", jsonData);
+    const decompressedProject = isCompressed ? decompress(jsonData) : jsonData;
+    const pdf = await axios.post('http://56.228.64.88:5000/download-pdf', decompressedProject, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      responseType: "arraybuffer"
+    });
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename="proposal.pdf"');

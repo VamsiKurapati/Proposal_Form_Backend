@@ -104,7 +104,7 @@ exports.login = async (req, res) => {
       const subscription = await Subscription.find({ user_id: user._id }).sort({ created_at: -1 }).limit(1).lean();
       // console.log(subscription);
       let subscriptionData = {};
-      if (!subscription || subscription[0].end_date < new Date()) {
+      if (subscription.length === 0 || subscription[0].end_date < new Date()) {
         subscriptionData = {
           plan_name: "None",
           max_rfp_proposal_generations: 0,
@@ -135,7 +135,7 @@ exports.login = async (req, res) => {
       // console.log(subscription);
 
       let subscriptionData = {};
-      if (!subscription || subscription[0].end_date < new Date()) {
+      if (subscription.length === 0 || subscription[0].end_date < new Date()) {
         subscriptionData = {
           plan_name: "None",
           max_rfp_proposal_generations: 0,

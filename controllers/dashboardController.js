@@ -85,11 +85,11 @@ exports.getDashboardData = async (req, res) => {
             const subscription = await Subscription.find({ user_id: user._id }).sort({ created_at: -1 }).limit(1).lean();
             // console.log(subscription);
             const sub_data = {
-                maxRFPs: subscription ? subscription[0].max_rfp_proposal_generations : 0,
-                maxGrants: subscription ? subscription[0].max_grant_proposal_generations : 0,
+                maxRFPs: subscription.length > 0 ? subscription[0].max_rfp_proposal_generations : 0,
+                maxGrants: subscription.length > 0 ? subscription[0].max_grant_proposal_generations : 0,
                 currentRFPs: proposals.length,
                 currentGrants: grantProposals.length,
-                plan_name: subscription ? subscription[0].plan_name : "None",
+                plan_name: subscription.length > 0 ? subscription[0].plan_name : "None",
             };
 
             const data = {
@@ -198,11 +198,11 @@ exports.getDashboardData = async (req, res) => {
             // console.log(subscription);
 
             const sub_data = {
-                maxRFPs: subscription ? subscription[0].max_rfp_proposal_generations : 0,
-                maxGrants: subscription ? subscription[0].max_grant_proposal_generations : 0,
+                maxRFPs: subscription.length > 0 ? subscription[0].max_rfp_proposal_generations : 0,
+                maxGrants: subscription.length > 0 ? subscription[0].max_grant_proposal_generations : 0,
                 currentRFPs: proposals.length,
                 currentGrants: grantProposals.length,
-                plan_name: subscription ? subscription[0].plan_name : "None",
+                plan_name: subscription.length > 0 ? subscription[0].plan_name : "None",
             };
 
             const data = {
