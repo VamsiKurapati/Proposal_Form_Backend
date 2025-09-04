@@ -190,3 +190,28 @@ exports.deleteExpiredProposals = async () => {
   }
 };
 
+
+exports.autoSaveProposal = async (req, res) => {
+  try {
+    const { proposalId, compressedProject } = req.body;
+    const decompressedProject = decompress(compressedProject);
+
+    const new_proposal = await Proposal.findById(proposalId);
+
+    new_proposal.generatedProposal = decompressedProject;
+    await new_proposal.save();
+
+    const new_draft_proposal = await DraftProposal.findOne({ proposalId: proposalId });
+
+    if (new_draft_proposal) {
+      new_draft_proposal.generatedProposal = decompressedProject;
+      await new_draft_proposal.save();
+    }
+
+    res.status(200).json({ message: 'Proposal saved successfully' });
+
+  } catch (error) {
+    console.error('Error in autoSaveProposal:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
