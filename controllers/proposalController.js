@@ -17,6 +17,8 @@ exports.basicComplianceCheck = async (req, res) => {
     const new_proposal = await Proposal.findById(proposalId);
 
     const decompressedProposal = isCompressed ? decompress(jsonData) : jsonData;
+    console.log("Decompressed Proposal: ", decompressedProposal);
+
     const structuredJson = getStructuredJson(decompressedProposal, new_proposal.initialProposal);
     console.log("Structured JSON: ", structuredJson);
 
@@ -46,10 +48,12 @@ exports.advancedComplianceCheck = async (req, res) => {
     const { jsonData, proposalId, isCompressed } = req.body;
 
     const decompressedProposal = isCompressed ? decompress(jsonData) : jsonData;
+    console.log("Decompressed Proposal: ", decompressedProposal);
 
     const new_proposal = await Proposal.findById(proposalId);
 
     const structuredJson = getStructuredJson(decompressedProposal, new_proposal.initialProposal);
+    console.log("Structured JSON: ", structuredJson);
 
     const rfp = await MatchedRFP.findById(new_proposal.rfpId) || await RFP.findById(new_proposal.rfpId);
 
