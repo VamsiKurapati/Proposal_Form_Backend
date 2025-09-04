@@ -104,8 +104,8 @@ exports.advancedComplianceCheck = async (req, res) => {
 
 exports.generatePDF = async (req, res) => {
   try {
-    const { jsonData, isCompressed } = req.body;
-    const decompressedProject = isCompressed ? decompress(jsonData) : jsonData;
+    const { project, isCompressed } = req.body;
+    const decompressedProject = isCompressed ? decompress(project) : project;
     const pdf = await axios.post('http://56.228.64.88:5000/download-pdf', decompressedProject, {
       headers: {
         'Content-Type': 'application/json',
