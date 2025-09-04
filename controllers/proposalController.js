@@ -79,7 +79,7 @@ exports.advancedComplianceCheck = async (req, res) => {
         "Requested Proposal Information": "Not found",
       },
       "proposal": {
-        structuredJson,
+        ...structuredJson,
         "email": new_proposal.companyMail,
         "rfpTitle": rfp.title
       }
