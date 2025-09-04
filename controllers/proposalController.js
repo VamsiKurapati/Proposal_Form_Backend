@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Proposal = require('../models/Proposal');
 const axios = require('axios');
 const MatchedRFP = require('../models/MatchedRFP');
+const RFP = require('../models/RFP');
 
 const { getStructuredJson } = require('../utils/get_structured_json');
 const { decompress } = require('../utils/decompress');
@@ -57,7 +58,7 @@ exports.advancedComplianceCheck = async (req, res) => {
     console.log("New proposal: ", new_proposal);
     const structuredJson = getStructuredJson(decompressedProposal, new_proposal.initialProposal);
 
-    const rfp = await MatchedRFP.find({ title: new_proposal.rfpTitle }).limit(1);
+    const rfp = await MatchedRFP.findById(new_proposal.rfpId) || await RFP.findById(new_proposal.rfpId);
 
     const initialProposal_1 = [{
       "rfp": rfp,
