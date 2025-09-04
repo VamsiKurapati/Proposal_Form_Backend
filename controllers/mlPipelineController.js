@@ -209,6 +209,8 @@ exports.getSavedAndDraftRFPs = async (req, res) => {
       return {
         generatedProposal: item.generatedProposal,
         currentEditor: item.currentEditor,
+        proposalId: item.proposalId,
+        rfpId: item.rfpId,
         ...item.rfp,
         _id: item.rfpId,
       }
