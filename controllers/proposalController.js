@@ -79,6 +79,21 @@ exports.advancedComplianceCheck = async (req, res) => {
 
     console.log("Initial proposal: ", initialProposal_1);
 
+    const resBasicCompliance = await axios.post('http://56.228.64.88:5000/basic-compliance', initialProposal_1, {
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    const dataBasicCompliance = resBasicCompliance.data.report;
+
+    const firstKey = Object.keys(dataBasicCompliance)[0];
+    const firstValue = dataBasicCompliance[firstKey];
+
+    const compliance_dataBasicCompliance = firstValue["compliance_flags"];
+
+
+
     const resProposal = await axios.post('http://56.228.64.88:5000/advance-compliance', initialProposal_1, {
       headers: {
         'Content-Type': 'application/json',
@@ -96,7 +111,7 @@ exports.advancedComplianceCheck = async (req, res) => {
     // console.log("Missing data: ", missing_data);
     // console.log("Requested data: ", requested_data);
 
-    res.status(200).json({ present_data, missing_data, requested_data });
+    res.status(200).json({ present_data, missing_data, requested_data, compliance_dataBasicCompliance });
   } catch (error) {
     console.error('Error in advancedComplianceCheck:', error);
     console.error('Error stack:', error.stack);
