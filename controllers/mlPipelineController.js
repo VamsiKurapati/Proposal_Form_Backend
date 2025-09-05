@@ -582,10 +582,10 @@ exports.sendDataForProposalGeneration = async (req, res) => {
         });
         await new_ProposalTracker.save();
 
-        return res.status(200).json({ message: 'Proposal Generation completed successfully', proposal: processedProposal });
+        return res.status(200).json({ message: 'Proposal Generation completed successfully.', proposal: processedProposal, proposalId: new_Proposal._id });
       } else if (res_data.status === "progress") {
         return res.status(200).json({ message: 'Proposal Generation is already in progress. Please wait for it to complete.' });
-      } else {
+      } else if (res_data.status === "error") {
         //Delete the proposal tracker
         await ProposalTracker.deleteOne({ rfpId: proposal._id });
         return res.status(400).json({ error: 'Failed to generate proposal. Please try again later.' });
@@ -660,7 +660,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       trackingId: res_data.trackingId,
     });
     await new_ProposalTracker.save();
-    return res.status(200).json({ message: 'Proposal Generation completed successfully', proposal: res_data.proposal });
+    return res.status(200).json({ message: 'Proposal Generation is already in progress. Please wait for it to complete.' });
   } catch (err) {
     console.error('Error in /sendDataForProposalGeneration:', err);
 
