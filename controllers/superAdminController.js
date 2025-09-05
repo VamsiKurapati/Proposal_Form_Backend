@@ -8,6 +8,7 @@ const Subscription = require("../models/Subscription");
 const nodemailer = require('nodemailer');
 const User = require("../models/User");
 const CustomPlan = require("../models/CustomPlan");
+const PaymentDetails = require("../models/PaymentDetails");
 
 
 // Merged Company Stats and Company Data API
@@ -421,6 +422,25 @@ exports.sendEmail = async (req, res) => {
   }
   const customPlan = new CustomPlan({ userId: user._id, email, price, planType, maxEditors, maxViewers, maxRFPProposalGenerations, maxGrantProposalGenerations });
   await customPlan.save();
+  
+  let AdminPaymenyData = {};
+  const paymentDetails = await PaymentDetails.find();
+  if (!paymentDetails) {
+    AdminPaymenyData = {
+      upi_id: null,
+      account_holder_name: null,
+      account_number: null,
+      ifsc_code: null,
+      bank_name: null,
+      branch_name: null,
+      bank_address: null,
+      is_primary: false,
+    };
+  }
+  else {
+    AdminPaymenyData = paymentDetails[0];
+  }
+  // console.log(AdminPaymenyData);
 
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -435,10 +455,10 @@ exports.sendEmail = async (req, res) => {
   const mailOptions = {
     from: process.env.MAIL_USER,
     to: email,
-    subject: `Custom Subscription Plan Request from ${email || "Unknown Email"}`,
+    subject: `RRP2GRANTS - Enterprise Subscription Plan Request`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
-        <h2 style="color: #2563EB;">Custom Subscription Plan Request</h2>
+        <h2 style="color: #2563EB;">Enterprise Subscription Plan Request</h2>
         <p><strong>Email:</strong> ${email}</p>
         <p><strong>Price:</strong> ${price || "Not provided"}</p>
         <p><strong>Plan Type:</strong> ${planType || "Not provided"}</p>   
@@ -447,7 +467,16 @@ exports.sendEmail = async (req, res) => {
         <p><strong>Max RFP Proposal Generations:</strong> ${maxRFPProposalGenerations || "Not specified"}</p>
         <p><strong>Max Grant Proposal Generations:</strong> ${maxGrantProposalGenerations || "Not specified"}</p>
         <hr />
-        <p style="font-size: 12px; color: #666;">This email was generated from the Custom Plan Request form on your website.</p>
+
+        <h2 style="color: #2563EB;">Payment Details:</h2>
+        <p><strong>UPI ID:</strong> ${AdminPaymenyData.upi_id || "Not provided"}</p>
+        <p><strong>    (OR)</strong></p>
+        <p><strong>Account Holder Name:</strong> ${AdminPaymenyData.account_holder_name || "Not provided"}</p>
+        <p><strong>Account Number:</strong> ${AdminPaymenyData.account_number || "Not provided"}</p>
+        <p><strong>IFSC Code:</strong> ${AdminPaymenyData.ifsc_code || "Not provided"}</p>
+        <p><strong>Bank Name:</strong> ${AdminPaymenyData.bank_name || "Not provided"}</p>
+        <p><strong>Branch Name:</strong> ${AdminPaymenyData.branch_name || "Not provided"}</p>
+        <p style="font-size: 12px; color: #666;">This email was generated from the Enterprise Plan Request.</p>
       </div>
     `,
   };
@@ -481,6 +510,13 @@ exports.getCustomPlanData = async (req, res) => {
   res.json(customPlansWithCompanyName);  
 };
 
+exports.editCustomPlan = async (req, res) => {
+  const { id } = req.params;
+  const { price, planType, maxEditors, maxViewers, maxRFPProposalGenerations, maxGrantProposalGenerations } = req.body;
+  const customPlan = await CustomPlan.findByIdAndUpdate(id, { price, planType, maxEditors, maxViewers, maxRFPProposalGenerations, maxGrantProposalGenerations }, { new: true });
+  res.json(customPlan);
+};
+
 exports.deleteCustomPlan = async (req, res) => {
   const { id } = req.params;
   await CustomPlan.findByIdAndDelete(id);
@@ -504,6 +540,8 @@ exports.createCustomPlan = async (req, res) => {
       payment_method,
     } = req.body;
 
+    console.log(req.body);
+
     // Find and delete any existing CustomPlan with the same email before creating a new one
     await CustomPlan.deleteMany({ email });
 
@@ -525,7 +563,7 @@ exports.createCustomPlan = async (req, res) => {
     // 3. Create Subscription record
     const subscription = await Subscription.create({
       user_id: user._id,
-      plan_name: planType,
+      plan_name: "Custom",
       plan_price: price,
       start_date: startDate,
       end_date: endDate,
@@ -559,4 +597,19 @@ exports.createCustomPlan = async (req, res) => {
     console.error("Error creating custom plan:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
+};
+
+
+
+// payment details
+exports.getPaymentDetails = async (req, res) => {
+  const paymentDetails = await PaymentDetails.find();
+  res.json(paymentDetails);
+};
+
+exports.editPaymentDetails = async (req, res) => {
+  const { id } = req.params;
+  const { upi_id, account_holder_name, account_number, ifsc_code, bank_name, branch_name, bank_address, is_primary } = req.body;
+  const paymentDetails = await PaymentDetails.findByIdAndUpdate(id, { upi_id, account_holder_name, account_number, ifsc_code, bank_name, branch_name, bank_address, is_primary }, { new: true });
+  res.json(paymentDetails);
 };
