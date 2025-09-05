@@ -5,6 +5,7 @@ const User = require("../models/User");
 const CompanyProfile = require("../models/CompanyProfile");
 const EmployeeProfile = require("../models/EmployeeProfile");
 const Proposal = require("../models/Proposal");
+const GrantProposal = require("../models/GrantProposal");
 const { GridFsStorage } = require("multer-gridfs-storage");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
@@ -160,16 +161,17 @@ exports.getProfile = async (req, res) => {
             preferredIndustries: companyProfile.preferredIndustries,
         };
         const Proposals = await Proposal.find({ companyMail: companyProfile.email });
-        const totalProposals = Proposals.length;
-        const wonProposals = Proposals.filter(proposal => proposal.status === "Won").length;
+        const GrantProposals = await GrantProposal.find({ companyMail: companyProfile.email });
+        const totalProposals = Proposals.length + GrantProposals.length;
+        const wonProposals = Proposals.filter(proposal => proposal.status === "Won").length + GrantProposals.filter(proposal => proposal.status === "Won").length;
         const successRate = totalProposals === 0 ? "0.00" : ((wonProposals / totalProposals) * 100).toFixed(2);
         const data_1 = {
             ...data,
             totalProposals,
-            activeProposals: Proposals.filter(proposal => proposal.status === "In Progress").length,
+            activeProposals: Proposals.filter(proposal => proposal.status === "In Progress").length + GrantProposals.filter(proposal => proposal.status === "In Progress").length,
             wonProposals,
             successRate,
-            proposals: Proposals
+            proposals: [...Proposals, ...GrantProposals],
         };
         res.status(200).json(data_1);
     } catch (error) {
@@ -229,14 +231,14 @@ exports.getCompanyProfile = async (req, res) => {
         }
 
         const Proposals = await Proposal.find({ companyMail: companyProfile.email });
-
+        const GrantProposals = await GrantProposal.find({ companyMail: companyProfile.email });
         const requiredData = {
             companyName: companyProfile.companyName,
             adminName: companyProfile.adminName,
             industry: companyProfile.industry,
             bio: companyProfile.bio,
             employees: companyProfile.employees,
-            proposals: Proposals,
+            proposals: [...Proposals, ...GrantProposals],
             caseStudies: companyProfile.caseStudies,
         };
 
@@ -260,7 +262,10 @@ exports.getProposals = async (req, res) => {
         }
 
         const proposals = await Proposal.find({ companyMail: companyMail }).populate("currentEditor", "_id fullName email");
-        res.status(200).json(proposals);
+        const grantProposals = await GrantProposal.find({ companyMail: companyMail }).populate("currentEditor", "_id fullName email");
+
+        const finalProposals = [...proposals, ...grantProposals];
+        res.status(200).json(finalProposals);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

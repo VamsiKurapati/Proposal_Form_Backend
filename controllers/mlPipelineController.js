@@ -1639,6 +1639,8 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
           grantId: grant._id,
           companyMail: userEmail,
           deadline: grant.ESTIMATED_APPLICATION_DUE_DATE || "Not Provided",
+          title: grant.OPPORTUNITY_TITLE || "Not Provided",
+          client: grant.AGENCY_NAME || "Not Provided",
           initialProposal: processedProposal,
           generatedProposal: processedProposal,
           project_inputs: formData,
@@ -1678,7 +1680,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
         });
         await new_ProposalTracker.save();
 
-        return res.status(200).json({ message: 'Grant Proposal Generation completed successfully', proposal: processedProposal });
+        return res.status(200).json({ message: 'Grant Proposal Generation completed successfully.', proposal: processedProposal, proposalId: new_Proposal._id });
       } else if (res_data.status === "progress") {
         return res.status(200).json({ message: 'Grant Proposal Generation is already in progress. Please wait for it to complete.' });
       } else {
@@ -1709,6 +1711,8 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       grantId: grant._id,
       companyMail: userEmail,
       deadline: grant.ESTIMATED_APPLICATION_DUE_DATE || "Not Provided",
+      title: grant.OPPORTUNITY_TITLE || "Not Provided",
+      client: grant.AGENCY_NAME || "Not Provided",
       initialProposal: grant_proposal_data || null,
       generatedProposal: grant_proposal_data || null,
       project_inputs: formData,

@@ -4,6 +4,8 @@ const GrantProposalSchema = new mongoose.Schema({
     grantId: { type: mongoose.Schema.Types.ObjectId, ref: "Grant", required: true },
     project_inputs: { type: Object, required: true },
     initialProposal: { type: Object, required: true },
+    title: { type: String, required: true },
+    client: { type: String, required: true },
     generatedProposal: { type: [Object], default: [], limit: 10 },
     companyMail: { type: String, required: true },
     deadline: { type: String, required: true },
