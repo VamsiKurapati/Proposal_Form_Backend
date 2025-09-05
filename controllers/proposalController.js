@@ -4,6 +4,9 @@ const axios = require('axios');
 const MatchedRFP = require('../models/MatchedRFP');
 const RFP = require('../models/RFP');
 const DraftRFP = require('../models/DraftRFP');
+const GrantProposal = require('../models/GrantProposal');
+const Grant = require('../models/Grant');
+const DraftGrant = require('../models/DraftGrant');
 
 const { getStructuredJson } = require('../utils/get_structured_json');
 const { decompress } = require('../utils/decompress');
@@ -187,19 +190,33 @@ exports.autoSaveProposal = async (req, res) => {
     const { proposalId, jsonData, isCompressed } = req.body;
     const decompressedProject = isCompressed ? decompress(jsonData) : jsonData;
 
-    const new_proposal = await Proposal.findById(proposalId);
+    const new_grant_proposal = await GrantProposal.findOne({ proposalId: proposalId });
+    if (new_grant_proposal) {
+      new_grant_proposal.generatedProposal = decompressedProject;
+      await new_grant_proposal.save();
 
-    new_proposal.generatedProposal = decompressedProject;
-    await new_proposal.save();
-
-    const new_draft_proposal = await DraftRFP.findOne({ proposalId: proposalId });
-
-    if (new_draft_proposal) {
-      new_draft_proposal.generatedProposal = decompressedProject;
-      await new_draft_proposal.save();
+      const new_draft_grant = await DraftGrant.findOne({ proposalId: proposalId });
+      if (new_draft_grant) {
+        new_draft_grant.generatedProposal = decompressedProject;
+        await new_draft_grant.save();
+      }
+      return res.status(200).json({ message: 'Grant proposal saved successfully' });
     }
 
-    res.status(200).json({ message: 'Proposal saved successfully' });
+    const new_proposal_1 = await Proposal.findById(proposalId);
+    if (new_proposal_1) {
+      new_proposal_1.generatedProposal = decompressedProject;
+      await new_proposal_1.save();
+
+      const new_draft_proposal = await DraftRFP.findOne({ proposalId: proposalId });
+      if (new_draft_proposal) {
+        new_draft_proposal.generatedProposal = decompressedProject;
+        await new_draft_proposal.save();
+      }
+      return res.status(200).json({ message: 'RFP proposal saved successfully' });
+    }
+
+    res.status(404).json({ message: 'Proposal not found' });
 
   } catch (error) {
     console.error('Error in autoSaveProposal:', error);

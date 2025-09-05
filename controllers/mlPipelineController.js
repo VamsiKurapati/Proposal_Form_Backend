@@ -15,6 +15,7 @@ const User = require('../models/User');
 const SavedGrant = require('../models/SavedGrant');
 const DraftGrant = require('../models/DraftGrant');
 const GrantProposal = require('../models/GrantProposal');
+const ProposalTracker = require('../models/ProposalTracker');
 
 
 const axios = require('axios');
@@ -333,29 +334,37 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       return res.status(400).json({ error: 'Proposal data is required' });
     }
 
-    // Check required proposal fields
-    if (!proposal.title || !proposal.description) {
-      return res.status(400).json({ error: 'Proposal title and description are required' });
-    }
-
     let userEmail = req.user.email;
+
     let companyProfile_1 = "";
+
     let userId = "";
+
     if (req.user.role === "employee") {
+
       const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+
       if (!employeeProfile) {
         return res.status(404).json({ error: 'Employee profile not found' });
       }
+
       userEmail = employeeProfile.companyMail;
+
       companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
+
       let user = await User.findOne({ email: userEmail });
+
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
+
       userId = user._id;
+
     } else {
       companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
+
       userId = req.user._id;
+
     }
 
     // Check if company profile exists
@@ -363,23 +372,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       return res.status(404).json({ error: 'Company profile not found. Please complete your company profile first.' });
     }
 
-    // const subscription = await Subscription.findOne({ userId: userId });
-    // if (!subscription || subscription.end_date < new Date()) {
-    //   return res.status(400).json({ error: 'Subscription not found or expired' });
-    // }
-
-    // //Get no.of RFP proposals generated between subscription start date and end date
-    // const currentRFPs = await Proposal.find({ companyMail: userEmail, createdAt: { $gte: subscription.start_date, $lte: subscription.end_date } }).countDocuments();
-    // if (subscription.max_rfp_proposal_generations <= currentRFPs) {
-    //   return res.status(400).json({ error: 'You have reached the maximum number of RFP proposals' });
-    // }
-
     const db = mongoose.connection.db;
-
-    // Check if company has documents before processing
-    if (!companyProfile_1.documents || companyProfile_1.documents.length === 0) {
-      return res.status(400).json({ error: 'No company documents found. Please upload company documents first.' });
-    }
 
     //Extract the company Documents from upload.chunks and save them in the companyProfile_1.companyDocuments
     const files = await db.collection('uploads.files')
@@ -425,7 +418,6 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       };
     });
 
-    //console.log("Company Documents: ", companyDocuments_1);
 
     const caseStudies_1 = (companyProfile_1.caseStudies || []).map((study) => {
       return {
@@ -433,7 +425,6 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       };
     });
 
-    //console.log("Case Studies: ", caseStudies_1);
 
     const pastProjects_1 = (companyProfile_1.proposals || []).map((project) => {
       return {
@@ -441,7 +432,6 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       };
     });
 
-    //console.log("Past Projects: ", pastProjects_1);
 
     const certifications_1 = (companyProfile_1.licensesAndCertifications || []).map((certification) => {
       return {
@@ -450,8 +440,6 @@ exports.sendDataForProposalGeneration = async (req, res) => {
         "validTill": `${certification.validTill}`,
       };
     });
-
-    //console.log("Certifications: ", certifications_1);
 
     const employeeData_1 = (companyProfile_1.employees || []).map((employee) => {
       return {
@@ -462,8 +450,6 @@ exports.sendDataForProposalGeneration = async (req, res) => {
         "email": `${employee.email}`,
       };
     });
-
-    //console.log("Employee Data: ", employeeData_1);
 
     const rfp = {
       "RFP Title": `${proposal.title || ""}`,
@@ -478,8 +464,6 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       "Timeline": `${proposal.timeline || ""}`,
     };
 
-    //console.log("RFP: ", rfp);
-
     const userData = {
       "_id": `${companyProfile_1._id}`,
       "email": `${companyProfile_1.email || ""}`,
@@ -493,8 +477,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       "website": `${companyProfile_1.website || ""}`,
       "linkedIn": `${companyProfile_1.linkedIn || ""}`,
       "certifications": certifications_1,
-      // "documents": companyDocuments_1,
-      "documents": [],
+      "documents": companyDocuments_1,
       "caseStudies": caseStudies_1,
       "pastProjects": pastProjects_1,
       "employees_information": employeeData_1,
@@ -507,20 +490,126 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       },
     };
 
-    //console.log("User Data: ", userData);
+    //Check if there is any proposal in draft with the same rfpId
+    const draftProposal = await DraftRFP.findOne({ rfpId: proposal._id });
+    if (draftProposal) {
+      return res.status(200).json({ message: 'A proposal with the same RFP ID already exists in draft. Please edit the draft proposal instead of generating a new one.' });
+    }
+
+    //Check if there is any proposal in proposal tracker with the same rfpId
+    const proposalTracker = await ProposalTracker.findOne({ rfpId: proposal._id });
+    if (proposalTracker) {
+      //Initilize the api call to mlPipeline to know the status of the proposal generation
+      const res_1 = await axios.post(`http://56.228.64.88:5000/get_proposal_from_tracking_id/${proposalTracker.trackingId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+      });
+
+      const res_data = res_1.data;
+
+      if (res_data.status === "success") {
+        // Check if ML service returned valid data
+        if (!res_1.data.proposal) {
+          console.error("ML service returned invalid response:", res_1.data);
+          //Delete the proposal tracker
+          await ProposalTracker.deleteOne({ rfpId: proposal._id });
+          return res.status(500).json({
+            error: 'ML service returned invalid response. Please try again later.',
+            details: 'The proposal generation service is currently unavailable or returned an empty response.'
+          });
+        }
+
+        const proposalData = res_1.data.proposal;
+
+        const processedProposal = replaceTextInJson(template_json, proposalData, userData, rfp);
+
+        const new_Proposal = new Proposal({
+          rfpId: proposal._id || "",
+          title: proposal.title || "",
+          client: proposal.organization || "Not found",
+          initialProposal: processedProposal,
+          generatedProposal: processedProposal,
+          companyMail: userEmail,
+          deadline: proposal.deadline || new Date(),
+          status: "In Progress",
+          submittedAt: new Date(),
+          currentEditor: req.user._id,
+          isDeleted: false,
+          deletedAt: null,
+          deletedBy: null,
+          isSaved: false,
+          savedAt: null,
+          savedBy: null,
+          restoreBy: null,
+          restoredBy: null,
+          restoredAt: null,
+        });
+
+        await new_Proposal.save();
+
+        const new_Draft = new DraftRFP({
+          userEmail: userEmail,
+          rfpId: proposal._id || "",
+          proposalId: new_Proposal._id || "",
+          rfp: { ...proposal },
+          generatedProposal: processedProposal,
+          currentEditor: req.user._id,
+        });
+        await new_Draft.save();
+
+        const new_CalendarEvent = new CalendarEvent({
+          companyId: companyProfile_1._id,
+          employeeId: req.user._id,
+          proposalId: new_Proposal._id,
+          grantId: null,
+          title: proposal.title || "",
+          startDate: new Date(),
+          endDate: new Date(),
+          status: "In Progress",
+        });
+        await new_CalendarEvent.save();
+
+        res.status(200).json({ processedProposal, proposalId: new_Proposal._id });
+
+        const new_ProposalTracker = new ProposalTracker({
+          rfpId: proposal._id,
+          proposalId: new_Proposal._id,
+          trackingId: res_data.trackingId,
+          companyMail: userEmail,
+          status: "success",
+        });
+        await new_ProposalTracker.save();
+
+        return res.status(200).json({ message: 'Proposal Generation completed successfully', proposal: processedProposal });
+      } else if (res_data.status === "progress") {
+        return res.status(200).json({ message: 'Proposal Generation is already in progress. Please wait for it to complete.' });
+      } else {
+        //Delete the proposal tracker
+        await ProposalTracker.deleteOne({ rfpId: proposal._id });
+        return res.status(400).json({ error: 'Failed to generate proposal. Please try again later.' });
+      }
+    }
+
+    const subscription = await Subscription.findOne({ userId: userId });
+    if (!subscription || subscription.end_date < new Date()) {
+      return res.status(400).json({ error: 'Subscription not found or expired' });
+    }
+
+    //Get no.of RFP proposals generated between subscription start date and end date
+    const currentRFPs = await Proposal.find({ companyMail: userEmail, createdAt: { $gte: subscription.start_date, $lte: subscription.end_date } }).countDocuments();
+    if (subscription.max_rfp_proposal_generations <= currentRFPs) {
+      return res.status(400).json({ error: 'You have reached the maximum number of RFP proposals' });
+    }
 
     const data = {
       "user": userData,
       "rfp": rfp,
     };
 
-    // console.log("Data sent to ML model: ", data);
-
-    console.log("Generating proposal for RFP");
-
     // Calculate and log payload size
     const payloadSize = JSON.stringify(data).length;
-    console.log("Payload size:", payloadSize, "bytes");
 
     // Check if payload is too large (e.g., > 1MB)
     const MAX_PAYLOAD_SIZE = 1024 * 1024; // 1MB
@@ -544,90 +633,34 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       };
 
       const optimizedPayloadSize = JSON.stringify(optimizedData).length;
-      console.log("Optimized payload size:", optimizedPayloadSize, "bytes");
+      //console.log("Optimized payload size:", optimizedPayloadSize, "bytes");
 
       if (optimizedPayloadSize < payloadSize) {
-        console.log("Using optimized payload");
+        //console.log("Using optimized payload");
         data = optimizedData;
       }
     }
 
     // Call ML service with timeout and better error handling
     const res_1 = await axios.post(`http://56.228.64.88:5000/new_rfp_proposal_generation`, data, {
-      timeout: 300000, // 5 minutes timeout
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       }
     });
 
-    // Check if ML service returned valid data
-    if (!res_1 || !res_1.data || !res_1.data.result) {
-      console.error("ML service returned invalid response:", res_1);
-      return res.status(500).json({
-        error: 'ML service returned invalid response. Please try again later.',
-        details: 'The proposal generation service is currently unavailable or returned an empty response.'
-      });
-    }
+    const res_data = res_1.data;
 
-    console.log("Proposal generated for RFP", res_1.data.result);
-
-    const proposalData = res_1.data.result;
-
-    console.log("Replacing text in proposal");
-    const processedProposal = replaceTextInJson(template_json, proposalData, userData, rfp);
-
-    console.log("Creating new proposal");
-    const new_Proposal = new Proposal({
-      rfpId: proposal._id || "",
-      title: proposal.title || "",
-      client: proposal.organization || "Not found",
-      initialProposal: processedProposal,
-      generatedProposal: processedProposal,
-      companyMail: userEmail,
-      deadline: proposal.deadline || new Date(),
-      status: "In Progress",
-      submittedAt: new Date(),
-      currentEditor: req.user._id,
-      isDeleted: false,
-      deletedAt: null,
-      deletedBy: null,
-      isSaved: false,
-      savedAt: null,
-      savedBy: null,
-      restoreBy: null,
-      restoredBy: null,
-      restoredAt: null,
-    });
-
-    await new_Proposal.save();
-
-    console.log("Creating new draft");
-    const new_Draft = new DraftRFP({
-      userEmail: userEmail,
-      rfpId: proposal._id || "",
-      proposalId: new_Proposal._id || "",
-      rfp: { ...proposal },
-      generatedProposal: processedProposal,
-      currentEditor: req.user._id,
-    });
-    await new_Draft.save();
-
-    console.log("Creating new calendar event");
-    const new_CalendarEvent = new CalendarEvent({
-      companyId: companyProfile_1._id,
-      employeeId: req.user._id,
-      proposalId: new_Proposal._id,
+    const new_ProposalTracker = new ProposalTracker({
+      rfpId: proposal._id,
+      proposalId: null,
       grantId: null,
-      title: proposal.title || "",
-      startDate: new Date(),
-      endDate: new Date(),
-      status: "In Progress",
+      companyMail: userEmail,
+      status: "progress",
+      trackingId: res_data.trackingId,
     });
-    await new_CalendarEvent.save();
-
-    console.log("Proposal generated successfully");
-    res.status(200).json({ processedProposal, proposalId: new_Proposal._id });
+    await new_ProposalTracker.save();
+    return res.status(200).json({ message: 'Proposal Generation completed successfully', proposal: res_data.proposal });
   } catch (err) {
     console.error('Error in /sendDataForProposalGeneration:', err);
 
@@ -946,9 +979,9 @@ exports.handleFileUploadAndSendForRFPExtraction = [
         }
       }
 
-      //console.log("API Response: ", apiResponse);
+      ////console.log("API Response: ", apiResponse);
 
-      //console.log("API Response Data: ", apiResponse.data);
+      ////console.log("API Response Data: ", apiResponse.data);
 
       // Extract RFP data from API response
       let rfp = null;
@@ -960,7 +993,7 @@ exports.handleFileUploadAndSendForRFPExtraction = [
 
           if (structuredData && structuredData.structured_fields) {
             const fields = structuredData.structured_fields;
-            //console.log("Fields: ", fields);
+            ////console.log("Fields: ", fields);
 
             rfp = {
               title: fields['RFP Title'] || req.file.originalname.replace('.pdf', "").replace('.txt', ""),
@@ -1190,9 +1223,9 @@ exports.handleFileUploadAndSendForGrantExtraction = [
         }
       }
 
-      //console.log("API Response: ", apiResponse);
+      ////console.log("API Response: ", apiResponse);
 
-      //console.log("API Response Data: ", apiResponse.data);
+      ////console.log("API Response Data: ", apiResponse.data);
 
       // Extract Grant data from API response
       let grant = null;
@@ -1204,7 +1237,7 @@ exports.handleFileUploadAndSendForGrantExtraction = [
 
           if (structuredData && structuredData.structured_fields) {
             const fields = structuredData.structured_fields;
-            //console.log("Fields: ", fields);
+            ////console.log("Fields: ", fields);
 
             grant = fields;
           }
@@ -1319,7 +1352,7 @@ exports.saveGrant = async (req, res) => {
     if (!grant) {
       return res.status(404).json({ message: "Grant not found" });
     }
-    console.log("Grant: ", grant);
+    //console.log("Grant: ", grant);
     const new_SavedGrant = new SavedGrant({
       grantId: grant._id,
       userEmail: userEmail,
@@ -1479,21 +1512,6 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       return res.status(404).json({ error: 'Company profile not found. Please complete your company profile first.' });
     }
 
-    const subscription = await Subscription.findOne({ userId: req.user._id });
-    if (!subscription || subscription.end_date < new Date()) {
-      return res.status(404).json({ error: 'Subscription not found or expired' });
-    }
-
-    const currentGrants = await GrantProposal.find({ companyMail: userEmail, createdAt: { $gte: subscription.start_date, $lte: subscription.end_date } }).countDocuments();
-    if (subscription.max_grant_proposal_generations <= currentGrants) {
-      return res.status(400).json({ error: 'You have reached the maximum number of grant proposals' });
-    }
-
-    // Check if company has documents before processing
-    if (!companyProfile_1.documents || companyProfile_1.documents.length === 0) {
-      return res.status(400).json({ error: 'No company documents found. Please upload company documents first.' });
-    }
-
     const db = mongoose.connection.db;
 
     //Extract the company Documents from upload.chunks and save them in the companyProfile_1.companyDocuments
@@ -1596,22 +1614,97 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       }
     };
 
+    // Check if there is any proposal in draft with the same grantId
+    const draftProposal = await DraftGrant.findOne({ grantId: grant._id });
+    if (draftProposal) {
+      return res.status(200).json({ message: 'A proposal with the same Grant ID already exists in draft. Please edit the draft proposal instead of generating a new one.' });
+    }
+
+    // Check if there is any proposal in proposal tracker with the same grantId
+    const proposalTracker = await ProposalTracker.findOne({ grantId: grant._id });
+    if (proposalTracker) {
+      //Initilize the api call to mlPipeline to know the status of the proposal generation
+      const res_1 = await axios.post(`http://56.228.64.88:5000/get_grant_proposal_from_tracking_id/${proposalTracker.trackingId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+      });
+
+      const res_data = res_1.data;
+      if (res_data.status === "success") {
+        const proposalData = res_1.data.proposal;
+        const processedProposal = replaceTextInJson_Grant(grant_template_json, userData, grant, proposalData);
+        const new_Proposal = new GrantProposal({
+          grantId: grant._id,
+          companyMail: userEmail,
+          deadline: grant.ESTIMATED_APPLICATION_DUE_DATE || "Not Provided",
+          initialProposal: processedProposal,
+          generatedProposal: processedProposal,
+          project_inputs: formData,
+          status: "In Progress",
+          submittedAt: new Date(),
+          currentEditor: req.user._id,
+        });
+        await new_Proposal.save();
+
+        const new_Draft = new DraftGrant({
+          grantId: grant._id,
+          userEmail: userEmail,
+          grant: grant,
+          generatedProposal: processedProposal,
+          currentEditor: req.user._id,
+        });
+        await new_Draft.save();
+
+        const new_CalendarEvent = new CalendarEvent({
+          companyId: companyProfile_1._id,
+          employeeId: req.user._id,
+          proposalId: new_Proposal._id,
+          grantId: grant._id,
+          title: "Proposal Submission",
+          startDate: new Date(),
+          endDate: new Date(),
+          status: "In Progress",
+        });
+        await new_CalendarEvent.save();
+
+        const new_ProposalTracker = new ProposalTracker({
+          grantId: grant._id,
+          proposalId: new_Proposal._id,
+          trackingId: res_data.trackingId,
+          companyMail: userEmail,
+          status: "success",
+        });
+        await new_ProposalTracker.save();
+
+        return res.status(200).json({ message: 'Grant Proposal Generation completed successfully', proposal: processedProposal });
+      } else if (res_data.status === "progress") {
+        return res.status(200).json({ message: 'Grant Proposal Generation is already in progress. Please wait for it to complete.' });
+      } else {
+        return res.status(400).json({ error: 'Failed to generate grant proposal. Please try again later.' });
+      }
+    }
+
+    const subscription = await Subscription.findOne({ userId: req.user._id });
+    if (!subscription || subscription.end_date < new Date()) {
+      return res.status(404).json({ error: 'Subscription not found or expired' });
+    }
+
+    const currentGrants = await GrantProposal.find({ companyMail: userEmail, createdAt: { $gte: subscription.start_date, $lte: subscription.end_date } }).countDocuments();
+    if (subscription.max_grant_proposal_generations <= currentGrants) {
+      return res.status(400).json({ error: 'You have reached the maximum number of grant proposals' });
+    }
+
     const data = {
       user: userData,
       grant_data: grant,
       project_inputs: formData,
     };
 
-    //console.log("User Data: ", userData);
-    //console.log("Grant Data: ", grant);
-    //console.log("Form Data: ", formData);
-
     const res_1 = await axios.post(`http://56.228.64.88:5000/grant_proposal_generation`, data);
-    //console.log("Res_1: ", res_1);
     const grant_result = res_1.data.grant_result;
-    console.log("Grant Result: ", grant_result);
     const grant_proposal_data = replaceTextInJson_Grant(grant_template_json, userData, grant, grant_result);
-    console.log("Grant Proposal Data: ", grant_proposal_data);
     const new_Proposal = new GrantProposal({
       grantId: grant._id,
       companyMail: userEmail,
@@ -1668,7 +1761,6 @@ exports.triggerGrant = async () => {
   try {
     const grants = await axios.get(`http://56.228.64.88:5000/grants/trigger`);
     const grant_data = await Grant.insertMany(grants);
-    //console.log("Grant data: ", grant_data);
   } catch (err) {
     console.error('Error in /triggerGrant:', err);
   }
