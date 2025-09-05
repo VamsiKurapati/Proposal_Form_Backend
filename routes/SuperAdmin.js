@@ -18,7 +18,10 @@ const { getCompanyStatsAndData,
            createCustomPlan,
            getPaymentDetails,
            editPaymentDetails,
-           editCustomPlan
+           editCustomPlan,
+           getContactData,
+           deleteContactData,
+           updateContactData
  } = require('../controllers/superAdminController');
 
 router.get('/getCompanyStatsAndData', verifyUser(["SuperAdmin"]), getCompanyStatsAndData);
@@ -53,6 +56,10 @@ router.post('/createCustomPlan', verifyUser(["SuperAdmin"]), createCustomPlan);
 router.get('/getPaymentDetails', verifyUser(["SuperAdmin"]), getPaymentDetails);
 router.put('/editPaymentDetails/:id', verifyUser(["SuperAdmin"]), editPaymentDetails);
 
+//contact
+router.get('/getContactData', verifyUser(["SuperAdmin"]), getContactData);
+router.delete('/deleteContactData/:id', verifyUser(["SuperAdmin"]), deleteContactData);
+router.put('/updateContactData/:id', verifyUser(["SuperAdmin"]), updateContactData);
 
 
 module.exports = router;

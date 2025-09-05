@@ -9,6 +9,7 @@ const nodemailer = require('nodemailer');
 const User = require("../models/User");
 const CustomPlan = require("../models/CustomPlan");
 const PaymentDetails = require("../models/PaymentDetails");
+const Contact = require("../models/Contact");
 
 
 // Merged Company Stats and Company Data API
@@ -612,4 +613,28 @@ exports.editPaymentDetails = async (req, res) => {
   const { upi_id, account_holder_name, account_number, ifsc_code, bank_name, branch_name, bank_address, is_primary } = req.body;
   const paymentDetails = await PaymentDetails.findByIdAndUpdate(id, { upi_id, account_holder_name, account_number, ifsc_code, bank_name, branch_name, bank_address, is_primary }, { new: true });
   res.json(paymentDetails);
+};
+
+
+
+//contact 
+exports.getContactData = async (req, res) => {
+  // Only return contacts from the past 30 days
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const contactData = await Contact.find({ createdAt: { $gte: thirtyDaysAgo } });
+  res.json(contactData);
+};
+
+exports.deleteContactData = async (req, res) => {
+  const { id } = req.params;
+  await Contact.findByIdAndDelete(id);
+  res.status(200).json({ message: "Contact data deleted successfully" });
+};
+
+exports.updateContactData = async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  await Contact.findByIdAndUpdate(id, { status }, { new: true });
+  res.status(200).json({ message: "Contact data updated successfully" });
 };

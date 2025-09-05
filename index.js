@@ -17,6 +17,7 @@ const SubscriptionPlan = require('./models/SubscriptionPlan.js');
 const Subscription = require('./models/Subscription.js');
 const nodemailer = require('nodemailer');
 const stripeController = require('./controllers/stripeController');
+const Contact = require('./models/Contact.js');
 
 const getSubscriptionPlansData = async (req, res) => {
   try {
@@ -53,7 +54,10 @@ const getSubscriptionPlansData = async (req, res) => {
 };
 
 const sendEmail = async (req, res) => {
-  const { name, company, email } = req.body; // extract from form
+  const { name, company, email , description } = req.body; // extract from form
+
+  const contact = await Contact.create({ name, company, email, description, status: "Open" });
+  await contact.save();
 
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -75,6 +79,7 @@ const sendEmail = async (req, res) => {
         <p><strong>Name:</strong> ${name}</p>
         <p><strong>Email:</strong> ${email}</p>
         <p><strong>Company:</strong> ${company}</p>
+        <p><strong>Description:</strong> ${description}</p>
         <hr />
         <p style="font-size: 12px; color: #666;">This email was generated from the Contact Us form on your website.</p>
       </div>
@@ -102,7 +107,7 @@ app.use(express.json());
 
 // CORS Configuration
 app.use(cors({
-  origin: ["https://proposal-form-frontend.vercel.app", "https://rfp2grants.ai"],
+  origin: ["https://proposal-form-frontend.vercel.app", "https://rfp2grants.ai" , "http://localhost:5174"],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
