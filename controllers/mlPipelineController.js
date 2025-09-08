@@ -514,7 +514,9 @@ exports.sendDataForProposalGeneration = async (req, res) => {
         const res_data = res_1.data;
 
         if (res_data.status === "success") {
-          const proposalData = res_data.result.result;
+          const dummy = JSON.parse(res_data.result.result);
+          // const proposalData = res_data.result.result;
+          const proposalData = dummy;
 
           const processedProposal = replaceTextInJson(template_json, proposalData, userData, rfp);
 
