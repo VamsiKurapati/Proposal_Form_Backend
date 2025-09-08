@@ -585,7 +585,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       }
     }
 
-    const subscription = await Subscription.findOne({ userId: userId });
+    const subscription = await Subscription.findOne({ user_id: userId });
     if (!subscription || subscription.end_date < new Date()) {
       return res.status(400).json({ error: 'Subscription not found or expired' });
     }
@@ -1478,7 +1478,11 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
     }
 
     let userEmail = req.user.email;
+
+    let userId = "";
+
     let companyProfile_1 = "";
+
     if (req.user.role === "employee") {
       const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
       if (!employeeProfile) {
@@ -1486,8 +1490,11 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       }
       userEmail = employeeProfile.companyMail;
       companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
+      const user = await User.findOne({ email: userEmail });
+      userId = user._id;
     } else {
       companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
+      userId = req.user._id;
     }
 
     // Check if company profile exists
@@ -1661,7 +1668,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       }
     }
 
-    const subscription = await Subscription.findOne({ userId: req.user._id });
+    const subscription = await Subscription.findOne({ user_id: userId });
     if (!subscription || subscription.end_date < new Date()) {
       return res.status(404).json({ error: 'Subscription not found or expired. Please upgrade your subscription to generate more proposals.' });
     }
