@@ -504,7 +504,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
         return res.status(400).json({ error: 'Failed to generate proposal. Please try again later.' });
       } else if (proposalTracker.status === "progress") {
         //Initilize the api call to mlPipeline to know the status of the proposal generation and update the proposal tracker
-        const res_1 = await axios.post(`http://13.51.83.4:8000/task-status/${proposalTracker.trackingId}`, {
+        const res_1 = await axios.get(`http://13.51.83.4:8000/task-status/${proposalTracker.trackingId}`, {
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
@@ -1607,7 +1607,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
         return res.status(400).json({ error: 'Failed to generate grant proposal. Please try again later.' });
       } else if (proposalTracker.status === "progress") {
         //Initilize the api call to mlPipeline to know the status of the grant proposal generation
-        const res_1 = await axios.post(`http://13.51.83.4:8000/grant_proposal_status/${proposalTracker.trackingId}`, data);
+        const res_1 = await axios.get(`http://13.51.83.4:8000/grant_proposal_status/${proposalTracker.trackingId}`, data);
         const res_data = res_1.data;
 
         if (res_data.status === "success") {
