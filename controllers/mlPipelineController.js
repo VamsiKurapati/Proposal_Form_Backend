@@ -514,13 +514,13 @@ exports.sendDataForProposalGeneration = async (req, res) => {
         const res_data = res_1.data;
 
         if (res_data.status === "success") {
-          console.log("res_data", res_data);
-          console.log("status", res_data.status);
-          console.log("result", res_data.result);
-          console.log("result.result", res_data.result.result);
           const proposalData = res_data.result.result;
 
           const processedProposal = replaceTextInJson(template_json, proposalData, userData, rfp);
+
+          console.log("processedProposal", processedProposal);
+          console.log("User Data", userData);
+          console.log("RFP", rfp);
 
           const new_Proposal = new Proposal({
             rfpId: proposal._id || "",
