@@ -115,10 +115,13 @@ exports.generatePDF = async (req, res) => {
 
     const pdf = await axios.post('http://56.228.64.88:5000/download-pdf', { "project": project, "isCompressed": isCompressed }, { responseType: "arraybuffer" });
 
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename="proposal.pdf"');
+    console.log("PDF: ", pdf.data);
+
+    // res.setHeader('Content-Type', 'application/pdf');
+    // res.setHeader('Content-Disposition', 'attachment; filename="proposal.pdf"');
     res.status(200).send(pdf.data);
   } catch (error) {
+    console.error('Error in generatePDF:', error);
     res.status(500).json({ message: error.message });
   }
 };
