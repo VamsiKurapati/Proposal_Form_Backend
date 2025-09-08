@@ -477,7 +477,8 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       "website": `${companyProfile_1.website || ""}`,
       "linkedIn": `${companyProfile_1.linkedIn || ""}`,
       "certifications": certifications_1,
-      "documents": companyDocuments_1,
+      // "documents": companyDocuments_1,
+      "documents": [],
       "caseStudies": caseStudies_1,
       "pastProjects": pastProjects_1,
       "employees_information": employeeData_1,
@@ -500,7 +501,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     const proposalTracker = await ProposalTracker.findOne({ rfpId: proposal._id });
     if (proposalTracker) {
       //Initilize the api call to mlPipeline to know the status of the proposal generation
-      const res_1 = await axios.post(`http://56.228.64.88:5000/get_proposal_from_tracking_id/${proposalTracker.trackingId}`, {
+      const res_1 = await axios.post(`http://13.51.83.4:8000/task-status/${proposalTracker.trackingId}`, {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
@@ -642,7 +643,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     }
 
     // Call ML service with timeout and better error handling
-    const res_1 = await axios.post(`http://56.228.64.88:5000/new_rfp_proposal_generation`, data, {
+    const res_1 = await axios.post(`http://13.51.83.4:8000/new_rfp_proposal_generation`, data, {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
@@ -660,29 +661,13 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       trackingId: res_data.trackingId,
     });
     await new_ProposalTracker.save();
-    return res.status(200).json({ message: 'Proposal Generation is already in progress. Please wait for it to complete.' });
+    return res.status(200).json({ message: 'Proposal Generation is In Progress. Please visit again after some time.' });
   } catch (err) {
     console.error('Error in /sendDataForProposalGeneration:', err);
-
-    // Provide more specific error messages based on error type
-    if (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'ENOTFOUND') {
-      return res.status(503).json({
-        error: 'Proposal generation service is unavailable',
-        details: 'Unable to connect to the proposal generation service. Please try again later.'
-      });
-    }
-
-    if (err.response?.status === 500) {
-      return res.status(502).json({
-        error: 'Proposal generation service error',
-        details: 'The proposal generation service encountered an internal error. Please try again later.'
-      });
-    }
-
     // Generic error response
     res.status(500).json({
       error: 'Failed to send data for proposal generation',
-      details: err.message || 'An unexpected error occurred'
+      message: err.message || 'An unexpected error occurred'
     });
   }
 };
@@ -801,7 +786,8 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
       "website": `${companyProfile_1.website || ""}`,
       "linkedIn": `${companyProfile_1.linkedIn || ""}`,
       "certifications": certifications_1,
-      "documents": companyDocuments_1,
+      // "documents": companyDocuments_1,
+      "documents": [],
       "caseStudies": caseStudies_1,
       "pastProjects": pastProjects_1,
       "employees_information": employeeData_1,
@@ -1601,7 +1587,8 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       "website": companyProfile_1.website || "",
       "linkedIn": companyProfile_1.linkedIn || "",
       "certifications": certifications_1,
-      "documents": companyDocuments_1,
+      // "documents": companyDocuments_1,
+      "documents": [],
       "caseStudies": caseStudies_1,
       "pastProjects": pastProjects_1,
       "employees_information": employeeData_1,
@@ -1624,7 +1611,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
     const proposalTracker = await ProposalTracker.findOne({ grantId: grant._id });
     if (proposalTracker) {
       //Initilize the api call to mlPipeline to know the status of the proposal generation
-      const res_1 = await axios.post(`http://56.228.64.88:5000/get_grant_proposal_from_tracking_id/${proposalTracker.trackingId}`, {
+      const res_1 = await axios.post(`http://13.51.83.4:8000/task-status/${proposalTracker.trackingId}`, {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
@@ -1682,7 +1669,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
 
         return res.status(200).json({ message: 'Grant Proposal Generation completed successfully.', proposal: processedProposal, proposalId: new_Proposal._id });
       } else if (res_data.status === "progress") {
-        return res.status(200).json({ message: 'Grant Proposal Generation is already in progress. Please wait for it to complete.' });
+        return res.status(200).json({ message: 'Grant Proposal Generation is Still In Progress. Please visit again after some time.' });
       } else {
         return res.status(400).json({ error: 'Failed to generate grant proposal. Please try again later.' });
       }
@@ -1695,7 +1682,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
 
     const currentGrants = await GrantProposal.find({ companyMail: userEmail, createdAt: { $gte: subscription.start_date, $lte: subscription.end_date } }).countDocuments();
     if (subscription.max_grant_proposal_generations <= currentGrants) {
-      return res.status(400).json({ error: 'You have reached the maximum number of grant proposals' });
+      return res.status(400).json({ error: 'You have reached the maximum number of grant proposals. Please upgrade your subscription to generate more proposals.' });
     }
 
     const data = {
@@ -1704,57 +1691,19 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       project_inputs: formData,
     };
 
-    const res_1 = await axios.post(`http://56.228.64.88:5000/grant_proposal_generation`, data);
-    const grant_result = res_1.data.grant_result;
-    const grant_proposal_data = replaceTextInJson_Grant(grant_template_json, userData, grant, grant_result);
-    const new_Proposal = new GrantProposal({
+    const res_1 = await axios.post(`http://13.51.83.4:8000/grant_proposal_generation`, data);
+    const res_data = res_1.data;
+
+    const new_tracker = new ProposalTracker({
       grantId: grant._id,
-      companyMail: userEmail,
-      deadline: grant.ESTIMATED_APPLICATION_DUE_DATE || "Not Provided",
-      title: grant.OPPORTUNITY_TITLE || "Not Provided",
-      client: grant.AGENCY_NAME || "Not Provided",
-      initialProposal: grant_proposal_data || null,
-      generatedProposal: grant_proposal_data || null,
-      project_inputs: formData,
-      status: "In Progress",
-      submittedAt: new Date(),
-      currentEditor: req.user._id,
-      isDeleted: false,
-      deletedAt: null,
-      deletedBy: null,
-      isSaved: false,
-      savedAt: null,
-      savedBy: null,
-      restoreBy: null,
-      restoredBy: null,
-      restoredAt: null,
-    });
-
-    await new_Proposal.save();
-
-    const new_Draft = new DraftGrant({
-      grantId: grant._id,
-      userEmail: userEmail,
-      grant: grant,
-      generatedProposal: grant_proposal_data,
-      currentEditor: req.user._id,
-    });
-    await new_Draft.save();
-
-    const new_CalendarEvent = new CalendarEvent({
-      companyId: companyProfile_1._id,
-      employeeId: req.user._id,
       proposalId: null,
-      grantId: grant._id,
-      title: "Proposal Submission",
-      startDate: new Date(),
-      endDate: new Date(),
-      status: "In Progress",
+      trackingId: res_data.trackingId,
+      companyMail: userEmail,
+      status: "progress",
     });
+    await new_tracker.save();
+    return res.status(200).json({ message: 'Grant Proposal Generation is In Progress. Please visit again after some time.' });
 
-    await new_CalendarEvent.save();
-
-    res.status(200).json(grant_proposal_data);
   } catch (err) {
     console.error('Error in /sendDataForProposalGeneration:', err);
     res.status(500).json({ error: 'Failed to send data for proposal generation' });
