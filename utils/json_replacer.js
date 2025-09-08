@@ -55,18 +55,18 @@ function replaceTextInJson(inputFile, proposalData, userData, rfpData) {
   const idTextMap = {
     //pag1
     "sfb0qxhzo": userData.companyName,
-    "buo0cwdou": rfpData["rfpTitle"],
+    "buo0cwdou": rfpData["RFP Title"],
     "s85d0tldh": getFormattedDate(),
     "ey860fgut": userData.location + "\n" + userData.website,
     //page2
 
     //page3
-    "mdub9ouyg": rfpData["rfpTitle"],
+    "mdub9ouyg": rfpData["RFP Title"],
     "amqnhn7r5": userData.companyName,
     "e393dkga7": getFormattedDate(),
     "4ey4knfhs": proposalData.summary,
     //page4
-    "sb4xu4at9": rfpData["rfpTitle"],
+    "sb4xu4at9": rfpData["RFP Title"],
     "j01snnxfv": userData.companyName,
     "tuss33u6f": getFormattedDate(),
     "4eyndmkib": proposalData.objectives,
@@ -78,43 +78,43 @@ function replaceTextInJson(inputFile, proposalData, userData, rfpData) {
     "zjlwgdt8i": proposalData.proposed_solution,
 
     //page6
-    "dcb17250f": rfpData["rfpTitle"],
+    "dcb17250f": rfpData["RFP Title"],
     "x2yby8dgv": userData.companyName,
     "27xoznepe": getFormattedDate(),
     "av3rcuxl4": proposalData.deliverables,
 
     //page7
-    "oylv4651k": rfpData["rfpTitle"],
+    "oylv4651k": rfpData["RFP Title"],
     "sml8c7n57": userData.companyName,
     "k27rh2pci": getFormattedDate(),
     "py7u859qk": proposalData.project_plan_tech_stack,
 
     //page8
-    "vnjr21s7m": rfpData["rfpTitle"],
+    "vnjr21s7m": rfpData["RFP Title"],
     "kxp07qj8i": userData.companyName,
     "o6gdqq202": getFormattedDate(),
     "88d3f1l3a": proposalData.timeline,
 
     //page9
-    "tg2kneo4b": rfpData["rfpTitle"],
+    "tg2kneo4b": rfpData["RFP Title"],
     "kqvsb9pql": userData.companyName,
     "4zdegwrsx": getFormattedDate(),
     "gc7hokh4z": proposalData.risk_assessment,
 
     //page10
-    "a6mnqs3pi": rfpData["rfpTitle"],
+    "a6mnqs3pi": rfpData["RFP Title"],
     "vcygupow0": userData.companyName,
     "wbdun45xt": getFormattedDate(),
     "ru4uuq3pc": proposalData.budget_estimate,
 
     //page11
-    "7dazzlr2d": rfpData["rfpTitle"],
+    "7dazzlr2d": rfpData["RFP Title"],
     "nn7ertnve": userData.companyName,
     "udlmeex0z": getFormattedDate(),
     "m14li90xw": proposalData.team_details,
 
     //page12
-    "m19j8subn": rfpData["rfpTitle"],
+    "m19j8subn": rfpData["RFP Title"],
     "mucg3l24k": userData.companyName,
     "0bjhx1p07": getFormattedDate(),
     "v78no4hjq": proposalData.certifications_awards,
@@ -124,43 +124,43 @@ function replaceTextInJson(inputFile, proposalData, userData, rfpData) {
     "pv7rgfqzh": awards_firstHalf + "\n" + awards_secondHalf,
 
     //page13
-    "79r01186b": rfpData["rfpTitle"],
+    "79r01186b": rfpData["RFP Title"],
     "0272zwvof": userData.companyName,
     "s74ju2ssi": getFormattedDate(),
     "0u9y51lyn": proposalData.caseStudies,
 
     //page14
-    "zy6zq47zd": rfpData["rfpTitle"],
+    "zy6zq47zd": rfpData["RFP Title"],
     "86ohbs6cd": userData.companyName,
     "7jlxt1p8r": getFormattedDate(),
     "oknuxrpj2": proposalData.pastProjects,
 
     //page15
-    "f9smebw4k": rfpData["rfpTitle"],
+    "f9smebw4k": rfpData["RFP Title"],
     "cm1fihph1": userData.companyName,
     "09rapdyr2": getFormattedDate(),
     "joc0g7s91": proposalData.Partnership_Overview,
 
     //page16
-    "f9smebw4k": rfpData["rfpTitle"],
+    "f9smebw4k": rfpData["RFP Title"],
     "cm1fihph1": userData.companyName,
     "09rapdyr2": getFormattedDate(),
     "joc0g7s91": proposalData.references_proven_results,
 
     //page17
-    "gm8bbqjgr": rfpData["rfpTitle"],
+    "gm8bbqjgr": rfpData["RFP Title"],
     "1a2awvl8b": userData.companyName,
     "zaliz1uya": getFormattedDate(),
     "etw86yng5": proposalData.why_us,
 
     //page18
-    "ctrxb9v51": rfpData["rfpTitle"],
+    "ctrxb9v51": rfpData["RFP Title"],
     "td31ssthl": userData.companyName,
     "0xidw6oi3": getFormattedDate(),
     "rhtfsgrfk": proposalData.terms_conditions,
 
     //page19
-    "2uzagqz7f": rfpData["rfpTitle"],
+    "2uzagqz7f": rfpData["RFP Title"],
     "y5kmwem4e": userData.companyName,
     "4fq2v9ilp": getFormattedDate(),
     "ryr2k6yjj": proposalData.cover_letter,
@@ -223,7 +223,7 @@ function replaceTextInJson(inputFile, proposalData, userData, rfpData) {
               element.properties.text = String(replacementText);
             }
 
-            console.log(`replaceTextById: Successfully processed text for ID ${element.id}`);
+            //console.log(`replaceTextById: Successfully processed text for ID ${element.id}`);
 
           } catch (error) {
             console.error(`replaceTextById: Error processing element with ID ${element.id}:`, error);

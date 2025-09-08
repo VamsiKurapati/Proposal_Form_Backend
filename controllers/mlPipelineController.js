@@ -520,9 +520,9 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
           const processedProposal = replaceTextInJson(template_json, proposalData, userData, rfp);
 
-          console.log("processedProposal", processedProposal);
-          console.log("User Data", userData);
-          console.log("RFP", rfp);
+          // console.log("processedProposal", processedProposal);
+          // console.log("User Data", userData);
+          // console.log("RFP", rfp);
 
           const new_Proposal = new Proposal({
             rfpId: proposal._id || "",
