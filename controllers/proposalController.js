@@ -7,7 +7,8 @@ const DraftRFP = require('../models/DraftRFP');
 const GrantProposal = require('../models/GrantProposal');
 const Grant = require('../models/Grant');
 const DraftGrant = require('../models/DraftGrant');
-
+const fs = require('fs');
+const path = require('path');
 const { getStructuredJson } = require('../utils/get_structured_json');
 const { decompress } = require('../utils/decompress');
 
@@ -74,24 +75,28 @@ exports.advancedComplianceCheck = async (req, res) => {
       }
     };
 
-    // console.log("Sending structuredJson to basic compliance");
+    console.log("Sending structuredJson to basic compliance");
 
-    // const resBasicCompliance = await axios.post('http://56.228.64.88:5000/basic-compliance', structuredJson, {
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   }
-    // });
-    // console.log("Received response from basic compliance");
+    const resBasicCompliance = await axios.post('http://56.228.64.88:5000/basic-compliance', structuredJson, {
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    console.log("Received response from basic compliance");
 
-    // const dataBasicCompliance = resBasicCompliance.data.report;
+    const dataBasicCompliance = resBasicCompliance.data.report;
 
-    // const firstKey = Object.keys(dataBasicCompliance)[0];
-    // const firstValue = dataBasicCompliance[firstKey];
+    const firstKey = Object.keys(dataBasicCompliance)[0];
+    const firstValue = dataBasicCompliance[firstKey];
 
-    // const compliance_dataBasicCompliance = firstValue["compliance_flags"];
+    const compliance_dataBasicCompliance = firstValue["compliance_flags"];
 
     console.log("Sending Data to advanced compliance");
+
     console.log("Data: ", initialProposal_1);
+
+    fs.writeFileSync(path.join(__dirname, 'output.json'), JSON.stringify(initialProposal_1, null, 2));
+
     const resProposal = await axios.post('http://56.228.64.88:5000/advance-compliance', initialProposal_1, {
       headers: {
         'Content-Type': 'application/json',
@@ -103,8 +108,7 @@ exports.advancedComplianceCheck = async (req, res) => {
     const dataAdvancedCompliance = resProposal.data.report;
 
 
-    // res.status(200).json({ compliance_dataBasicCompliance, dataAdvancedCompliance });
-    res.status(200).json({ dataAdvancedCompliance });
+    res.status(200).json({ compliance_dataBasicCompliance, dataAdvancedCompliance });
   } catch (error) {
     console.error('Error in advancedComplianceCheck:', error.response.data);
     res.status(500).json({ message: error.message });
