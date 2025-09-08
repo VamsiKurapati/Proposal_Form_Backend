@@ -95,7 +95,7 @@ exports.advancedComplianceCheck = async (req, res) => {
 
     console.log("Data: ", initialProposal_1);
 
-    fs.writeFileSync(path.join(__dirname, 'output.json'), JSON.stringify(initialProposal_1, null, 2));
+    fs.writeFileSync(path.join(__dirname, 'output.json'), initialProposal_1);
 
     const resProposal = await axios.post('http://56.228.64.88:5000/advance-compliance', initialProposal_1, {
       headers: {
@@ -110,8 +110,10 @@ exports.advancedComplianceCheck = async (req, res) => {
 
     res.status(200).json({ compliance_dataBasicCompliance, dataAdvancedCompliance });
   } catch (error) {
-    console.error('Error in advancedComplianceCheck:', error.response.data);
-    res.status(500).json({ message: error.message });
+    const statusCode = error.response && error.response.status ? error.response.status : 500;
+    const responseData = error.response && error.response.data ? error.response.data : null;
+    console.error('Error in advancedComplianceCheck:', responseData || error.message);
+    res.status(statusCode).json({ message: 'Advanced compliance check failed', error: responseData || error.message });
   }
 };
 
