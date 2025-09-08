@@ -1613,7 +1613,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
         return res.status(400).json({ error: 'Failed to generate grant proposal. Please try again later.' });
       } else if (proposalTracker.status === "progress") {
         //Initilize the api call to mlPipeline to know the status of the grant proposal generation
-        const res_1 = await axios.get(`http://13.51.83.4:8000/grant_proposal_status/${proposalTracker.trackingId}`, {
+        const res_1 = await axios.get(`http://13.51.83.4:8000/task-status/${proposalTracker.trackingId}`, {
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
@@ -1622,10 +1622,6 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
         const res_data = res_1.data;
 
         if (res_data.status === "success") {
-          console.log("res_data", res_data);
-          console.log("status", res_data.status);
-          console.log("result", res_data.result);
-          console.log("result.result", res_data.result.result);
           const proposalData = res_data.result.result;
 
           const processedProposal = replaceTextInJson_Grant(grant_template_json, proposalData, userData, grant);
@@ -1707,7 +1703,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       project_inputs: formData,
     };
 
-    const res_1 = await axios.post(`http://13.51.83.4:8000/grant_proposal_generation`, data);
+    const res_1 = await axios.post(`http://13.51.83.4:8000/new_grant_proposal_generation`, data);
     const res_data = res_1.data;
 
     const new_tracker = new ProposalTracker({
