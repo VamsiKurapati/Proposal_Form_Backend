@@ -495,7 +495,18 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     //Check if there is any proposal in proposal tracker with the same rfpId
     const proposalTracker = await ProposalTracker.findOne({ rfpId: proposal._id });
     if (proposalTracker) {
-      //Initilize the api call to mlPipeline to know the status of the proposal generation
+
+      if (proposalTracker.status === "success") {
+        const new_prop = await Proposal.findOne({ _id: proposalTracker.proposalId });
+        return res.status(200).json({ message: 'Proposal Generation completed successfully.', proposal: new_prop.generatedProposal, proposalId: new_prop._id });
+      } else if (proposalTracker.status === "error") {
+        await ProposalTracker.deleteOne({ rfpId: proposal._id });
+        return res.status(400).json({ error: 'Failed to generate proposal. Please try again later.' });
+      } else if (proposalTracker.status === "progress") {
+        return res.status(200).json({ message: 'Proposal Generation is still in progress. Please wait for it to complete.' });
+      }
+
+      //Initilize the api call to mlPipeline to know the status of the proposal generation and update the proposal tracker
       const res_1 = await axios.post(`http://13.51.83.4:8000/task-status/${proposalTracker.trackingId}`, {
         headers: {
           'Content-Type': 'application/json',
@@ -507,19 +518,6 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
       if (res_data.status === "success") {
         // Check if ML service returned valid data
-        if (!res_data.result) {
-          console.error("ML service returned invalid response:", res_data.result);
-          //Delete the proposal tracker
-          await ProposalTracker.deleteOne({ rfpId: proposal._id });
-          proposalTracker.status = "error";
-          await proposalTracker.save();
-          return res.status(500).json({
-            error: 'ML service returned invalid response. Please try again later.',
-            details: 'The proposal generation service is currently unavailable or returned an empty response.',
-            result: res_data.result
-          });
-        }
-
         console.log("res_data", res_data);
         console.log("res_data.result", res_data.result);
         console.log("res_data.result.result", res_data.result.result);
@@ -574,17 +572,15 @@ exports.sendDataForProposalGeneration = async (req, res) => {
         });
         await new_CalendarEvent.save();
 
-        res.status(200).json({ processedProposal, proposalId: new_Proposal._id });
-
         proposalTracker.status = "success";
         await proposalTracker.save();
 
         return res.status(200).json({ message: 'Proposal Generation completed successfully.', proposal: processedProposal, proposalId: new_Proposal._id });
-      } else if (res_data.status === "progress") {
-        return res.status(200).json({ message: 'Proposal Generation is already in progress. Please wait for it to complete.' });
+      } else if (res_data.status === "processing") {
+        return res.status(200).json({ message: 'Proposal Generation is still in progress. Please wait for it to complete.' });
       } else if (res_data.status === "error") {
         //Delete the proposal tracker
-        await ProposalTracker.deleteOne({ rfpId: proposal._id });
+        await ProposalTracker.deleteOne({ rfpId: proposal._id, proposalId: null });
         return res.status(400).json({ error: 'Failed to generate proposal. Please try again later.' });
       }
     }
@@ -638,7 +634,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       }
     }
 
-    // Call ML service with timeout and better error handling
+    // Call ML service to generate proposal
     const res_1 = await axios.post(`http://13.51.83.4:8000/new_rfp_proposal_generation`, data, {
       headers: {
         'Content-Type': 'application/json',
@@ -658,7 +654,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
         trackingId: res_data.task_id,
       });
       await new_ProposalTracker.save();
-      return res.status(200).json({ message: 'Proposal Generation is In Progress. Please visit again after some time.' });
+      return res.status(200).json({ message: 'Proposal Generation is in Progress. Please visit again after some time.' });
     }
 
     return res.status(400).json({ error: 'Failed to generate proposal. Please try again later.' });
@@ -1477,8 +1473,8 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
     const { grant, formData } = req.body;
 
     // Validate grant object
-    if (!grant) {
-      return res.status(400).json({ error: 'Grant data is required' });
+    if (!grant || !formData) {
+      return res.status(400).json({ error: 'Grant data and form data are required' });
     }
 
     let userEmail = req.user.email;
@@ -1486,7 +1482,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
     if (req.user.role === "employee") {
       const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
       if (!employeeProfile) {
-        return res.status(404).json({ error: 'Employee profile not found' });
+        return res.status(404).json({ error: 'Employee profile not found. Please complete your employee profile first.' });
       }
       userEmail = employeeProfile.companyMail;
       companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
@@ -1615,8 +1611,8 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       });
 
       const res_data = res_1.data;
-      if (res_data.status === "success") {
-        const proposalData = res_1.data.proposal;
+      if (res_data.result.status === "success") {
+        const proposalData = res_1.result.result;
         const processedProposal = replaceTextInJson_Grant(grant_template_json, userData, grant, proposalData);
         const new_Proposal = new GrantProposal({
           grantId: grant._id,
@@ -1658,8 +1654,8 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
         await proposalTracker.save();
 
         return res.status(200).json({ message: 'Grant Proposal Generation completed successfully.', proposal: processedProposal, proposalId: new_Proposal._id });
-      } else if (res_data.status === "progress") {
-        return res.status(200).json({ message: 'Grant Proposal Generation is Still In Progress. Please visit again after some time.' });
+      } else if (res_data.status === "processing") {
+        return res.status(200).json({ message: 'Grant Proposal Generation is still in progress. Please wait for it to complete.' });
       } else {
         return res.status(400).json({ error: 'Failed to generate grant proposal. Please try again later.' });
       }
@@ -1667,7 +1663,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
 
     const subscription = await Subscription.findOne({ userId: req.user._id });
     if (!subscription || subscription.end_date < new Date()) {
-      return res.status(404).json({ error: 'Subscription not found or expired' });
+      return res.status(404).json({ error: 'Subscription not found or expired. Please upgrade your subscription to generate more proposals.' });
     }
 
     const currentGrants = await GrantProposal.find({ companyMail: userEmail, createdAt: { $gte: subscription.start_date, $lte: subscription.end_date } }).countDocuments();
@@ -1689,10 +1685,10 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       proposalId: null,
       trackingId: res_data.trackingId,
       companyMail: userEmail,
-      status: "progress",
+      status: "processing",
     });
     await new_tracker.save();
-    return res.status(200).json({ message: 'Grant Proposal Generation is In Progress. Please visit again after some time.' });
+    return res.status(200).json({ message: 'Grant Proposal Generation is in Progress. Please visit again after some time.' });
 
   } catch (err) {
     console.error('Error in /sendDataForProposalGeneration:', err);
