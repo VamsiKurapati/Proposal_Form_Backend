@@ -642,13 +642,13 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       }
     });
 
+    console.log("res_1", res_1);
+
     const res_data = res_1.data;
 
     if (res_data.status === "submitted") {
       const new_ProposalTracker = new ProposalTracker({
         rfpId: proposal._id,
-        proposalId: null,
-        grantId: null,
         companyMail: userEmail,
         status: "progress",
         trackingId: res_data.task_id,
