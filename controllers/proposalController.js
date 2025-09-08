@@ -75,21 +75,21 @@ exports.advancedComplianceCheck = async (req, res) => {
       }
     };
 
-    console.log("Sending structuredJson to basic compliance");
+    // console.log("Sending structuredJson to basic compliance");
 
-    const resBasicCompliance = await axios.post('http://56.228.64.88:5000/basic-compliance', structuredJson, {
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
-    console.log("Received response from basic compliance");
+    // const resBasicCompliance = await axios.post('http://56.228.64.88:5000/basic-compliance', structuredJson, {
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   }
+    // });
+    // console.log("Received response from basic compliance");
 
-    const dataBasicCompliance = resBasicCompliance.data.report;
+    // const dataBasicCompliance = resBasicCompliance.data.report;
 
-    const firstKey = Object.keys(dataBasicCompliance)[0];
-    const firstValue = dataBasicCompliance[firstKey];
+    // const firstKey = Object.keys(dataBasicCompliance)[0];
+    // const firstValue = dataBasicCompliance[firstKey];
 
-    const compliance_dataBasicCompliance = firstValue["compliance_flags"];
+    // const compliance_dataBasicCompliance = firstValue["compliance_flags"];
 
     console.log("Sending Data to advanced compliance");
 
@@ -108,7 +108,8 @@ exports.advancedComplianceCheck = async (req, res) => {
     const dataAdvancedCompliance = resProposal.data.report;
 
 
-    res.status(200).json({ compliance_dataBasicCompliance, dataAdvancedCompliance });
+    // res.status(200).json({ compliance_dataBasicCompliance, dataAdvancedCompliance });
+    res.status(200).json({ dataAdvancedCompliance });
   } catch (error) {
     const statusCode = error.response && error.response.status ? error.response.status : 500;
     const responseData = error.response && error.response.data ? error.response.data : null;
