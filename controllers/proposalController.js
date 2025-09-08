@@ -95,7 +95,7 @@ exports.advancedComplianceCheck = async (req, res) => {
 
     console.log("Data: ", initialProposal_1);
 
-    fs.writeFileSync(path.join(__dirname, 'output.json'), initialProposal_1);
+    //fs.writeFileSync(path.join(__dirname, 'output.json'), initialProposal_1);
 
     const resProposal = await axios.post('http://56.228.64.88:5000/advance-compliance', initialProposal_1, {
       headers: {
