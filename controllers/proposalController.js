@@ -27,6 +27,7 @@ exports.basicComplianceCheck = async (req, res) => {
     const resProposal = await axios.post('http://56.228.64.88:5000/basic-compliance', structuredJson, {
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json'
       }
     });
 
@@ -75,27 +76,20 @@ exports.advancedComplianceCheck = async (req, res) => {
       }
     };
 
-    // console.log("Sending structuredJson to basic compliance");
 
-    // const resBasicCompliance = await axios.post('http://56.228.64.88:5000/basic-compliance', structuredJson, {
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   }
-    // });
-    // console.log("Received response from basic compliance");
+    const resBasicCompliance = await axios.post('http://56.228.64.88:5000/basic-compliance', structuredJson, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    });
 
-    // const dataBasicCompliance = resBasicCompliance.data.report;
+    const dataBasicCompliance = resBasicCompliance.data.report;
 
-    // const firstKey = Object.keys(dataBasicCompliance)[0];
-    // const firstValue = dataBasicCompliance[firstKey];
+    const firstKey = Object.keys(dataBasicCompliance)[0];
+    const firstValue = dataBasicCompliance[firstKey];
 
-    // const compliance_dataBasicCompliance = firstValue["compliance_flags"];
-
-    console.log("Sending Data to advanced compliance");
-
-    console.log("Data: ", initialProposal_1);
-
-    //fs.writeFileSync(path.join(__dirname, 'output.json'), initialProposal_1);
+    const compliance_dataBasicCompliance = firstValue["compliance_flags"];
 
     const resProposal = await axios.post('http://56.228.64.88:5000/advance-compliance', initialProposal_1, {
       headers: {
@@ -103,13 +97,10 @@ exports.advancedComplianceCheck = async (req, res) => {
       }
     });
 
-    console.log("Received Data from advanced compliance");
-
     const dataAdvancedCompliance = resProposal.data.report;
 
+    res.status(200).json({ compliance_dataBasicCompliance, dataAdvancedCompliance });
 
-    // res.status(200).json({ compliance_dataBasicCompliance, dataAdvancedCompliance });
-    res.status(200).json({ dataAdvancedCompliance });
   } catch (error) {
     const statusCode = error.response && error.response.status ? error.response.status : 500;
     const responseData = error.response && error.response.data ? error.response.data : null;
@@ -122,16 +113,7 @@ exports.generatePDF = async (req, res) => {
   try {
     const { project, isCompressed } = req.body;
 
-    const pdf = await axios.post('http://56.228.64.88:5000/download-pdf', { project, isCompressed }, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      responseType: "arraybuffer"
-    });
-
-    console.log("Received response from generatePDF");
-
-    console.log("PDF: ", pdf.data);
+    const pdf = await axios.post('http://56.228.64.88:5000/download-pdf', { "project": project, "isCompressed": isCompressed }, { responseType: "arraybuffer" });
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename="proposal.pdf"');
