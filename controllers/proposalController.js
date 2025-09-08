@@ -106,9 +106,6 @@ exports.advancedComplianceCheck = async (req, res) => {
 
     res.status(200).json({ compliance_dataBasicCompliance, dataAdvancedCompliance });
   } catch (error) {
-    console.error('Error in advancedComplianceCheck:', error);
-    console.error('Error stack:', error.stack);
-    console.error('Error in advancedComplianceCheck:', error.data);
     console.error('Error in advancedComplianceCheck:', error.response.data);
     res.status(500).json({ message: error.message });
   }
@@ -121,6 +118,8 @@ exports.generatePDF = async (req, res) => {
 
     console.log("Sending Data to generatePDF");
 
+    console.log("Data: ", decompressedProject);
+
     const pdf = await axios.post('http://56.228.64.88:5000/download-pdf', decompressedProject, {
       headers: {
         'Content-Type': 'application/json',
@@ -130,13 +129,12 @@ exports.generatePDF = async (req, res) => {
 
     console.log("Received response from generatePDF");
 
+    console.log("PDF: ", pdf.data);
+
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename="proposal.pdf"');
     res.status(200).send(pdf.data);
   } catch (error) {
-    console.error('Error in generatePDF:', error);
-    console.error('Error in generatePDF:', error.data);
-    console.error('Error in generatePDF:', error.response.data);
     res.status(500).json({ message: error.message });
   }
 };
