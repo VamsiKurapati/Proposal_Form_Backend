@@ -92,7 +92,7 @@ exports.advancedComplianceCheck = async (req, res) => {
 
     setTimeout(() => {
       console.log("Starting advanced compliance");
-    }, 10000); // 5 seconds Delay
+    }, 5000); // 5 seconds Delay
 
     console.log("Sending Data to advanced compliance");
     console.log("Data: ", initialProposal_1);
