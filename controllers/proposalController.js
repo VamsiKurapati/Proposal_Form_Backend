@@ -123,6 +123,10 @@ exports.generatePDF = async (req, res) => {
 
     console.log("Data: ", decompressedProject);
 
+    const structuredJson = getStructuredJson(decompressedProject, decompressedProject.initialProposal);
+
+    console.log("Structured Json: ", structuredJson);
+
     const pdf = await axios.post('http://56.228.64.88:5000/download-pdf', decompressedProject, {
       headers: {
         'Content-Type': 'application/json',
