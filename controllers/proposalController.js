@@ -92,6 +92,7 @@ exports.advancedComplianceCheck = async (req, res) => {
 
 
     console.log("Sending Data to advanced compliance");
+    console.log("Data: ", initialProposal_1);
     const resProposal = await axios.post('http://56.228.64.88:5000/advance-compliance', initialProposal_1, {
       headers: {
         'Content-Type': 'application/json',
