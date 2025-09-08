@@ -11,6 +11,7 @@ const subscriptionPlanSchema = new mongoose.Schema({
   maxRFPProposalGenerations: { type: Number, required: true, min: 0 },
   maxGrantProposalGenerations: { type: Number, required: true, min: 0 },
   description: { type: String, required: true },
+  isContact: { type: Boolean, default: false },
 }, { timestamps: true });
 
 module.exports = mongoose.model("SubscriptionPlan", subscriptionPlanSchema);

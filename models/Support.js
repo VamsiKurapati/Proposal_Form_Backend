@@ -56,7 +56,8 @@ const supportSchema = new mongoose.Schema({
     type: String,
     enum: ['Low', 'Medium', 'High'],
     default: 'Low'
-  }
+  },
+  plan_name: { type: String, default: null }
 }, { timestamps: true });
 
 

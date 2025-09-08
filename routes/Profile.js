@@ -4,7 +4,7 @@ const router = express.Router();
 
 const verifyUser = require('../utils/verifyUser');
 
-const { getProfile, getEmployeeProfile, getCompanyProfile, updateCompanyProfile, updateEmployeeProfile, addEmployee, removeEmployee, addCaseStudy, addLicenseAndCertification, uploadLogo, getProfileImage, getCaseStudy, addDocument, getDocument, getProposals, changePassword } = require('../controllers/profileController.js');
+const { getProfile, getEmployeeProfile, getCompanyProfile, updateCompanyProfile, updateEmployeeProfile, addEmployee, removeEmployee, addCaseStudy, addLicenseAndCertification, uploadLogo, getProfileImage, getCaseStudy, addDocument, getDocument, getProposals, changePassword, getPaymentById } = require('../controllers/profileController.js');
 
 router.get('/getProfile', verifyUser(["company"]), getProfile);
 router.get('/getCompanyProfile', verifyUser(["employee"]), getCompanyProfile);
@@ -22,5 +22,6 @@ router.get('/getProfileImage/file/:id', getProfileImage);
 router.get('/getCaseStudy/:id', getCaseStudy);
 router.get('/getDocument/:id', getDocument);
 router.put('/changePassword', verifyUser(["company", "employee", "SuperAdmin"]), changePassword);
+router.get('/getPaymentById/:id', verifyUser(["company", "employee"]), getPaymentById);
 
 module.exports = router;

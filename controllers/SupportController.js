@@ -5,7 +5,9 @@ const Notification = require('../models/Notification');
 // Create ticket API
 exports.createTicket = async (req, res) => {
   try {
-    const { userId, category, subCategory, description } = req.body;
+    const { userId, category, subCategory, description, plan_name } = req.body;
+
+    
 
     if (!userId || !description) {
       return res.status(400).json({ message: "userId and description are required" });
@@ -38,7 +40,8 @@ exports.createTicket = async (req, res) => {
       category,
       subCategory,
       description,
-      attachments
+      attachments,
+      plan_name
     });
 
     const savedTicket = await ticket.save();
