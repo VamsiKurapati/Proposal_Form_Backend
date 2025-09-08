@@ -379,11 +379,6 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       .find({ _id: { $in: companyProfile_1.documents.map(doc => doc.fileId) } })
       .toArray();
 
-    // Check if files were found
-    if (!files || files.length === 0) {
-      return res.status(400).json({ error: 'No uploaded files found. Please ensure all company documents are properly uploaded.' });
-    }
-
     const filesWithBase64 = await Promise.all(
       files.map(async (file) => {
         const chunks = await db.collection('uploads.chunks')
@@ -512,17 +507,24 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
       if (res_data.status === "success") {
         // Check if ML service returned valid data
-        if (!res_1.data.proposal) {
-          console.error("ML service returned invalid response:", res_1.data);
+        if (!res_data.result) {
+          console.error("ML service returned invalid response:", res_data.result);
           //Delete the proposal tracker
           await ProposalTracker.deleteOne({ rfpId: proposal._id });
+          proposalTracker.status = "error";
+          await proposalTracker.save();
           return res.status(500).json({
             error: 'ML service returned invalid response. Please try again later.',
-            details: 'The proposal generation service is currently unavailable or returned an empty response.'
+            details: 'The proposal generation service is currently unavailable or returned an empty response.',
+            result: res_data.result
           });
         }
 
-        const proposalData = res_1.data.proposal;
+        console.log("res_data", res_data);
+        console.log("res_data.result", res_data.result);
+        console.log("res_data.result.result", res_data.result.result);
+
+        const proposalData = res_data.result.result;
 
         const processedProposal = replaceTextInJson(template_json, proposalData, userData, rfp);
 
@@ -574,14 +576,8 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
         res.status(200).json({ processedProposal, proposalId: new_Proposal._id });
 
-        const new_ProposalTracker = new ProposalTracker({
-          rfpId: proposal._id,
-          proposalId: new_Proposal._id,
-          trackingId: res_data.trackingId,
-          companyMail: userEmail,
-          status: "success",
-        });
-        await new_ProposalTracker.save();
+        proposalTracker.status = "success";
+        await proposalTracker.save();
 
         return res.status(200).json({ message: 'Proposal Generation completed successfully.', proposal: processedProposal, proposalId: new_Proposal._id });
       } else if (res_data.status === "progress") {
@@ -652,16 +648,21 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
     const res_data = res_1.data;
 
-    const new_ProposalTracker = new ProposalTracker({
-      rfpId: proposal._id,
-      proposalId: null,
-      grantId: null,
-      companyMail: userEmail,
-      status: "progress",
-      trackingId: res_data.trackingId,
-    });
-    await new_ProposalTracker.save();
-    return res.status(200).json({ message: 'Proposal Generation is In Progress. Please visit again after some time.' });
+    if (res_data.status === "submitted") {
+      const new_ProposalTracker = new ProposalTracker({
+        rfpId: proposal._id,
+        proposalId: null,
+        grantId: null,
+        companyMail: userEmail,
+        status: "progress",
+        trackingId: res_data.task_id,
+      });
+      await new_ProposalTracker.save();
+      return res.status(200).json({ message: 'Proposal Generation is In Progress. Please visit again after some time.' });
+    }
+
+    return res.status(400).json({ error: 'Failed to generate proposal. Please try again later.' });
+
   } catch (err) {
     console.error('Error in /sendDataForProposalGeneration:', err);
     // Generic error response
@@ -1505,11 +1506,6 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       .find({ _id: { $in: companyProfile_1.documents.map(doc => doc.fileId) } })
       .toArray();
 
-    // Check if files were found
-    if (!files || files.length === 0) {
-      return res.status(400).json({ error: 'No uploaded files found. Please ensure all company documents are properly uploaded.' });
-    }
-
     const filesWithBase64 = await Promise.all(
       files.map(async (file) => {
         const chunks = await db.collection('uploads.chunks')
@@ -1658,14 +1654,8 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
         });
         await new_CalendarEvent.save();
 
-        const new_ProposalTracker = new ProposalTracker({
-          grantId: grant._id,
-          proposalId: new_Proposal._id,
-          trackingId: res_data.trackingId,
-          companyMail: userEmail,
-          status: "success",
-        });
-        await new_ProposalTracker.save();
+        proposalTracker.status = "success";
+        await proposalTracker.save();
 
         return res.status(200).json({ message: 'Grant Proposal Generation completed successfully.', proposal: processedProposal, proposalId: new_Proposal._id });
       } else if (res_data.status === "progress") {
