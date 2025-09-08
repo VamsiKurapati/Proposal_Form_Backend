@@ -642,8 +642,6 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       }
     });
 
-    console.log("res_1", res_1);
-
     const res_data = res_1.data;
 
     if (res_data.status === "submitted") {
@@ -1689,7 +1687,6 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
 
     const new_tracker = new ProposalTracker({
       grantId: grant._id,
-      proposalId: null,
       trackingId: res_data.trackingId,
       companyMail: userEmail,
       status: "processing",
