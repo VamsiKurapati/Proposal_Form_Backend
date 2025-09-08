@@ -12,6 +12,7 @@ const { randomInt } = require("crypto");
 const multer = require("multer");
 const nodemailer = require("nodemailer");
 const Subscription = require("../models/Subscription");
+const Payment = require("../models/Payments");
 
 const storage = new GridFsStorage({
     url: process.env.MONGO_URI,
@@ -745,3 +746,43 @@ exports.changePassword = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+
+exports.getPaymentById = async (req, res) => {
+    try {
+      const { id } = req.params;
+  
+      // Find payment by ID
+      const payment = await Payment.findOne({user_id:id  
+      });
+      if (!payment) {
+        return res.status(404).json({ message: "Payment not found" });
+      }
+ 
+  
+      // Fetch subscription (if available)
+      let planName = "Unknown Plan";
+      if (payment.subscription_id) {
+        const subscription = await Subscription.findById(
+          payment.subscription_id,
+          { plan_name: 1 }
+        );
+        if (subscription) {
+          planName = subscription.plan_name;
+        }
+      }
+  
+      // Attach company and plan to payment
+      const paymentWithDetails = {
+        ...payment.toObject(),
+        planName
+      };
+  
+      res.json(paymentWithDetails);
+    } catch (err) {
+      res.status(500).json({
+        message: "Error fetching payment by ID",
+        error: err.message
+      });
+    }
+  };

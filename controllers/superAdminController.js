@@ -17,7 +17,31 @@ exports.getCompanyStatsAndData = async (req, res) => {
   try {
     const totalCompanies = await CompanyProfile.countDocuments();
     const totalProposals = await Proposal.countDocuments();
+
     const companies = await CompanyProfile.find();
+    // For each company, find the user's current subscription and attach plan_name
+    const userIds = companies.map(company => company.userId);
+    // Fetch all subscriptions for these users
+    const subscriptions = await Subscription.find({ user_id: { $in: userIds } });
+    // Map user_id to plan_name for quick lookup (get latest subscription per user)
+    const userPlanMap = {};
+    subscriptions.forEach(sub => {
+      const key = sub.user_id ? sub.user_id.toString() : undefined;
+      if (!key) return;
+      // If multiple subscriptions, pick the latest by end_date
+      if (!userPlanMap[key] || (userPlanMap[key].end_date < sub.end_date)) {
+        userPlanMap[key] = {
+          plan_name: sub.plan_name,
+          end_date: sub.end_date
+        };
+      }
+    });
+    // Attach plan_name to each company
+    companies.forEach(company => {
+      const key = company.userId ? company.userId.toString() : undefined;
+      const planInfo = key ? userPlanMap[key] : null;
+      company._doc.plan_name = planInfo ? planInfo.plan_name : null;
+    });
 
     res.json({
       stats: {
@@ -223,16 +247,40 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
     // Remove duplicates
     const uniqueUserIds = [...new Set(userIds.map(id => id.toString()))];
 
-    // Fetch companies in bulk from CompanyProfile
+    // Fetch companies in bulk from CompanyProfile by userId
     let companiesMap = {};
     if (uniqueUserIds.length > 0) {
       const companies = await require("../models/CompanyProfile").find(
-        { _id: { $in: uniqueUserIds } },
-        { companyName: 1 } // only fetch companyName field
+        { userId: { $in: uniqueUserIds } },
+        { companyName: 1, userId: 1 }
       );
 
       companiesMap = companies.reduce((acc, company) => {
-        acc[company._id.toString()] = company.companyName;
+        if (company.userId) {
+          acc[company.userId.toString()] = company.companyName;
+        }
+        return acc;
+      }, {});
+    }
+
+    // For each payment, fetch the plan_name from the related Subscription and attach it
+    // Collect all unique subscription_ids from payments
+    const subscriptionIds = payments
+      .map(payment => payment.subscription_id)
+      .filter(id => !!id);
+
+    // Remove duplicates
+    const uniqueSubscriptionIds = [...new Set(subscriptionIds.map(id => id.toString()))];
+
+    // Fetch subscriptions in bulk
+    let subscriptionMap = {};
+    if (uniqueSubscriptionIds.length > 0) {
+      const subscriptions = await Subscription.find(
+        { _id: { $in: uniqueSubscriptionIds } },
+        { plan_name: 1 }
+      );
+      subscriptionMap = subscriptions.reduce((acc, sub) => {
+        acc[sub._id.toString()] = sub.plan_name;
         return acc;
       }, {});
     }
@@ -243,9 +291,14 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
         ? companiesMap[payment.user_id.toString()] || "Unknown Company"
         : "Unknown Company";
 
+      const planName = payment.subscription_id
+        ? subscriptionMap[payment.subscription_id.toString()] || "Unknown Plan"
+        : "Unknown Plan";
+
       return {
         ...payment.toObject(),
-        companyName
+        companyName,
+        planName
       };
     });
 
@@ -564,7 +617,7 @@ exports.createCustomPlan = async (req, res) => {
     // 3. Create Subscription record
     const subscription = await Subscription.create({
       user_id: user._id,
-      plan_name: "Custom",
+      plan_name: "Enterprise",
       plan_price: price,
       start_date: startDate,
       end_date: endDate,
