@@ -72,7 +72,7 @@ function replaceTextInJson(inputFile, proposalData, userData, rfpData) {
     "4eyndmkib": proposalData.objectives,
 
     //page5
-    "mxzpxxnjo": rfpData['rfpTitle'],
+    "mxzpxxnjo": rfpData['RFP Title'],
     "1z73ijy8k": userData.companyName,
     "juifg3w23": getFormattedDate(),
     "zjlwgdt8i": proposalData.proposed_solution,
