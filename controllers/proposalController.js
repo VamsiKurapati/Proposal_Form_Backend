@@ -117,8 +117,8 @@ exports.generatePDF = async (req, res) => {
 
     console.log("PDF: ", pdf.data);
 
-    // res.setHeader('Content-Type', 'application/pdf');
-    // res.setHeader('Content-Disposition', 'attachment; filename="proposal.pdf"');
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="proposal.pdf"');
     res.status(200).send(pdf.data);
   } catch (error) {
     console.error('Error in generatePDF:', error);
