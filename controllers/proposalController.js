@@ -117,19 +117,25 @@ exports.generatePDF = async (req, res) => {
   try {
     const { project, isCompressed } = req.body;
     const decompressedProject = isCompressed ? decompress(project) : project;
+
+    console.log("Sending Data to generatePDF");
+
     const pdf = await axios.post('http://56.228.64.88:5000/download-pdf', decompressedProject, {
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json'
       },
       responseType: "arraybuffer"
     });
+
+    console.log("Received response from generatePDF");
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename="proposal.pdf"');
     res.status(200).send(pdf.data);
   } catch (error) {
     console.error('Error in generatePDF:', error);
+    console.error('Error in generatePDF:', error.data);
+    console.error('Error in generatePDF:', error.response.data);
     res.status(500).json({ message: error.message });
   }
 };
