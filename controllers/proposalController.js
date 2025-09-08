@@ -76,11 +76,11 @@ exports.advancedComplianceCheck = async (req, res) => {
 
     console.log("Sending structuredJson to basic compliance");
 
-    // const resBasicCompliance = await axios.post('http://56.228.64.88:5000/basic-compliance', structuredJson, {
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   }
-    // });
+    const resBasicCompliance = await axios.post('http://56.228.64.88:5000/basic-compliance', structuredJson, {
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
     console.log("Received response from basic compliance");
 
     const dataBasicCompliance = resBasicCompliance.data.report;
@@ -90,6 +90,9 @@ exports.advancedComplianceCheck = async (req, res) => {
 
     const compliance_dataBasicCompliance = firstValue["compliance_flags"];
 
+    setTimeout(() => {
+      console.log("Starting advanced compliance");
+    }, 10000); // 5 seconds Delay
 
     console.log("Sending Data to advanced compliance");
     console.log("Data: ", initialProposal_1);
