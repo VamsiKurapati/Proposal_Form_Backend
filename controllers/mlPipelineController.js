@@ -503,85 +503,77 @@ exports.sendDataForProposalGeneration = async (req, res) => {
         await ProposalTracker.deleteOne({ rfpId: proposal._id });
         return res.status(400).json({ error: 'Failed to generate proposal. Please try again later.' });
       } else if (proposalTracker.status === "progress") {
-        return res.status(200).json({ message: 'Proposal Generation is still in progress. Please wait for it to complete.' });
-      }
-
-      //Initilize the api call to mlPipeline to know the status of the proposal generation and update the proposal tracker
-      const res_1 = await axios.post(`http://13.51.83.4:8000/task-status/${proposalTracker.trackingId}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-      });
-
-      const res_data = res_1.data;
-
-      if (res_data.status === "success") {
-        // Check if ML service returned valid data
-        console.log("res_data", res_data);
-        console.log("res_data.result", res_data.result);
-        console.log("res_data.result.result", res_data.result.result);
-
-        const proposalData = res_data.result.result;
-
-        const processedProposal = replaceTextInJson(template_json, proposalData, userData, rfp);
-
-        const new_Proposal = new Proposal({
-          rfpId: proposal._id || "",
-          title: proposal.title || "",
-          client: proposal.organization || "Not found",
-          initialProposal: processedProposal,
-          generatedProposal: processedProposal,
-          companyMail: userEmail,
-          deadline: proposal.deadline || new Date(),
-          status: "In Progress",
-          submittedAt: new Date(),
-          currentEditor: req.user._id,
-          isDeleted: false,
-          deletedAt: null,
-          deletedBy: null,
-          isSaved: false,
-          savedAt: null,
-          savedBy: null,
-          restoreBy: null,
-          restoredBy: null,
-          restoredAt: null,
+        //Initilize the api call to mlPipeline to know the status of the proposal generation and update the proposal tracker
+        const res_1 = await axios.post(`http://13.51.83.4:8000/task-status/${proposalTracker.trackingId}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
         });
 
-        await new_Proposal.save();
+        const res_data = res_1.data;
 
-        const new_Draft = new DraftRFP({
-          userEmail: userEmail,
-          rfpId: proposal._id || "",
-          proposalId: new_Proposal._id || "",
-          rfp: { ...proposal },
-          generatedProposal: processedProposal,
-          currentEditor: req.user._id,
-        });
-        await new_Draft.save();
+        if (res_data.status === "success") {
+          const proposalData = res_data.result.result;
 
-        const new_CalendarEvent = new CalendarEvent({
-          companyId: companyProfile_1._id,
-          employeeId: req.user._id,
-          proposalId: new_Proposal._id,
-          grantId: null,
-          title: proposal.title || "",
-          startDate: new Date(),
-          endDate: new Date(),
-          status: "In Progress",
-        });
-        await new_CalendarEvent.save();
+          const processedProposal = replaceTextInJson(template_json, proposalData, userData, rfp);
 
-        proposalTracker.status = "success";
-        await proposalTracker.save();
+          const new_Proposal = new Proposal({
+            rfpId: proposal._id || "",
+            title: proposal.title || "",
+            client: proposal.organization || "Not found",
+            initialProposal: processedProposal,
+            generatedProposal: processedProposal,
+            companyMail: userEmail,
+            deadline: proposal.deadline || new Date(),
+            status: "In Progress",
+            submittedAt: new Date(),
+            currentEditor: req.user._id,
+            isDeleted: false,
+            deletedAt: null,
+            deletedBy: null,
+            isSaved: false,
+            savedAt: null,
+            savedBy: null,
+            restoreBy: null,
+            restoredBy: null,
+            restoredAt: null,
+          });
 
-        return res.status(200).json({ message: 'Proposal Generation completed successfully.', proposal: processedProposal, proposalId: new_Proposal._id });
-      } else if (res_data.status === "processing") {
-        return res.status(200).json({ message: 'Proposal Generation is still in progress. Please wait for it to complete.' });
-      } else if (res_data.status === "error") {
-        //Delete the proposal tracker
-        await ProposalTracker.deleteOne({ rfpId: proposal._id, proposalId: null });
-        return res.status(400).json({ error: 'Failed to generate proposal. Please try again later.' });
+          await new_Proposal.save();
+
+          const new_Draft = new DraftRFP({
+            userEmail: userEmail,
+            rfpId: proposal._id || "",
+            proposalId: new_Proposal._id || "",
+            rfp: { ...proposal },
+            generatedProposal: processedProposal,
+            currentEditor: req.user._id,
+          });
+          await new_Draft.save();
+
+          const new_CalendarEvent = new CalendarEvent({
+            companyId: companyProfile_1._id,
+            employeeId: req.user._id,
+            proposalId: new_Proposal._id,
+            grantId: null,
+            title: proposal.title || "",
+            startDate: new Date(),
+            endDate: new Date(),
+            status: "In Progress",
+          });
+          await new_CalendarEvent.save();
+
+          proposalTracker.status = "success";
+          await proposalTracker.save();
+
+          return res.status(200).json({ message: 'Proposal Generation completed successfully.', proposal: processedProposal, proposalId: new_Proposal._id });
+        } else if (res_data.status === "processing") {
+          return res.status(200).json({ message: 'Proposal Generation is still in progress. Please wait for it to complete.' });
+        } else {
+          // await ProposalTracker.deleteOne({ rfpId: proposal._id });
+          return res.status(400).json({ error: 'Failed to generate proposal. Please try again later.' });
+        }
       }
     }
 
@@ -1607,62 +1599,80 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
     // Check if there is any proposal in proposal tracker with the same grantId
     const proposalTracker = await ProposalTracker.findOne({ grantId: grant._id });
     if (proposalTracker) {
-      //Initilize the api call to mlPipeline to know the status of the proposal generation
-      const res_1 = await axios.post(`http://13.51.83.4:8000/task-status/${proposalTracker.trackingId}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-      });
-
-      const res_data = res_1.data;
-      if (res_data.result.status === "success") {
-        const proposalData = res_1.result.result;
-        const processedProposal = replaceTextInJson_Grant(grant_template_json, userData, grant, proposalData);
-        const new_Proposal = new GrantProposal({
-          grantId: grant._id,
-          companyMail: userEmail,
-          deadline: grant.ESTIMATED_APPLICATION_DUE_DATE || "Not Provided",
-          title: grant.OPPORTUNITY_TITLE || "Not Provided",
-          client: grant.AGENCY_NAME || "Not Provided",
-          initialProposal: processedProposal,
-          generatedProposal: processedProposal,
-          project_inputs: formData,
-          status: "In Progress",
-          submittedAt: new Date(),
-          currentEditor: req.user._id,
-        });
-        await new_Proposal.save();
-
-        const new_Draft = new DraftGrant({
-          grantId: grant._id,
-          userEmail: userEmail,
-          grant: grant,
-          generatedProposal: processedProposal,
-          currentEditor: req.user._id,
-        });
-        await new_Draft.save();
-
-        const new_CalendarEvent = new CalendarEvent({
-          companyId: companyProfile_1._id,
-          employeeId: req.user._id,
-          proposalId: new_Proposal._id,
-          grantId: grant._id,
-          title: "Proposal Submission",
-          startDate: new Date(),
-          endDate: new Date(),
-          status: "In Progress",
-        });
-        await new_CalendarEvent.save();
-
-        proposalTracker.status = "success";
-        await proposalTracker.save();
-
-        return res.status(200).json({ message: 'Grant Proposal Generation completed successfully.', proposal: processedProposal, proposalId: new_Proposal._id });
-      } else if (res_data.status === "processing") {
-        return res.status(200).json({ message: 'Grant Proposal Generation is still in progress. Please wait for it to complete.' });
-      } else {
+      if (proposalTracker.status === "success") {
+        const new_prop = await GrantProposal.findOne({ _id: proposalTracker.proposalId });
+        return res.status(200).json({ message: 'Grant Proposal Generation completed successfully.', proposal: new_prop.generatedProposal, proposalId: new_prop._id });
+      } else if (proposalTracker.status === "error") {
+        await ProposalTracker.deleteOne({ grantId: grant._id });
         return res.status(400).json({ error: 'Failed to generate grant proposal. Please try again later.' });
+      } else if (proposalTracker.status === "progress") {
+        //Initilize the api call to mlPipeline to know the status of the grant proposal generation
+        const res_1 = await axios.post(`http://13.51.83.4:8000/grant_proposal_status/${proposalTracker.trackingId}`, data);
+        const res_data = res_1.data;
+
+        if (res_data.status === "success") {
+          const proposalData = res_data.result.result;
+
+          const processedProposal = replaceTextInJson_Grant(grant_template_json, proposalData, userData, grant);
+
+          const new_prop = new GrantProposal({
+            grantId: grant._id,
+            project_inputs: formData,
+            initialProposal: processedProposal,
+            title: grant.OPPORTUNITY_TITLE,
+            client: userData.companyName,
+            companyMail: userEmail,
+            deadline: grant.ESTIMATED_APPLICATION_DUE_DATE,
+            status: "In Progress",
+            submittedAt: new Date(),
+            currentEditor: req.user._id,
+            generatedProposal: processedProposal,
+            isDeleted: false,
+            deletedAt: null,
+            deletedBy: null,
+            isSaved: false,
+            savedAt: null,
+            savedBy: null,
+            isRestored: false,
+            restoredAt: null,
+            restoredBy: null,
+            restoredAt: null,
+          });
+          await new_prop.save();
+
+          const new_Draft = new DraftGrant({
+            grantId: grant._id,
+            email: userEmail,
+            grant_data: grant.grant_data,
+            project_inputs: formData,
+            proposal: new_prop.generatedProposal,
+          });
+          await new_Draft.save();
+
+          const new_CalendarEvent = new CalendarEvent({
+            companyId: companyProfile_1._id,
+            employeeId: req.user._id,
+            proposalId: new_prop._id,
+            grantId: grant._id,
+            title: grant.OPPORTUNITY_TITLE,
+            startDate: new Date(),
+            endDate: new Date(),
+            status: "In Progress",
+          });
+          await new_CalendarEvent.save();
+
+
+          proposalTracker.status = "success";
+          await proposalTracker.save();
+
+          return res.status(200).json({ message: 'Grant Proposal Generation completed successfully.', proposal: processedProposal, proposalId: new_prop._id });
+
+        } else if (res_data.status === "processing") {
+          return res.status(200).json({ message: 'Grant Proposal Generation is still in progress. Please wait for it to complete.' });
+        } else {
+          //await ProposalTracker.deleteOne({ grantId: grant._id });
+          return res.status(400).json({ error: 'Failed to generate grant proposal. Please try again later.' });
+        }
       }
     }
 
