@@ -121,17 +121,8 @@ exports.advancedComplianceCheck = async (req, res) => {
 exports.generatePDF = async (req, res) => {
   try {
     const { project, isCompressed } = req.body;
-    const decompressedProject = isCompressed ? decompress(project) : project;
 
-    console.log("Sending Data to generatePDF");
-
-    console.log("Data: ", decompressedProject);
-
-    const structuredJson = getStructuredJson(decompressedProject, decompressedProject.initialProposal);
-
-    console.log("Structured Json: ", structuredJson);
-
-    const pdf = await axios.post('http://56.228.64.88:5000/download-pdf', decompressedProject, {
+    const pdf = await axios.post('http://56.228.64.88:5000/download-pdf', { project, isCompressed }, {
       headers: {
         'Content-Type': 'application/json',
       },
