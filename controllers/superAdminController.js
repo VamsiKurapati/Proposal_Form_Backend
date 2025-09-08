@@ -17,6 +17,8 @@ exports.getCompanyStatsAndData = async (req, res) => {
   try {
     const totalCompanies = await CompanyProfile.countDocuments();
     const totalProposals = await Proposal.countDocuments();
+    const activeUsers = await User.countDocuments({ subscription_status: "active" });
+    const inactiveUsers = await User.countDocuments({ subscription_status: "inactive" });
 
     const companies = await CompanyProfile.find();
     // For each company, find the user's current subscription and attach plan_name
@@ -47,8 +49,8 @@ exports.getCompanyStatsAndData = async (req, res) => {
       stats: {
         "Total Proposals": totalProposals,
         "Total Users": totalCompanies,
-        "Active Users": 0,
-        "Inactive Users": 0
+        "Active Users": activeUsers,
+        "Inactive Users": inactiveUsers
       },
       CompanyData: companies
     });
@@ -476,7 +478,7 @@ exports.sendEmail = async (req, res) => {
   }
   const customPlan = new CustomPlan({ userId: user._id, email, price, planType, maxEditors, maxViewers, maxRFPProposalGenerations, maxGrantProposalGenerations });
   await customPlan.save();
-  
+
   let AdminPaymenyData = {};
   const paymentDetails = await PaymentDetails.find();
   if (!paymentDetails) {
@@ -561,7 +563,7 @@ exports.getCustomPlanData = async (req, res) => {
       };
     })
   );
-  res.json(customPlansWithCompanyName);  
+  res.json(customPlansWithCompanyName);
 };
 
 exports.editCustomPlan = async (req, res) => {
