@@ -511,10 +511,10 @@ exports.sendEmail = async (req, res) => {
   const mailOptions = {
     from: process.env.MAIL_USER,
     to: email,
-    subject: `RRP2GRANTS - Enterprise Subscription Plan Request`,
+    subject: `RFP2GRANTS - Enterprise Subscription Plan Request`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
-        <h2 style="color: #2563EB;">Enterprise Subscription Plan Request</h2>
+        <h2 style="color: #2563EB;">RFP2GRANTS - Enterprise Subscription Plan Request</h2>
         <p><strong>Email:</strong> ${email}</p>
         <p><strong>Price:</strong> ${price || "Not provided"}</p>
         <p><strong>Plan Type:</strong> ${planType || "Not provided"}</p>   
@@ -607,10 +607,10 @@ exports.editCustomPlan = async (req, res) => {
   const mailOptions = {
     from: process.env.MAIL_USER,
     to: customPlan.email,
-    subject: `RRP2GRANTS - Enterprise Subscription Plan Request`,
+    subject: `RFP2GRANTS - Enterprise Subscription Plan Request`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
-        <h2 style="color: #2563EB;">Enterprise Subscription Plan Request</h2>
+        <h2 style="color: #2563EB;">RFP2GRANTS - Enterprise Subscription Plan Request</h2>
         <p><strong>Email:</strong> ${customPlan.email}</p>
         <p><strong>Price:</strong> ${price || "Not provided"}</p>
         <p><strong>Plan Type:</strong> ${planType || "Not provided"}</p>   
