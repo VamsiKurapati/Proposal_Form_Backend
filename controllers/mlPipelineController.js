@@ -1597,15 +1597,15 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
     };
 
     // Check if there is any proposal in draft with the same grantId
-    console.log("Checking if there is any proposal in draft with the same grantId");
+    // console.log("Checking if there is any proposal in draft with the same grantId");
     const draftProposal = await DraftGrant.findOne({ grantId: grant._id });
     if (draftProposal) {
       return res.status(200).json({ message: 'A proposal with the same Grant ID already exists in draft. Please edit the draft proposal instead of generating a new one.' });
     }
-    console.log("No proposal found in draft with the same grantId");
+    // console.log("No proposal found in draft with the same grantId");
 
     // Check if there is any proposal in proposal tracker with the same grantId
-    console.log("Checking if there is any proposal in proposal tracker with the same grantId");
+    // console.log("Checking if there is any proposal in proposal tracker with the same grantId");
     const proposalTracker = await ProposalTracker.findOne({ grantId: grant._id });
     console.log("Proposal tracker: ", proposalTracker);
     if (proposalTracker) {
@@ -1690,16 +1690,16 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
         }
       }
     }
-    console.log("No proposal found in proposal tracker with the same grantId");
+    // console.log("No proposal found in proposal tracker with the same grantId");
 
-    console.log("Checking if subscription exists");
+    // console.log("Checking if subscription exists");
     const subscription = await Subscription.findOne({ user_id: userId });
     if (!subscription || subscription.end_date < new Date()) {
       return res.status(404).json({ error: 'Subscription not found or expired. Please upgrade your subscription to generate more proposals.' });
     }
-    console.log("Subscription exists");
+    // console.log("Subscription exists");
 
-    console.log("Checking if current grants are less than max grants");
+    // console.log("Checking if current grants are less than max grants");
     const currentGrants = await GrantProposal.find({ companyMail: userEmail, createdAt: { $gte: subscription.start_date, $lte: subscription.end_date } }).countDocuments();
     if (subscription.max_grant_proposal_generations <= currentGrants) {
       return res.status(400).json({ error: 'You have reached the maximum number of grant proposals. Please upgrade your subscription to generate more proposals.' });
@@ -1712,11 +1712,11 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       project_inputs: formData,
     };
 
-    console.log("Sending data to mlPipeline");
+    // console.log("Sending data to mlPipeline");
     const res_1 = await axios.post(`http://13.51.83.4:8000/new_grant_proposal_generation`, data);
     const res_data = res_1.data;
 
-    console.log("Data sent to mlPipeline");
+    // console.log("Data sent to mlPipeline");
 
     const new_tracker = new ProposalTracker({
       grantId: grant._id,
@@ -1727,7 +1727,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       grantProposalId: null,
     });
     await new_tracker.save();
-    console.log("Proposal tracker saved");
+    // console.log("Proposal tracker saved");
     return res.status(200).json({ message: 'Grant Proposal Generation is in Progress. Please visit again after some time.' });
 
   } catch (err) {
