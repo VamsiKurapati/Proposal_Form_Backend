@@ -241,7 +241,7 @@ function replaceTextInJson(inputFile, proposalData, userData, rfpData) {
   const updatedJson = replaceTextById(jsonData, idTextMap);
 
   // Return the processed data instead of writing to file
-  console.log(`JSON processing completed successfully`);
+  // console.log(`JSON processing completed successfully`);
   return updatedJson;
 }
 

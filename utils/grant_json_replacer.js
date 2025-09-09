@@ -230,7 +230,7 @@ function replaceTextInJson_Grant(inputFile, userData, grantData, grant_result) {
               element.properties.text = String(replacementText);
             }
 
-            console.log(`replaceTextById: Successfully processed text for ID ${element.id}`);
+            // console.log(`replaceTextById: Successfully processed text for ID ${element.id}`);
 
           } catch (error) {
             console.error(`replaceTextById: Error processing element with ID ${element.id}:`, error);
@@ -248,7 +248,7 @@ function replaceTextInJson_Grant(inputFile, userData, grantData, grant_result) {
   const updatedJson = replaceTextById(jsonData, idTextMap);
 
   // Return the processed data instead of writing to file
-  console.log(`JSON processing completed successfully`);
+  // console.log(`JSON processing completed successfully`);
   return updatedJson;
 }
 

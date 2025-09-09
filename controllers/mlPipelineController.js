@@ -1835,6 +1835,7 @@ exports.getGrantProposalStatus = async (req, res) => {
       }
     }
   } catch (err) {
+    console.error('Error in /getGrantProposalStatus:', err.message);
     res.status(500).json({ error: 'Failed to get grant proposal status' });
   }
 };
