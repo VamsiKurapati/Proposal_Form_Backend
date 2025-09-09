@@ -1626,7 +1626,8 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
         const res_data = res_1.data;
 
         if (res_data.status === "success") {
-          const proposalData = res_data.result.result;
+          const dummy = res_data.result.result;
+          const proposalData = JSON.parse(dummy);
 
           const processedProposal = replaceTextInJson_Grant(grant_template_json, proposalData, userData, grant);
 
@@ -1780,8 +1781,10 @@ exports.getGrantProposalStatus = async (req, res) => {
       });
       const res_data = res_1.data;
       if (res_data.status === "success") {
-        const proposalData = res_data.result.result;
-        const processedProposal = replaceTextInJson_Grant(grant_template_json, {}, grant, proposalData);
+        const dummy = res_data.result.result;
+        const proposalData = JSON.parse(dummy);
+
+        const processedProposal = replaceTextInJson_Grant(grant_template_json, companyProfile_1, grant, proposalData);
         const new_prop = new GrantProposal({
           grantId: grant._id,
           project_inputs: proposalTracker.formData,
