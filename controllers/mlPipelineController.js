@@ -1607,7 +1607,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
     // Check if there is any proposal in proposal tracker with the same grantId
     // console.log("Checking if there is any proposal in proposal tracker with the same grantId");
     const proposalTracker = await ProposalTracker.findOne({ grantId: grant._id });
-    console.log("Proposal tracker: ", proposalTracker);
+    // console.log("Proposal tracker: ", proposalTracker);
     if (proposalTracker) {
       if (proposalTracker.status === "success") {
         const new_prop = await GrantProposal.findOne({ _id: proposalTracker.proposalId });
@@ -1658,10 +1658,10 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
 
           const new_Draft = new DraftGrant({
             grantId: grant._id,
-            email: userEmail,
-            grant_data: grant.grant_data,
-            project_inputs: formData,
-            proposal: new_prop.generatedProposal,
+            userEmail: userEmail,
+            grant_data: grant,
+            generatedProposal: processedProposal,
+            currentEditor: req.user._id,
           });
           await new_Draft.save();
 
@@ -1705,7 +1705,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
     if (subscription.max_grant_proposal_generations <= currentGrants) {
       return res.status(400).json({ error: 'You have reached the maximum number of grant proposals. Please upgrade your subscription to generate more proposals.' });
     }
-    console.log("Current grants are less than max grants");
+    // console.log("Current grants are less than max grants");
 
     const data = {
       user: userData,
@@ -1802,10 +1802,10 @@ exports.getGrantProposalStatus = async (req, res) => {
 
         const new_Draft = new DraftGrant({
           grantId: grant._id,
-          email: userEmail,
-          grant_data: grant.grant_data,
-          project_inputs: proposalTracker.formData,
-          proposal: new_prop.generatedProposal,
+          userEmail: userEmail,
+          grant_data: grant,
+          currentEditor: req.user._id,
+          generatedProposal: processedProposal,
         });
         await new_Draft.save();
 
