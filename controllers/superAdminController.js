@@ -568,9 +568,79 @@ exports.getCustomPlanData = async (req, res) => {
 
 exports.editCustomPlan = async (req, res) => {
   const { id } = req.params;
+
   const { price, planType, maxEditors, maxViewers, maxRFPProposalGenerations, maxGrantProposalGenerations } = req.body;
+
   const customPlan = await CustomPlan.findByIdAndUpdate(id, { price, planType, maxEditors, maxViewers, maxRFPProposalGenerations, maxGrantProposalGenerations }, { new: true });
-  res.json(customPlan);
+
+  let AdminPaymenyData = {};
+
+  const paymentDetails = await PaymentDetails.find();
+
+  if (!paymentDetails) {
+    AdminPaymenyData = {
+      upi_id: null,
+      account_holder_name: null,
+      account_number: null,
+      ifsc_code: null,
+      bank_name: null,
+      branch_name: null,
+      bank_address: null,
+      is_primary: false,
+    };
+  }
+  else {
+    AdminPaymenyData = paymentDetails[0];
+  }
+  // console.log(AdminPaymenyData);
+
+  const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
+    auth: {
+      user: process.env.MAIL_USER,
+      pass: process.env.MAIL_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: process.env.MAIL_USER,
+    to: customPlan.email,
+    subject: `RRP2GRANTS - Enterprise Subscription Plan Request`,
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
+        <h2 style="color: #2563EB;">Enterprise Subscription Plan Request</h2>
+        <p><strong>Email:</strong> ${customPlan.email}</p>
+        <p><strong>Price:</strong> ${price || "Not provided"}</p>
+        <p><strong>Plan Type:</strong> ${planType || "Not provided"}</p>   
+        <p><strong>Max Editors:</strong> ${maxEditors || "Not specified"}</p>
+        <p><strong>Max Viewers:</strong> ${maxViewers || "Not specified"}</p>
+        <p><strong>Max RFP Proposal Generations:</strong> ${maxRFPProposalGenerations || "Not specified"}</p>
+        <p><strong>Max Grant Proposal Generations:</strong> ${maxGrantProposalGenerations || "Not specified"}</p>
+        <hr />
+
+        <h2 style="color: #2563EB;">Payment Details:</h2>
+        <p><strong>UPI ID:</strong> ${AdminPaymenyData.upi_id || "Not provided"}</p>
+        <p><strong>    (OR)</strong></p>
+        <p><strong>Account Holder Name:</strong> ${AdminPaymenyData.account_holder_name || "Not provided"}</p>
+        <p><strong>Account Number:</strong> ${AdminPaymenyData.account_number || "Not provided"}</p>
+        <p><strong>IFSC Code:</strong> ${AdminPaymenyData.ifsc_code || "Not provided"}</p>
+        <p><strong>Bank Name:</strong> ${AdminPaymenyData.bank_name || "Not provided"}</p>
+        <p><strong>Branch Name:</strong> ${AdminPaymenyData.branch_name || "Not provided"}</p>
+        <p style="font-size: 12px; color: #666;">This email was generated from the Enterprise Plan Request.</p>
+      </div>
+    `,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email sent: " + info.response);
+    res.status(200).json({ message: "Email sent successfully!" });
+  } catch (error) {
+    console.error("Error in editCustomPlan:", error);
+    res.status(500).json({ message: error.message });
+  }
 };
 
 exports.deleteCustomPlan = async (req, res) => {

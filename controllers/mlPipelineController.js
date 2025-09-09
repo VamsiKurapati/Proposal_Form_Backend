@@ -1760,6 +1760,13 @@ exports.getGrantProposalStatus = async (req, res) => {
       companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
     }
 
+    //Chheck if a proposal with the same grantId already exists
+    const proposal = await GrantProposal.findOne({ grantId: grant._id, companyMail: userEmail });
+    if (proposal) {
+      return res.status(200).json({ message: 'Grant Proposal Generated successfully.', proposal: proposal.generatedProposal, proposalId: proposal._id });
+    }
+
+    //Check if a proposal tracker with the same grantId already exists
     const proposalTracker = await ProposalTracker.findOne({ grantId: grant._id, companyMail: userEmail });
 
     if (!proposalTracker) {

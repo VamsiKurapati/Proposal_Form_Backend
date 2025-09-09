@@ -54,7 +54,7 @@ const getSubscriptionPlansData = async (req, res) => {
 };
 
 const sendEmail = async (req, res) => {
-  const { name, company, email , description } = req.body; // extract from form
+  const { name, company, email, description } = req.body; // extract from form
 
   const contact = await Contact.create({ name, company, email, description, status: "Open" });
   await contact.save();
@@ -107,7 +107,7 @@ app.use(express.json());
 
 // CORS Configuration
 app.use(cors({
-  origin: ["https://proposal-form-frontend.vercel.app", "https://rfp2grants.ai" , "http://localhost:5173"],
+  origin: ["https://proposal-form-frontend.vercel.app", "https://rfp2grants.ai", "http://localhost:5173"],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
