@@ -4,7 +4,7 @@ const router = express.Router();
 
 const verifyUser = require('../utils/verifyUser');
 
-const { getRecommendedAndSavedRFPs, getOtherRFPs, saveRFP, unsaveRFP, saveDraftRFP, postAllRFPs, getSavedAndDraftRFPs, sendDataForProposalGeneration, sendDataForRFPDiscovery, handleFileUploadAndSendForRFPExtraction, sendGrantDataForProposalGeneration, getRecentAndSavedGrants, getOtherGrants, getSavedAndDraftGrants, saveGrant, unsaveGrant, saveDraftGrant, unsaveDraftGrant, handleFileUploadAndSendForGrantExtraction } = require('../controllers/mlPipelineController');
+const { getRecommendedAndSavedRFPs, getOtherRFPs, saveRFP, unsaveRFP, saveDraftRFP, postAllRFPs, getSavedAndDraftRFPs, sendDataForProposalGeneration, sendDataForRFPDiscovery, handleFileUploadAndSendForRFPExtraction, sendGrantDataForProposalGeneration, getRecentAndSavedGrants, getOtherGrants, getSavedAndDraftGrants, saveGrant, unsaveGrant, saveDraftGrant, unsaveDraftGrant, handleFileUploadAndSendForGrantExtraction, getGrantProposalStatus } = require('../controllers/mlPipelineController');
 
 router.post('/postAllRFPs', postAllRFPs);
 router.get('/getRecommendedAndSavedRFPs', verifyUser(["company", "employee"]), getRecommendedAndSavedRFPs);
@@ -30,5 +30,6 @@ router.post('/uploadRFP', verifyUser(["company", "employee"]), handleFileUploadA
 
 router.post('/sendGrantDataForProposalGeneration', verifyUser(["company", "Editor"]), sendGrantDataForProposalGeneration);
 router.post('/uploadGrant', verifyUser(["company", "employee"]), handleFileUploadAndSendForGrantExtraction);
+router.post('/getGrantProposal', verifyUser(["company", "Editor"]), getGrantProposalStatus);
 
 module.exports = router;

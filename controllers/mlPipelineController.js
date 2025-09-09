@@ -1711,6 +1711,8 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       trackingId: res_data.trackingId,
       companyMail: userEmail,
       status: "processing",
+      formData: formData,
+      grantProposalId: null,
     });
     await new_tracker.save();
     return res.status(200).json({ message: 'Grant Proposal Generation is in Progress. Please visit again after some time.' });
@@ -1718,6 +1720,106 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
   } catch (err) {
     console.error('Error in /sendDataForProposalGeneration:', err);
     res.status(500).json({ error: 'Failed to send data for proposal generation' });
+  }
+};
+
+exports.getGrantProposalStatus = async (req, res) => {
+  try {
+    const { grant } = req.body;
+
+    let userEmail = req.user.email;
+
+    let userId = "";
+
+    let companyProfile_1 = "";
+
+    if (req.user.role === "employee") {
+      const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+      if (!employeeProfile) {
+        return res.status(404).json({ error: 'Employee profile not found. Please complete your employee profile first.' });
+      }
+      userEmail = employeeProfile.companyMail;
+      companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
+      const user = await User.findOne({ email: userEmail });
+      userId = user._id;
+    } else {
+      companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
+      userId = req.user._id;
+    }
+
+    const proposalTracker = await ProposalTracker.findOne({ grantId: grant._id });
+
+    if (!proposalTracker) {
+      return res.status(404).json({ error: 'Proposal tracker not found' });
+    }
+
+    if (proposalTracker.status === "success") {
+      const grantProposal = await GrantProposal.findOne({ _id: proposalTracker.grantProposalId });
+      return res.status(200).json({ status: proposalTracker.status, proposal: grantProposal.generatedProposal });
+    } else if (proposalTracker.status === "error") {
+      return res.status(400).json({ error: 'Failed to generate grant proposal. Please try again later.' });
+    } else if (proposalTracker.status === "processing") {
+      const res_1 = await axios.get(`http://13.51.83.4:8000/task-status/${proposalTracker.trackingId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+      });
+      const res_data = res_1.data;
+      if (res_data.status === "success") {
+        const proposalData = res_data.result.result;
+        const processedProposal = replaceTextInJson_Grant(grant_template_json, {}, grant, proposalData);
+        const new_prop = new GrantProposal({
+          grantId: grant._id,
+          project_inputs: proposalTracker.formData,
+          initialProposal: processedProposal,
+          title: grant.OPPORTUNITY_TITLE,
+          client: grant.AGENCY_NAME,
+          companyMail: userEmail,
+          deadline: grant.ESTIMATED_APPLICATION_DUE_DATE,
+          status: "In Progress",
+          submittedAt: new Date(),
+          currentEditor: req.user._id,
+          generatedProposal: processedProposal,
+        });
+        await new_prop.save();
+
+        const new_Draft = new DraftGrant({
+          grantId: grant._id,
+          email: userEmail,
+          grant_data: grant.grant_data,
+          project_inputs: proposalTracker.formData,
+          proposal: new_prop.generatedProposal,
+        });
+        await new_Draft.save();
+
+        const new_CalendarEvent = new CalendarEvent({
+          companyId: companyProfile_1._id,
+          employeeId: req.user._id,
+          proposalId: new_prop._id,
+          grantId: grant._id,
+          title: grant.OPPORTUNITY_TITLE,
+          startDate: new Date(),
+          endDate: new Date(),
+          status: "In Progress",
+        });
+        await new_CalendarEvent.save();
+
+        proposalTracker.status = "success";
+        proposalTracker.grantProposalId = new_prop._id;
+        await proposalTracker.save();
+
+        return res.status(200).json({ status: proposalTracker.status, proposal: processedProposal, proposalId: new_prop._id });
+      } else if (res_data.status === "processing") {
+        return res.status(200).json({ message: 'Grant Proposal Generation is still in progress. Please wait for it to complete.' });
+      } else {
+        proposalTracker.status = "error";
+        await proposalTracker.save();
+        return res.status(400).json({ error: 'Failed to generate grant proposal. Please try again later.' });
+      }
+    }
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to get grant proposal status' });
   }
 };
 
