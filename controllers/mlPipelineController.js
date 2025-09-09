@@ -487,20 +487,20 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     };
 
     //Check if there is any proposal in draft with the same rfpId
-    const draftProposal = await DraftRFP.findOne({ rfpId: proposal._id });
+    const draftProposal = await DraftRFP.findOne({ rfpId: proposal._id, userEmail: userEmail });
     if (draftProposal) {
       return res.status(200).json({ message: 'A proposal with the same RFP ID already exists in draft. Please edit the draft proposal instead of generating a new one.' });
     }
 
     //Check if there is any proposal in proposal tracker with the same rfpId
-    const proposalTracker = await ProposalTracker.findOne({ rfpId: proposal._id });
+    const proposalTracker = await ProposalTracker.findOne({ rfpId: proposal._id, companyMail: userEmail });
     if (proposalTracker) {
 
       if (proposalTracker.status === "success") {
-        const new_prop = await Proposal.findOne({ _id: proposalTracker.proposalId });
+        const new_prop = await Proposal.findOne({ _id: proposalTracker.proposalId, companyMail: userEmail });
         return res.status(200).json({ message: 'Proposal Generation completed successfully.', proposal: new_prop.generatedProposal, proposalId: new_prop._id });
       } else if (proposalTracker.status === "error") {
-        await ProposalTracker.deleteOne({ rfpId: proposal._id });
+        await ProposalTracker.deleteOne({ rfpId: proposal._id, companyMail: userEmail });
         return res.status(400).json({ error: 'Failed to generate proposal. Please try again later.' });
       } else if (proposalTracker.status === "progress") {
         //Initilize the api call to mlPipeline to know the status of the proposal generation and update the proposal tracker
@@ -1598,7 +1598,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
 
     // Check if there is any proposal in draft with the same grantId
     // console.log("Checking if there is any proposal in draft with the same grantId");
-    const draftProposal = await DraftGrant.findOne({ grantId: grant._id });
+    const draftProposal = await DraftGrant.findOne({ grantId: grant._id, userEmail: userEmail });
     if (draftProposal) {
       return res.status(200).json({ message: 'A proposal with the same Grant ID already exists in draft. Please edit the draft proposal instead of generating a new one.' });
     }
@@ -1606,14 +1606,14 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
 
     // Check if there is any proposal in proposal tracker with the same grantId
     // console.log("Checking if there is any proposal in proposal tracker with the same grantId");
-    const proposalTracker = await ProposalTracker.findOne({ grantId: grant._id });
+    const proposalTracker = await ProposalTracker.findOne({ grantId: grant._id, companyMail: userEmail });
     // console.log("Proposal tracker: ", proposalTracker);
     if (proposalTracker) {
       if (proposalTracker.status === "success") {
-        const new_prop = await GrantProposal.findOne({ _id: proposalTracker.proposalId });
+        const new_prop = await GrantProposal.findOne({ _id: proposalTracker.proposalId, companyMail: userEmail });
         return res.status(200).json({ message: 'Grant Proposal Generation completed successfully.', proposal: new_prop.generatedProposal, proposalId: new_prop._id });
       } else if (proposalTracker.status === "error") {
-        await ProposalTracker.deleteOne({ grantId: grant._id });
+        await ProposalTracker.deleteOne({ grantId: grant._id, companyMail: userEmail });
         return res.status(400).json({ error: 'Failed to generate grant proposal. Please try again later.' });
       } else if (proposalTracker.status === "progress") {
         //Initilize the api call to mlPipeline to know the status of the grant proposal generation
@@ -1662,6 +1662,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
             grant_data: grant,
             generatedProposal: processedProposal,
             currentEditor: req.user._id,
+            proposalId: new_prop._id,
           });
           await new_Draft.save();
 
@@ -1743,8 +1744,6 @@ exports.getGrantProposalStatus = async (req, res) => {
 
     let userEmail = req.user.email;
 
-    let userId = "";
-
     let companyProfile_1 = "";
 
     if (req.user.role === "employee") {
@@ -1755,20 +1754,18 @@ exports.getGrantProposalStatus = async (req, res) => {
       userEmail = employeeProfile.companyMail;
       companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
       const user = await User.findOne({ email: userEmail });
-      userId = user._id;
     } else {
       companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
-      userId = req.user._id;
     }
 
-    const proposalTracker = await ProposalTracker.findOne({ grantId: grant._id });
+    const proposalTracker = await ProposalTracker.findOne({ grantId: grant._id, companyMail: userEmail });
 
     if (!proposalTracker) {
       return res.status(404).json({ error: 'Proposal tracker not found' });
     }
 
     if (proposalTracker.status === "success") {
-      const grantProposal = await GrantProposal.findOne({ _id: proposalTracker.grantProposalId });
+      const grantProposal = await GrantProposal.findOne({ _id: proposalTracker.grantProposalId, companyMail: userEmail });
       return res.status(200).json({ message: 'Grant Proposal Generated successfully.', proposal: grantProposal.generatedProposal, proposalId: grantProposal._id });
     } else if (proposalTracker.status === "error") {
       return res.status(400).json({ error: 'Failed to generate grant proposal. Please try again later.' });
@@ -1806,6 +1803,7 @@ exports.getGrantProposalStatus = async (req, res) => {
           grant_data: grant,
           currentEditor: req.user._id,
           generatedProposal: processedProposal,
+          proposalId: new_prop._id,
         });
         await new_Draft.save();
 

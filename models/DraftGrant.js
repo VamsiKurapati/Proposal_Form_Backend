@@ -33,6 +33,7 @@ const DraftGrantSchema = new mongoose.Schema({
     },
     generatedProposal: { type: Object, required: true },
     currentEditor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    proposalId: { type: mongoose.Schema.Types.ObjectId, ref: "GrantProposal", required: true },
 }, { timestamps: true });
 
 module.exports = mongoose.model("DraftGrant", DraftGrantSchema);

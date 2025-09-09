@@ -1,14 +1,13 @@
 const mongoose = require('mongoose');
 const Proposal = require('../models/Proposal');
+const EmployeeProfile = require('../models/EmployeeProfile');
 const axios = require('axios');
 const MatchedRFP = require('../models/MatchedRFP');
 const RFP = require('../models/RFP');
 const DraftRFP = require('../models/DraftRFP');
 const GrantProposal = require('../models/GrantProposal');
-const Grant = require('../models/Grant');
 const DraftGrant = require('../models/DraftGrant');
-const fs = require('fs');
-const path = require('path');
+
 const { getStructuredJson } = require('../utils/get_structured_json');
 const { decompress } = require('../utils/decompress');
 
@@ -190,12 +189,18 @@ exports.autoSaveProposal = async (req, res) => {
     const { proposalId, jsonData, isCompressed } = req.body;
     const decompressedProject = isCompressed ? decompress(jsonData) : jsonData;
 
-    const new_grant_proposal = await GrantProposal.findOne({ proposalId: proposalId });
+    let userEmail = req.user.email;
+    if (req.user.role === "employee") {
+      const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+      userEmail = employeeProfile.companyMail;
+    }
+
+    const new_grant_proposal = await GrantProposal.findOne({ _id: proposalId, companyMail: userEmail });
     if (new_grant_proposal) {
       new_grant_proposal.generatedProposal = decompressedProject;
       await new_grant_proposal.save();
 
-      const new_draft_grant = await DraftGrant.findOne({ proposalId: proposalId });
+      const new_draft_grant = await DraftGrant.findOne({ proposalId: proposalId, userEmail: userEmail });
       if (new_draft_grant) {
         new_draft_grant.generatedProposal = decompressedProject;
         await new_draft_grant.save();
@@ -203,12 +208,12 @@ exports.autoSaveProposal = async (req, res) => {
       return res.status(200).json({ message: 'Grant proposal saved successfully' });
     }
 
-    const new_proposal_1 = await Proposal.findById(proposalId);
+    const new_proposal_1 = await Proposal.findOne({ _id: proposalId, companyMail: userEmail });
     if (new_proposal_1) {
       new_proposal_1.generatedProposal = decompressedProject;
       await new_proposal_1.save();
 
-      const new_draft_proposal = await DraftRFP.findOne({ proposalId: proposalId });
+      const new_draft_proposal = await DraftRFP.findOne({ proposalId: proposalId, userEmail: userEmail });
       if (new_draft_proposal) {
         new_draft_proposal.generatedProposal = decompressedProject;
         await new_draft_proposal.save();
