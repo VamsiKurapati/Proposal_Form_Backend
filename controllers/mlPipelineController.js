@@ -205,7 +205,7 @@ exports.getSavedAndDraftRFPs = async (req, res) => {
       }
     });
 
-    const draftRFPs = await DraftRFP.find({ userEmail }).populate('currentEditor', '_id fullName email').lean();
+    const draftRFPs = await DraftRFP.find({ userEmail }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 }).lean();
     const draftRFPs_1 = draftRFPs.map((item) => {
       return {
         generatedProposal: item.generatedProposal,
@@ -1449,7 +1449,7 @@ exports.getSavedAndDraftGrants = async (req, res) => {
     });
 
 
-    const draftGrants = await DraftGrant.find({ userEmail: userEmail }).sort({ createdAt: -1 }).lean();
+    const draftGrants = await DraftGrant.find({ userEmail: userEmail }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 }).lean();
     const draftGrants_1 = draftGrants.map((grant) => {
       return {
         ...grant.grant_data,
