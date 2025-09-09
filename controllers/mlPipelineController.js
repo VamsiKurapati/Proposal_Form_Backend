@@ -1381,7 +1381,7 @@ exports.saveDraftGrant = async (req, res) => {
     const new_DraftGrant = new DraftGrant({
       grantId: grant._id,
       email: userEmail,
-      grant_data: grant.grant_data,
+      grant: grant,
       project_inputs: formData,
       proposal: grant.generatedProposal || null,
     });
@@ -1441,21 +1441,23 @@ exports.getSavedAndDraftGrants = async (req, res) => {
     }
 
     const savedGrants = await SavedGrant.find({ userEmail: userEmail }).sort({ createdAt: -1 }).lean();
-    const savedGrants_1 = savedGrants.map((grant) => {
+    const savedGrants_1 = savedGrants.map((item) => {
       return {
-        ...grant.grant_data,
-        _id: grant._id,
+        _id: item.grant_data._id,
+        ...item.grant_data,
       };
     });
 
 
     const draftGrants = await DraftGrant.find({ userEmail: userEmail }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 }).lean();
-    const draftGrants_1 = draftGrants.map((grant) => {
+    const draftGrants_1 = draftGrants.map((item) => {
       return {
-        ...grant.grant_data,
-        _id: grant._id,
-        generatedProposal: grant.generatedProposal,
-        currentEditor: grant.currentEditor,
+        _id: item.grant._id,
+        ...item.grant,
+        generatedProposal: item.generatedProposal,
+        currentEditor: item.currentEditor,
+        proposalId: item.proposalId,
+        grantId: item.grantId,
       };
     });
     res.status(200).json({ savedGrants: savedGrants_1, draftGrants: draftGrants_1 });
@@ -1659,7 +1661,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
           const new_Draft = new DraftGrant({
             grantId: grant._id,
             userEmail: userEmail,
-            grant_data: grant,
+            grant: grant,
             generatedProposal: processedProposal,
             currentEditor: req.user._id,
             proposalId: new_prop._id,
@@ -1800,7 +1802,7 @@ exports.getGrantProposalStatus = async (req, res) => {
         const new_Draft = new DraftGrant({
           grantId: grant._id,
           userEmail: userEmail,
-          grant_data: grant,
+          grant: grant,
           currentEditor: req.user._id,
           generatedProposal: processedProposal,
           proposalId: new_prop._id,

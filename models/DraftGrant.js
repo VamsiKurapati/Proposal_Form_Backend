@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const DraftGrantSchema = new mongoose.Schema({
     userEmail: { type: String, required: true },
-    grantId: { type: String, required: true },
+    grantId: { type: mongoose.Schema.Types.ObjectId, ref: "Grant", required: true },
     grant: {
         OPPORTUNITY_NUMBER: String,
         OPPORTUNITY_ID: String,
