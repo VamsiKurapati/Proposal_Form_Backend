@@ -1629,7 +1629,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
           const dummy = res_data.result.result;
           const proposalData = JSON.parse(dummy);
 
-          const processedProposal = replaceTextInJson_Grant(grant_template_json, proposalData, userData, grant);
+          const processedProposal = replaceTextInJson_Grant(grant_template_json, userData, grant, proposalData);
 
           const new_prop = new GrantProposal({
             grantId: grant._id,
