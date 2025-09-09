@@ -6,6 +6,7 @@ const verifyUser = require('../utils/verifyUser');
 const { serveTemplateImage, uploadTemplateImage, uploadImage, serveCloudImage, serveImageById, deleteImage } = require("../controllers/imageController");
 
 router.get("/get_image/:filename", serveCloudImage);
+router.get("/get_image_by_name/:filename", serveCloudImage);
 router.get("/get_image_by_id/:fileId", serveImageById);
 router.get("/get_template_image/:filename", serveTemplateImage);
 
