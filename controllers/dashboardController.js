@@ -114,16 +114,22 @@ exports.getDashboardData = async (req, res) => {
 
             res.status(200).json(data);
         } else if (role === "employee") {
+            console.log("In employee role");
             const employeeProfile = await EmployeeProfile.findOne({ userId: user._id });
             if (!employeeProfile) {
                 return res.status(404).json({ message: "Employee profile not found" });
             }
+            console.log(employeeProfile);
             const companyProfile = await CompanyProfile.findOne({ email: employeeProfile.companyMail });
             if (!companyProfile) {
                 return res.status(404).json({ message: "Company profile not found" });
             }
+            console.log(companyProfile);
             const proposals = await Proposal.find({ companyMail: companyProfile.email }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 });
             const grantProposals = await GrantProposal.find({ companyMail: companyProfile.email }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 });
+
+            console.log(proposals);
+            console.log(grantProposals);
 
             const totalProposals = proposals.length + grantProposals.length;
             const inProgressProposals = proposals.filter(proposal => proposal.status === "In Progress").length + grantProposals.filter(proposal => proposal.status === "In Progress").length;
