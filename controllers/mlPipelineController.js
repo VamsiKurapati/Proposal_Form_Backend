@@ -571,6 +571,20 @@ exports.sendDataForProposalGeneration = async (req, res) => {
           });
           await new_CalendarEvent.save();
 
+          //Also add new calendar event with deadline
+          const new_CalendarEvent_Deadline = new CalendarEvent({
+            companyId: companyProfile_1._id,
+            employeeId: req.user._id,
+            proposalId: null,
+            grantId: null,
+            title: proposal.title || "",
+            startDate: new Date(proposal.deadline) || new Date(),
+            endDate: new Date(proposal.deadline) || new Date(),
+            status: "Deadline",
+          });
+          await new_CalendarEvent_Deadline.save();
+
+
           proposalTracker.status = "success";
           await proposalTracker.save();
 

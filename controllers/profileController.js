@@ -549,7 +549,7 @@ exports.addEmployee = async (req, res) => {
                 }
             }
         }
-        res.status(200).json({ message: "Employee added successfully" });
+        res.status(201).json({ message: "Employee added successfully" });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -579,7 +579,7 @@ exports.removeEmployee = async (req, res) => {
             { new: true }
         );
         await companyProfile_1.save();
-        res.status(200).json({ message: "Employee removed successfully" });
+        res.status(201).json({ message: "Employee removed successfully" });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -620,7 +620,7 @@ exports.addCaseStudy = [
                 { new: true }
             );
             //console.log("Case study added successfully");
-            res.status(200).json({ message: "Case study added successfully" });
+            res.status(201).json({ message: "Case study added successfully" });
         } catch (error) {
             //console.log(error);
             res.status(500).json({ message: error.message });
@@ -640,7 +640,7 @@ exports.addLicenseAndCertification = async (req, res) => {
             { $push: { licensesAndCertifications: { name, issuer, validTill } } },
             { new: true }
         );
-        res.status(200).json({ message: "License and certification added successfully" });
+        res.status(201).json({ message: "License and certification added successfully" });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -682,7 +682,7 @@ exports.addDocument = [
                 { new: true }
             );
             //console.log("Document added successfully");
-            res.status(200).json({ message: "Document added successfully" });
+            res.status(201).json({ message: "Document added successfully" });
         } catch (error) {
             //console.log(error);
             res.status(500).json({ message: error.message });
@@ -748,7 +748,7 @@ exports.changePassword = async (req, res) => {
         }
         user.password = await bcrypt.hash(newPassword, 10);
         await user.save();
-        res.status(200).json({ message: "Password changed successfully" });
+        res.status(201).json({ message: "Password changed successfully" });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
