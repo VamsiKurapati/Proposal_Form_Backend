@@ -1696,6 +1696,19 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
           });
           await new_CalendarEvent.save();
 
+          //Also add new calendar event with deadline
+          const new_CalendarEvent_Deadline = new CalendarEvent({
+            companyId: companyProfile_1._id,
+            employeeId: req.user._id,
+            proposalId: null,
+            grantId: grant._id,
+            title: grant.OPPORTUNITY_TITLE,
+            startDate: new Date(grant.ESTIMATED_APPLICATION_DUE_DATE) || new Date(),
+            endDate: new Date(grant.ESTIMATED_APPLICATION_DUE_DATE) || new Date(),
+            status: "Deadline",
+          });
+          await new_CalendarEvent_Deadline.save();
+
 
           proposalTracker.status = "success";
           await proposalTracker.save();
@@ -1844,6 +1857,19 @@ exports.getGrantProposalStatus = async (req, res) => {
           status: "In Progress",
         });
         await new_CalendarEvent.save();
+
+        //Also add new calendar event with deadline
+        const new_CalendarEvent_Deadline = new CalendarEvent({
+          companyId: companyProfile_1._id,
+          employeeId: req.user._id,
+          proposalId: null,
+          grantId: grant._id,
+          title: grant.OPPORTUNITY_TITLE,
+          startDate: new Date(grant.ESTIMATED_APPLICATION_DUE_DATE) || new Date(),
+          endDate: new Date(grant.ESTIMATED_APPLICATION_DUE_DATE) || new Date(),
+          status: "Deadline",
+        });
+        await new_CalendarEvent_Deadline.save();
 
         proposalTracker.status = "success";
         proposalTracker.grantProposalId = new_prop._id;

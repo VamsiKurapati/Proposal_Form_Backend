@@ -238,25 +238,25 @@ exports.getDashboardData = async (req, res) => {
     }
 };
 
-exports.editProposalStatus = async (req, res) => {
-    try {
-        const { proposalId, status } = req.body;
-        const proposal = await Proposal.findByIdAndUpdate(proposalId, { status }, { new: true });
-        res.status(200).json(proposal);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
+// exports.editProposalStatus = async (req, res) => {
+//     try {
+//         const { proposalId, status } = req.body;
+//         const proposal = await Proposal.findByIdAndUpdate(proposalId, { status }, { new: true });
+//         res.status(200).json(proposal);
+//     } catch (error) {
+//         res.status(500).json({ message: error.message });
+//     }
+// };
 
-exports.editGrantProposalStatus = async (req, res) => {
-    try {
-        const { proposalId, status } = req.body;
-        const proposal = await GrantProposal.findByIdAndUpdate(proposalId, { status }, { new: true });
-        res.status(200).json(proposal);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
+// exports.editGrantProposalStatus = async (req, res) => {
+//     try {
+//         const { proposalId, status } = req.body;
+//         const proposal = await GrantProposal.findByIdAndUpdate(proposalId, { status }, { new: true });
+//         res.status(200).json(proposal);
+//     } catch (error) {
+//         res.status(500).json({ message: error.message });
+//     }
+// };
 
 exports.addCalendarEvent = async (req, res) => {
     try {
@@ -462,6 +462,13 @@ exports.updateProposal = async (req, res) => {
         if (updates.deadline) proposal.deadline = updates.deadline;
         if (updates.submittedAt) proposal.submittedAt = updates.submittedAt;
         if (updates.status) proposal.status = updates.status;
+        if (updates.status && updates.status !== proposal.status) {
+            const calendarEvent = await CalendarEvent.findOne({ proposalId: proposalId });
+            if (calendarEvent) {
+                calendarEvent.status = updates.status;
+                await calendarEvent.save();
+            }
+        }
         await proposal.save();
         res.status(200).json(proposal);
     } catch (error) {
@@ -479,6 +486,13 @@ exports.updateGrantProposal = async (req, res) => {
         if (updates.deadline) grantProposal.deadline = updates.deadline;
         if (updates.submittedAt) grantProposal.submittedAt = updates.submittedAt;
         if (updates.status) grantProposal.status = updates.status;
+        if (updates.status && updates.status !== grantProposal.status) {
+            const calendarEvent = await CalendarEvent.findOne({ grantId: grantProposalId });
+            if (calendarEvent) {
+                calendarEvent.status = updates.status;
+                await calendarEvent.save();
+            }
+        }
         await grantProposal.save();
         res.status(200).json(grantProposal);
     } catch (error) {
