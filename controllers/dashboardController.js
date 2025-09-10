@@ -9,7 +9,9 @@ const Subscription = require("../models/Subscription");
 exports.getDashboardData = async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
+        console.log(user);
         const role = user.role;
+        console.log(role);
         if (role === "company") {
             const companyProfile = await CompanyProfile.findOne({ userId: user._id });
 
