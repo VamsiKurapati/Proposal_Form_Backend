@@ -413,7 +413,7 @@ exports.updateEmployeeProfile = [
                 { new: true }
             );
 
-            const companyProfile = await CompanyProfile.findOne({ userId: employeeProfile.companyMail });
+            const companyProfile = await CompanyProfile.findOne({ email: employeeProfile.companyMail });
             if (companyProfile) {
                 const employeeIndex = companyProfile.employees.findIndex(emp => emp.email === email);
                 if (employeeIndex !== -1) {
