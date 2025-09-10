@@ -112,8 +112,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-app.get('/getSubscriptionPlansData', getSubscriptionPlansData);
-app.post('/contact', sendEmail);
+app.get('/api/getSubscriptionPlansData', getSubscriptionPlansData);
+app.post('/api/contact', sendEmail);
 
 // Register routes before starting server
 app.use('/api/proposals', proposalRoute);
