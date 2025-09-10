@@ -389,46 +389,48 @@ exports.updateCompanyProfile = [
     }
 ];
 
-exports.updateEmployeeProfile = async (req, res) => {
-    try {
-        const { name, email, location, phone, highestQualification, skills } = req.body;
-        const user = await User.findById(req.user._id);
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-        if (user.role !== "employee") {
-            return res.status(403).json({ message: "You are not authorized to update this profile" });
-        }
-
-        user.email = email;
-        user.mobile = phone;
-        user.fullName = name;
-        await user.save();
-
-        const employeeProfile = await EmployeeProfile.findOneAndUpdate(
-            { userId: req.user._id },
-            { name, email, location, phone, highestQualification, skills },
-            { new: true }
-        );
-
-        const companyProfile = await CompanyProfile.findOne({ userId: employeeProfile.companyMail });
-        if (companyProfile) {
-            const employeeIndex = companyProfile.employees.findIndex(emp => emp.email === email);
-            if (employeeIndex !== -1) {
-                companyProfile.employees[employeeIndex].name = name;
-                companyProfile.employees[employeeIndex].email = email;
-                companyProfile.employees[employeeIndex].phone = phone;
-                companyProfile.employees[employeeIndex].highestQualification = highestQualification;
-                companyProfile.employees[employeeIndex].skills = skills;
-                await companyProfile.save();
+exports.updateEmployeeProfile = [
+    upload.none(),
+    async (req, res) => {
+        try {
+            const { name, email, location, phone, highestQualification, skills } = req.body;
+            const user = await User.findById(req.user._id);
+            if (!user) {
+                return res.status(404).json({ message: "User not found" });
             }
+            if (user.role !== "employee") {
+                return res.status(403).json({ message: "You are not authorized to update this profile" });
+            }
+
+            user.email = email;
+            user.mobile = phone;
+            user.fullName = name;
+            await user.save();
+
+            const employeeProfile = await EmployeeProfile.findOneAndUpdate(
+                { userId: req.user._id },
+                { name, email, location, phone, highestQualification, skills },
+                { new: true }
+            );
+
+            const companyProfile = await CompanyProfile.findOne({ userId: employeeProfile.companyMail });
+            if (companyProfile) {
+                const employeeIndex = companyProfile.employees.findIndex(emp => emp.email === email);
+                if (employeeIndex !== -1) {
+                    companyProfile.employees[employeeIndex].name = name;
+                    companyProfile.employees[employeeIndex].email = email;
+                    companyProfile.employees[employeeIndex].phone = phone;
+                    companyProfile.employees[employeeIndex].highestQualification = highestQualification;
+                    companyProfile.employees[employeeIndex].skills = skills;
+                    await companyProfile.save();
+                }
+            }
+            res.status(200).json({ message: "Employee profile updated successfully" });
+        } catch (error) {
+            res.status(500).json({ message: error.message });
         }
-        res.status(200).json({ message: "Employee profile updated successfully" });
     }
-    catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
+];
 
 const addEmployeeToCompanyProfile = async (req, employeeProfile) => {
     const companyProfile_1 = await CompanyProfile.findOneAndUpdate(
@@ -755,39 +757,40 @@ exports.changePassword = async (req, res) => {
 
 exports.getPaymentById = async (req, res) => {
     try {
-      const { id } = req.params;
-  
-      // Find payment by ID
-      const payment = await Payment.findOne({user_id:id  
-      });
-      if (!payment) {
-        return res.status(404).json({ message: "Payment not found" });
-      }
- 
-  
-      // Fetch subscription (if available)
-      let planName = "Unknown Plan";
-      if (payment.subscription_id) {
-        const subscription = await Subscription.findById(
-          payment.subscription_id,
-          { plan_name: 1 }
-        );
-        if (subscription) {
-          planName = subscription.plan_name;
+        const { id } = req.params;
+
+        // Find payment by ID
+        const payment = await Payment.findOne({
+            user_id: id
+        });
+        if (!payment) {
+            return res.status(404).json({ message: "Payment not found" });
         }
-      }
-  
-      // Attach company and plan to payment
-      const paymentWithDetails = {
-        ...payment.toObject(),
-        planName
-      };
-  
-      res.json(paymentWithDetails);
+
+
+        // Fetch subscription (if available)
+        let planName = "Unknown Plan";
+        if (payment.subscription_id) {
+            const subscription = await Subscription.findById(
+                payment.subscription_id,
+                { plan_name: 1 }
+            );
+            if (subscription) {
+                planName = subscription.plan_name;
+            }
+        }
+
+        // Attach company and plan to payment
+        const paymentWithDetails = {
+            ...payment.toObject(),
+            planName
+        };
+
+        res.json(paymentWithDetails);
     } catch (err) {
-      res.status(500).json({
-        message: "Error fetching payment by ID",
-        error: err.message
-      });
+        res.status(500).json({
+            message: "Error fetching payment by ID",
+            error: err.message
+        });
     }
-  };
+};
