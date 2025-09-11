@@ -286,7 +286,7 @@ exports.addCalendarEvent = async (req, res) => {
                 status: "Deadline"
             });
             await calendarEvent.save();
-            res.status(201).json(calendarEvent);
+            res.status(201).json({ message: "Calendar event added successfully", event: calendarEvent });
         } else if (user.role === "employee") {
             const employeeProfile = await EmployeeProfile.findOne({ user: userId });
             if (!employeeProfile) {
@@ -302,7 +302,7 @@ exports.addCalendarEvent = async (req, res) => {
                 status: "Deadline"
             });
             await calendarEvent.save();
-            res.status(201).json(calendarEvent);
+            res.status(201).json({ message: "Calendar event added successfully", event: calendarEvent });
         } else {
             return res.status(400).json({ message: "Invalid user role" });
         }
