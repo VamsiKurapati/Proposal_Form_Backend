@@ -50,7 +50,7 @@ exports.signupWithProfile = [
       };
 
       if (role === "company") {
-        profileData.companyEmail = email;
+        profileData.email = email;
         profileData.companyName = req.body.companyName;
         profileData.industry = req.body.industry;
         profileData.location = req.body.location;
