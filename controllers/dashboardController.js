@@ -315,25 +315,39 @@ exports.setCurrentEditor = async (req, res) => {
     try {
         const { proposalId, editorId } = req.body;
 
+        console.log("Proposal ID:", proposalId);
+        console.log("Editor ID:", editorId);
+
         if (!proposalId || !editorId) {
             return res.status(400).json({ message: "Proposal ID and Editor ID are required" });
         }
+
+        console.log("Editor ID:", editorId);
 
         const editor = await EmployeeProfile.findById(editorId);
         if (!editor || editor.accessLevel !== "Editor") {
             return res.status(404).json({ message: "Editor not found or member is not an editor" });
         }
 
+        console.log("Editor:", editor);
+
         const userId = editor.userId;
+
+        console.log("User ID:", userId);
+
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
 
+        console.log("User:", user);
+
         const proposal = await Proposal.findById(proposalId).populate("currentEditor", "_id");
         if (!proposal) {
             return res.status(404).json({ message: "Proposal not found" });
         }
+
+        console.log("Proposal:", proposal);
 
         const req_user = await User.findOne({ email: proposal.companyMail });
 
@@ -343,11 +357,11 @@ exports.setCurrentEditor = async (req, res) => {
         }
 
         //Only company and the the current editor can set the current editor
-        if (user.role !== "company" && proposal.currentEditor._id !== editor.userId) {
+        if (user.role !== "company" && proposal.currentEditor._id !== req.user._id) {
             return res.status(403).json({ message: "You are not authorized to set the current editor-1" });
         }
 
-        proposal.currentEditor = editor.userId;
+        proposal.currentEditor = userId;
         await proposal.save();
 
         res.status(200).json({ message: "Editor set successfully" });
