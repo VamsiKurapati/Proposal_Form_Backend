@@ -335,21 +335,19 @@ exports.setCurrentEditor = async (req, res) => {
             return res.status(404).json({ message: "Proposal not found" });
         }
 
+        const req_user = await User.findOne({ email: proposal.companyMail });
+
         // If company and email is not the same as the proposal, return error
-        console.log("User:", user);
-        console.log("Proposal:", proposal);
-        if (user.role === "company" && user.email !== proposal.companyMail) {
+        if (user.role === "company" && req_user.email !== proposal.companyMail) {
             return res.status(403).json({ message: "You are not authorized to set the current editor" });
         }
 
         //Only company and the the current editor can set the current editor
-        console.log("User:", user);
-        console.log("Proposal:", proposal);
-        if (user.role !== "company" && proposal.currentEditor._id !== user._id) {
+        if (user.role !== "company" && proposal.currentEditor._id !== editor.userId) {
             return res.status(403).json({ message: "You are not authorized to set the current editor-1" });
         }
 
-        proposal.currentEditor = user._id;
+        proposal.currentEditor = editor.userId;
         await proposal.save();
 
         res.status(200).json({ message: "Editor set successfully" });
