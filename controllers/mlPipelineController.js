@@ -375,41 +375,47 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     const db = mongoose.connection.db;
 
     //Extract the company Documents from upload.chunks and save them in the companyProfile_1.companyDocuments
-    const files = await db.collection('uploads.files')
-      .find({ _id: { $in: companyProfile_1.documents.map(doc => doc.fileId) } })
-      .toArray();
+    // const files = await db.collection('uploads.files')
+    //   .find({ _id: { $in: companyProfile_1.documents.map(doc => doc.fileId) } })
+    //   .toArray();
 
-    const filesWithBase64 = await Promise.all(
-      files.map(async (file) => {
-        const chunks = await db.collection('uploads.chunks')
-          .find({ files_id: file._id })
-          .sort({ n: 1 })
-          .toArray();
-        const fileBuffer = Buffer.concat(chunks.map(chunk => chunk.data.buffer));
-        return {
-          ...file,
-          base64: fileBuffer.toString('base64'),
-        };
-      })
-    );
+    // const filesWithBase64 = await Promise.all(
+    //   files.map(async (file) => {
+    //     const chunks = await db.collection('uploads.chunks')
+    //       .find({ files_id: file._id })
+    //       .sort({ n: 1 })
+    //       .toArray();
+    //     const fileBuffer = Buffer.concat(chunks.map(chunk => chunk.data.buffer));
+    //     return {
+    //       ...file,
+    //       base64: fileBuffer.toString('base64'),
+    //     };
+    //   })
+    // );
 
-    const filesMap = filesWithBase64.reduce((acc, file) => {
-      acc[file._id.toString()] = file;
-      return acc;
-    }, {});
+    // const filesMap = filesWithBase64.reduce((acc, file) => {
+    //   acc[file._id.toString()] = file;
+    //   return acc;
+    // }, {});
 
     // Check if all required files are available
-    const missingFiles = companyProfile_1.documents.filter(doc => !filesMap[doc.fileId.toString()]);
-    if (missingFiles.length > 0) {
-      return res.status(400).json({
-        error: 'Some company documents are missing or corrupted. Please re-upload the following documents: ' +
-          missingFiles.map(doc => doc.name).join(', ')
-      });
-    }
+    // const missingFiles = companyProfile_1.documents.filter(doc => !filesMap[doc.fileId.toString()]);
+    // if (missingFiles.length > 0) {
+    //   return res.status(400).json({
+    //     error: 'Some company documents are missing or corrupted. Please re-upload the following documents: ' +
+    //       missingFiles.map(doc => doc.name).join(', ')
+    //   });
+    // }
 
-    const companyDocuments_1 = companyProfile_1.documents.map((doc) => {
+    // const companyDocuments_1 = companyProfile_1.documents.map((doc) => {
+    //   return {
+    //     [`${doc.name}.${doc.type}`]: `${filesMap[doc.fileId.toString()].base64}`,
+    //   };
+    // });
+
+    const companyDocuments_1 = companyProfile_1.documentSummaries.map((doc) => {
       return {
-        [`${doc.name}.${doc.type}`]: `${filesMap[doc.fileId.toString()].base64}`,
+        [`${doc.name}`]: `${doc.summary}`,
       };
     });
 
@@ -472,8 +478,8 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       "website": `${companyProfile_1.website || ""}`,
       "linkedIn": `${companyProfile_1.linkedIn || ""}`,
       "certifications": certifications_1,
-      // "documents": companyDocuments_1,
-      "documents": [],
+      "documents": companyDocuments_1,
+      // "documents": [],
       "caseStudies": caseStudies_1,
       "pastProjects": pastProjects_1,
       "employees_information": employeeData_1,
@@ -504,7 +510,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
         return res.status(400).json({ error: 'Failed to generate proposal. Please try again later.' });
       } else if (proposalTracker.status === "progress") {
         //Initilize the api call to mlPipeline to know the status of the proposal generation and update the proposal tracker
-        const res_1 = await axios.get(`http://13.51.83.4:8000/task-status/${proposalTracker.trackingId}`, {
+        const res_1 = await axios.get(`${process.env.PROPOSAL_PIPELINE_URL}/task-status/${proposalTracker.trackingId}`, {
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
@@ -648,7 +654,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     }
 
     // Call ML service to generate proposal
-    const res_1 = await axios.post(`http://13.51.83.4:8000/new_rfp_proposal_generation`, data, {
+    const res_1 = await axios.post(`${process.env.PROPOSAL_PIPELINE_URL}/new_rfp_proposal_generation`, data, {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
@@ -814,7 +820,7 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
 
     const dataInArray = [data];
 
-    const res_1 = await axios.post(`http://56.228.64.88:5000/run-rfp-discovery`, dataInArray);
+    const res_1 = await axios.post(`${process.env.PIPELINE_URL}/run-rfp-discovery`, dataInArray);
 
     const nestedRFPs = res_1.data.matches;
 
@@ -955,7 +961,7 @@ exports.handleFileUploadAndSendForRFPExtraction = [
 
       while (retryCount <= maxRetries) {
         try {
-          apiResponse = await axios.post(`http://56.228.64.88:5000/extract-structured-rfp`, formData, {
+          apiResponse = await axios.post(`${process.env.PIPELINE_URL}/extract-structured-rfp`, formData, {
             headers: {
               ...formData.getHeaders(),
             },
@@ -1199,7 +1205,7 @@ exports.handleFileUploadAndSendForGrantExtraction = [
 
       while (retryCount <= maxRetries) {
         try {
-          apiResponse = await axios.post(`http://56.228.64.88:5000/extract-structured-grant`, formData, {
+          apiResponse = await axios.post(`${process.env.PIPELINE_URL}/extract-structured-grant`, formData, {
             headers: {
               ...formData.getHeaders(),
             },
@@ -1518,41 +1524,47 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
     const db = mongoose.connection.db;
 
     //Extract the company Documents from upload.chunks and save them in the companyProfile_1.companyDocuments
-    const files = await db.collection('uploads.files')
-      .find({ _id: { $in: companyProfile_1.documents.map(doc => doc.fileId) } })
-      .toArray();
+    // const files = await db.collection('uploads.files')
+    //   .find({ _id: { $in: companyProfile_1.documents.map(doc => doc.fileId) } })
+    //   .toArray();
 
-    const filesWithBase64 = await Promise.all(
-      files.map(async (file) => {
-        const chunks = await db.collection('uploads.chunks')
-          .find({ files_id: file._id })
-          .sort({ n: 1 })
-          .toArray();
-        const fileBuffer = Buffer.concat(chunks.map(chunk => chunk.data.buffer));
-        return {
-          ...file,
-          base64: fileBuffer.toString('base64'),
-        };
-      })
-    );
+    // const filesWithBase64 = await Promise.all(
+    //   files.map(async (file) => {
+    //     const chunks = await db.collection('uploads.chunks')
+    //       .find({ files_id: file._id })
+    //       .sort({ n: 1 })
+    //       .toArray();
+    //     const fileBuffer = Buffer.concat(chunks.map(chunk => chunk.data.buffer));
+    //     return {
+    //       ...file,
+    //       base64: fileBuffer.toString('base64'),
+    //     };
+    //   })
+    // );
 
-    const filesMap = filesWithBase64.reduce((acc, file) => {
-      acc[file._id.toString()] = file;
-      return acc;
-    }, {});
+    // const filesMap = filesWithBase64.reduce((acc, file) => {
+    //   acc[file._id.toString()] = file;
+    //   return acc;
+    // }, {});
 
     // Check if all required files are available
-    const missingFiles = companyProfile_1.documents.filter(doc => !filesMap[doc.fileId.toString()]);
-    if (missingFiles.length > 0) {
-      return res.status(400).json({
-        error: 'Some company documents are missing or corrupted. Please re-upload the following documents: ' +
-          missingFiles.map(doc => doc.name).join(', ')
-      });
-    }
+    // const missingFiles = companyProfile_1.documents.filter(doc => !filesMap[doc.fileId.toString()]);
+    // if (missingFiles.length > 0) {
+    //   return res.status(400).json({
+    //     error: 'Some company documents are missing or corrupted. Please re-upload the following documents: ' +
+    //       missingFiles.map(doc => doc.name).join(', ')
+    //   });
+    // }
 
-    const companyDocuments_1 = companyProfile_1.documents.map((doc) => {
+    // const companyDocuments_1 = companyProfile_1.documents.map((doc) => {
+    //   return {
+    //     [doc.name + "." + doc.type]: filesMap[doc.fileId.toString()].base64,
+    //   };
+    // });
+
+    const companyDocuments_1 = companyProfile_1.documentSummaries.map((doc) => {
       return {
-        [doc.name + "." + doc.type]: filesMap[doc.fileId.toString()].base64,
+        [`${doc.name}`]: `${doc.summary}`,
       };
     });
 
@@ -1599,8 +1611,8 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       "website": companyProfile_1.website || "",
       "linkedIn": companyProfile_1.linkedIn || "",
       "certifications": certifications_1,
-      // "documents": companyDocuments_1,
-      "documents": [],
+      "documents": companyDocuments_1,
+      // "documents": [],
       "caseStudies": caseStudies_1,
       "pastProjects": pastProjects_1,
       "employees_information": employeeData_1,
@@ -1634,7 +1646,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
         return res.status(400).json({ error: 'Failed to generate grant proposal. Please try again later.' });
       } else if (proposalTracker.status === "progress") {
         //Initilize the api call to mlPipeline to know the status of the grant proposal generation
-        const res_1 = await axios.get(`http://13.51.83.4:8000/task-status/${proposalTracker.trackingId}`, {
+        const res_1 = await axios.get(`${process.env.PROPOSAL_PIPELINE_URL}/task-status/${proposalTracker.trackingId}`, {
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
@@ -1746,7 +1758,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
     };
 
     // console.log("Sending data to mlPipeline");
-    const res_1 = await axios.post(`http://13.51.83.4:8000/new_grant_proposal_generation`, data);
+    const res_1 = await axios.post(`${process.env.PROPOSAL_PIPELINE_URL}/new_grant_proposal_generation`, data);
     const res_data = res_1.data;
 
     // console.log("Data sent to mlPipeline");
@@ -1808,7 +1820,7 @@ exports.getGrantProposalStatus = async (req, res) => {
     } else if (proposalTracker.status === "error") {
       return res.status(400).json({ error: 'Failed to generate grant proposal. Please try again later.' });
     } else if (proposalTracker.status === "processing") {
-      const res_1 = await axios.get(`http://13.51.83.4:8000/task-status/${proposalTracker.trackingId}`, {
+      const res_1 = await axios.get(`${process.env.PROPOSAL_PIPELINE_URL}/task-status/${proposalTracker.trackingId}`, {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
@@ -1892,7 +1904,7 @@ exports.getGrantProposalStatus = async (req, res) => {
 
 exports.triggerGrant = async () => {
   try {
-    const grants = await axios.get(`http://56.228.64.88:5000/grants/trigger`);
+    const grants = await axios.get(`${process.env.PIPELINE_URL}/grants/trigger`);
     const grant_data = await Grant.insertMany(grants);
   } catch (err) {
     console.error('Error in /triggerGrant:', err);

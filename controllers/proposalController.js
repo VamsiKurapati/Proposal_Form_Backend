@@ -23,7 +23,7 @@ exports.basicComplianceCheck = async (req, res) => {
 
     const structuredJson = getStructuredJson(decompressedProposal, new_proposal.initialProposal);
 
-    const resProposal = await axios.post('http://56.228.64.88:5000/basic-compliance', structuredJson, {
+    const resProposal = await axios.post(`${process.env.PIPELINE_URL}/basic-compliance`, structuredJson, {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
@@ -76,7 +76,7 @@ exports.advancedComplianceCheck = async (req, res) => {
     };
 
 
-    const resBasicCompliance = await axios.post('http://56.228.64.88:5000/basic-compliance', structuredJson, {
+    const resBasicCompliance = await axios.post(`${process.env.PIPELINE_URL}/basic-compliance`, structuredJson, {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
@@ -90,7 +90,7 @@ exports.advancedComplianceCheck = async (req, res) => {
 
     const compliance_dataBasicCompliance = firstValue["compliance_flags"];
 
-    const resProposal = await axios.post('http://56.228.64.88:5000/advance-compliance', initialProposal_1, {
+    const resProposal = await axios.post(`${process.env.PIPELINE_URL}/advance-compliance`, initialProposal_1, {
       headers: {
         'Content-Type': 'application/json',
       }
@@ -112,7 +112,7 @@ exports.generatePDF = async (req, res) => {
   try {
     const { project, isCompressed } = req.body;
 
-    const pdf = await axios.post('http://56.228.64.88:5000/download-pdf', { "project": project, "isCompressed": isCompressed }, { responseType: "arraybuffer" });
+    const pdf = await axios.post(`${process.env.PIPELINE_URL}/download-pdf`, { "project": project, "isCompressed": isCompressed }, { responseType: "arraybuffer" });
 
     console.log("PDF: ", pdf.data);
 
