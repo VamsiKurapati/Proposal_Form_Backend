@@ -33,8 +33,7 @@ const companyProfileSchema = new mongoose.Schema({
   caseStudies: [
     {
       title: { type: String, required: true },
-      about: { type: String, required: true },
-      readTime: { type: String, required: true },
+      company: { type: String, required: true },
       fileUrl: { type: String, required: true },
       createdAt: { type: Date, default: Date.now },
     },
