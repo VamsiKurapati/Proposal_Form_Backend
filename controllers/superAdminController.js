@@ -319,7 +319,7 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
     const currentYear = now.getFullYear();
 
     payments.forEach(payment => {
-      if (payment.status === 'succeeded') {
+      if (payment.status === 'Success') {
         successfulPayments += 1;
         totalRevenue += payment.price;
 
@@ -334,18 +334,18 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
         }
       }
 
-      if (payment.status === 'failed') {
+      if (payment.status === 'Failed') {
         failedPayments += 1;
       }
 
-      if (payment.status === 'refunded') {
+      if (payment.status === 'Refunded') {
         totalRefunds += 1;
       }
 
       if (
-        payment.status === 'pending refund' ||
-        payment.status === 'pending_refund' ||
-        payment.status === 'pending refund, refunded'
+        payment.status === 'Pending Refund' ||
+        payment.status === 'Pending Refund' ||
+        payment.status === 'Pending Refund, Refunded'
       ) {
         pendingRefunds += 1;
       }
