@@ -62,6 +62,7 @@ const companyProfileSchema = new mongoose.Schema({
   documentSummaries: [
     {
       name: String,
+      fileId: { type: mongoose.Types.ObjectId, required: true },
       summary: String,
       createdAt: { type: Date, default: Date.now },
       updatedAt: { type: Date, default: Date.now },

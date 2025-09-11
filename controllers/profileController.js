@@ -670,19 +670,15 @@ exports.addDocument = [
             console.log("Document file:", req.file);
             console.log("Document buffer:", req.file.buffer);
             console.log("Summarizing document");
+
+            let documentSummary = null;
             try {
-                console.log("Try summarizePdf");
-                const summary = await summarizePdf(req.file);
-                console.log("Summary:\n", summary);
+                console.log("Try summarizePdfBuffer with buffer");
+                documentSummary = await summarizePdfBuffer(req.file.buffer);
+                console.log("Summary:\n", documentSummary);
             } catch (error) {
                 console.log("Error summarizing document:", error);
-                try {
-                    console.log("Try summarizePdfBuffer");
-                    const summary = await summarizePdfBuffer(req.file.buffer);
-                    console.log("Summary:\n", summary);
-                } catch (error) {
-                    console.log("Error summarizing document:", error);
-                }
+                // Continue without summary if summarization fails
             }
 
             const companyProfile = await CompanyProfile.findOneAndUpdate(
@@ -695,12 +691,11 @@ exports.addDocument = [
                             size: req.file.size,
                             url: fileUrl,
                             fileId: req.file.id
-                        }
-                    },
-                    $push: {
+                        },
                         documentSummaries: {
                             name: name || req.file.originalname,
-                            summary: summary || "No summary available",
+                            fileId: req.file.id,
+                            summary: documentSummary || "No summary available",
                         }
                     }
                 },

@@ -3,8 +3,20 @@ const pdfParse = require("pdf-parse");
 const { OpenAI } = require("openai");
 require("dotenv").config();
 
-async function extractPdfText(filePath) {
-    const buffer = fs.readFileSync(filePath);
+async function extractPdfText(filePathOrBuffer) {
+    let buffer;
+
+    // Check if it's a file path (string) or buffer
+    if (typeof filePathOrBuffer === 'string') {
+        // It's a file path, read from filesystem
+        buffer = fs.readFileSync(filePathOrBuffer);
+    } else if (Buffer.isBuffer(filePathOrBuffer)) {
+        // It's already a buffer
+        buffer = filePathOrBuffer;
+    } else {
+        throw new Error('Invalid input: expected file path (string) or buffer');
+    }
+
     const data = await pdfParse(buffer);
     return data.text;
 }
