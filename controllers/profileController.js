@@ -162,7 +162,7 @@ exports.getProfile = async (req, res) => {
             return res.status(404).json({ message: "Company profile not found" });
         }
 
-        const deadlines_1 = await CalendarEvent.find({ companyId: companyProfile._id, status: "Deadline" });
+        const deadlines_1 = await CalendarEvent.find({ companyId: companyProfile._id, status: "Deadline", endDate: { $gte: new Date() } });
 
         console.log("Deadlines:", deadlines_1);
 
