@@ -336,13 +336,17 @@ exports.setCurrentEditor = async (req, res) => {
         }
 
         // If company and email is not the same as the proposal, return error
+        console.log("User:", user);
+        console.log("Proposal:", proposal);
         if (user.role === "company" && user.email !== proposal.companyMail) {
             return res.status(403).json({ message: "You are not authorized to set the current editor" });
         }
 
         //Only company and the the current editor can set the current editor
+        console.log("User:", user);
+        console.log("Proposal:", proposal);
         if (user.role !== "company" && proposal.currentEditor._id !== user._id) {
-            return res.status(403).json({ message: "You are not authorized to set the current editor" });
+            return res.status(403).json({ message: "You are not authorized to set the current editor-1" });
         }
 
         proposal.currentEditor = user._id;
