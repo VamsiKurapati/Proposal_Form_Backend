@@ -164,17 +164,25 @@ exports.getProfile = async (req, res) => {
 
         const deadlines_1 = await CalendarEvent.find({ companyId: companyProfile._id, status: "Deadline" });
 
+        console.log("Deadlines:", deadlines_1);
+
         const deadlines = deadlines_1.map(async (deadline) => {
             const proposal = deadline.proposalId ? await Proposal.findById(deadline.proposalId) : null;
             const grantProposal = deadline.grantId ? await GrantProposal.findById(deadline.grantId) : null;
             const status = proposal?.status || grantProposal?.status || "Not Submitted";
             const endDate = new Date(proposal?.deadline || grantProposal?.deadline);
-            return {
-                title: deadline.title,
-                status: status,
-                endDate: endDate.toISOString(),
-            };
+            if ((proposal || grantProposal) && status !== "Not Submitted" && endDate > new Date()) {
+                return {
+                    title: deadline.title,
+                    status: status,
+                    endDate: endDate.toISOString(),
+                };
+            } else {
+                return null;
+            }
         });
+
+        console.log("Deadlines:", deadlines);
 
         const data = {
             companyName: companyProfile.companyName,
