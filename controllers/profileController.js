@@ -177,8 +177,6 @@ exports.getProfile = async (req, res) => {
                     status: status,
                     endDate: endDate.toISOString(),
                 };
-            } else {
-                return null;
             }
         });
 
