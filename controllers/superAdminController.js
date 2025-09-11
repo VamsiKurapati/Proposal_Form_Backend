@@ -10,13 +10,14 @@ const User = require("../models/User");
 const CustomPlan = require("../models/CustomPlan");
 const PaymentDetails = require("../models/PaymentDetails");
 const Contact = require("../models/Contact");
+const GrantProposal = require("../models/GrantProposal");
 
 
 // Merged Company Stats and Company Data API
 exports.getCompanyStatsAndData = async (req, res) => {
   try {
     const totalCompanies = await CompanyProfile.countDocuments();
-    const totalProposals = await Proposal.countDocuments();
+    const totalProposals = await Proposal.countDocuments() + await GrantProposal.countDocuments();
     const activeUsers = await User.countDocuments({ subscription_status: "active", role: "company" });
     const inactiveUsers = await User.countDocuments({ subscription_status: "inactive", role: "company" });
 
