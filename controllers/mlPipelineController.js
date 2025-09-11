@@ -413,7 +413,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     //   };
     // });
 
-    const companyDocuments_1 = companyProfile_1.documentSummaries.map((doc) => {
+    const companyDocuments_1 = (companyProfile_1.documentSummaries || []).map((doc) => {
       return {
         [`${doc.name}`]: `${doc.summary}`,
       };
@@ -1562,7 +1562,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
     //   };
     // });
 
-    const companyDocuments_1 = companyProfile_1.documentSummaries.map((doc) => {
+    const companyDocuments_1 = (companyProfile_1.documentSummaries || []).map((doc) => {
       return {
         [`${doc.name}`]: `${doc.summary}`,
       };
