@@ -39,16 +39,6 @@ async function summarizeText(text) {
     return completion.choices[0].message.content;
 }
 
-// (async () => {
-//     try {
-//         const pdfText = await extractPdfText("../utils/Sample.pdf");
-//         const summary = await summarizeText(pdfText);
-//         console.log("Summary:\n", summary);
-//     } catch (err) {
-//         console.error("Error:", err);
-//     }
-// })();
-
 //Function to accept the pdf buffer and return the summary
 exports.summarizePdfBuffer = async (pdfBuffer) => {
     try {

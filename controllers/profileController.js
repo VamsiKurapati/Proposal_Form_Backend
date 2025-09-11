@@ -15,6 +15,7 @@ const nodemailer = require("nodemailer");
 const Subscription = require("../models/Subscription");
 const Payment = require("../models/Payments");
 const { summarizePdfBuffer, summarizePdf } = require("../utils/documentSummarizer");
+const CalendarEvent = require("../models/CalendarEvents");
 
 const storage = new GridFsStorage({
     url: process.env.MONGO_URI,
@@ -160,6 +161,21 @@ exports.getProfile = async (req, res) => {
         if (!companyProfile) {
             return res.status(404).json({ message: "Company profile not found" });
         }
+
+        const deadlines_1 = await CalendarEvent.find({ companyId: companyProfile._id, status: "Deadline" });
+
+        const deadlines = deadlines_1.map(async (deadline) => {
+            const proposal = deadline.proposalId ? await Proposal.findById(deadline.proposalId) : null;
+            const grantProposal = deadline.grantId ? await GrantProposal.findById(deadline.grantId) : null;
+            const status = proposal?.status || grantProposal?.status || "Not Submitted";
+            const endDate = new Date(proposal?.deadline || grantProposal?.deadline);
+            return {
+                title: deadline.title,
+                status: status,
+                endDate: endDate.toISOString(),
+            };
+        });
+
         const data = {
             companyName: companyProfile.companyName,
             adminName: companyProfile.adminName,
@@ -181,6 +197,8 @@ exports.getProfile = async (req, res) => {
             awards: companyProfile.awards,
             clients: companyProfile.clients,
             preferredIndustries: companyProfile.preferredIndustries,
+            deadlines: deadlines,
+            activities: []
         };
         const Proposals = await Proposal.find({ companyMail: companyProfile.email });
         const GrantProposals = await GrantProposal.find({ companyMail: companyProfile.email });
@@ -688,17 +706,17 @@ exports.addDocument = [
 
             //Extract buffer from GridFS
             const buffer = await getFileBufferFromGridFS(req.file.id);
-            console.log("Buffer:", buffer);
+            // console.log("Buffer:", buffer);
 
-            console.log("Summarizing document");
+            // console.log("Summarizing document");
 
             let documentSummary = null;
             try {
-                console.log("Try summarizePdfBuffer with buffer");
+                // console.log("Try summarizePdfBuffer with buffer");
                 documentSummary = await summarizePdfBuffer(buffer);
-                console.log("Summary:\n", documentSummary);
+                // console.log("Summary:\n", documentSummary);
             } catch (error) {
-                console.log("Error summarizing document:", error);
+                // console.log("Error summarizing document:", error);
                 // Continue without summary if summarization fails
             }
 
