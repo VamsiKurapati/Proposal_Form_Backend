@@ -14,6 +14,7 @@ const multer = require("multer");
 const nodemailer = require("nodemailer");
 const Subscription = require("../models/Subscription");
 const Payment = require("../models/Payments");
+const { summarizePdfBuffer, summarizePdf } = require("../utils/documentSummarizer");
 
 const storage = new GridFsStorage({
     url: process.env.MONGO_URI,
@@ -665,7 +666,25 @@ exports.addDocument = [
             // Construct the file URL for the uploaded document
             const fileUrl = `${process.env.BACKEND_URL || "http://localhost:5000"}/api/profile/getDocument/${req.file.id}`;
 
-            //console.log("Adding document");
+            //Summarize the document
+            console.log("Document file:", req.file);
+            console.log("Document buffer:", req.file.buffer);
+            console.log("Summarizing document");
+            try {
+                console.log("Try summarizePdf");
+                const summary = await summarizePdf(req.file);
+                console.log("Summary:\n", summary);
+            } catch (error) {
+                console.log("Error summarizing document:", error);
+                try {
+                    console.log("Try summarizePdfBuffer");
+                    const summary = await summarizePdfBuffer(req.file.buffer);
+                    console.log("Summary:\n", summary);
+                } catch (error) {
+                    console.log("Error summarizing document:", error);
+                }
+            }
+
             const companyProfile = await CompanyProfile.findOneAndUpdate(
                 { userId: req.user._id },
                 {
@@ -677,11 +696,18 @@ exports.addDocument = [
                             url: fileUrl,
                             fileId: req.file.id
                         }
+                    },
+                    $push: {
+                        documentSummaries: {
+                            name: name || req.file.originalname,
+                            summary: summary || "No summary available",
+                        }
                     }
                 },
                 { new: true }
             );
-            //console.log("Document added successfully");
+            await companyProfile.save();
+
             res.status(201).json({ message: "Document added successfully" });
         } catch (error) {
             //console.log(error);

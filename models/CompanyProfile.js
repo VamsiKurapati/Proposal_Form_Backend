@@ -59,6 +59,14 @@ const companyProfileSchema = new mongoose.Schema({
       updatedAt: { type: Date, default: Date.now },
     },
   ],
+  documentSummaries: [
+    {
+      name: String,
+      summary: String,
+      createdAt: { type: Date, default: Date.now },
+      updatedAt: { type: Date, default: Date.now },
+    },
+  ],
   proposals: [
     {
       title: { type: String, required: true },

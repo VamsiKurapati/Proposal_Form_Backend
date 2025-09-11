@@ -320,8 +320,8 @@ exports.setCurrentEditor = async (req, res) => {
         }
 
         const editor = await EmployeeProfile.findById(editorId);
-        if (!editor) {
-            return res.status(404).json({ message: "Editor not found" });
+        if (!editor || editor.accessLevel !== "Editor") {
+            return res.status(404).json({ message: "Editor not found or member is not an editor" });
         }
 
         const userId = editor.userId;
@@ -330,9 +330,19 @@ exports.setCurrentEditor = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        const proposal = await Proposal.findById(proposalId);
+        const proposal = await Proposal.findById(proposalId).populate("currentEditor", "_id");
         if (!proposal) {
             return res.status(404).json({ message: "Proposal not found" });
+        }
+
+        // If company and email is not the same as the proposal, return error
+        if (user.role === "company" && user.email !== proposal.companyMail) {
+            return res.status(403).json({ message: "You are not authorized to set the current editor" });
+        }
+
+        //Only company and the the current editor can set the current editor
+        if (user.role !== "company" && proposal.currentEditor._id !== user._id) {
+            return res.status(403).json({ message: "You are not authorized to set the current editor" });
         }
 
         proposal.currentEditor = user._id;
@@ -352,8 +362,8 @@ exports.setCurrentEditorGrant = async (req, res) => {
         }
 
         const editor = await EmployeeProfile.findById(editorId);
-        if (!editor) {
-            return res.status(404).json({ message: "Editor not found" });
+        if (!editor || editor.accessLevel !== "Editor") {
+            return res.status(404).json({ message: "Editor not found or member is not an editor" });
         }
 
         const userId = editor.userId;
@@ -362,9 +372,19 @@ exports.setCurrentEditorGrant = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        const grantProposal = await GrantProposal.findById(grantProposalId);
+        //If company and email is not the same as the proposal, return error
+        if (user.role === "company" && user.email !== proposal.companyMail) {
+            return res.status(403).json({ message: "You are not authorized to set the current editor" });
+        }
+
+        const grantProposal = await GrantProposal.findById(grantProposalId).populate("currentEditor", "_id");
         if (!grantProposal) {
             return res.status(404).json({ message: "Grant proposal not found" });
+        }
+
+        //If company and email is not the same as the proposal, return error
+        if (user.role === "company" && user.email !== grantProposal.companyMail) {
+            return res.status(403).json({ message: "You are not authorized to set the current editor" });
         }
 
         grantProposal.currentEditor = user._id;
@@ -455,10 +475,26 @@ exports.deletePermanentlyGrant = async (req, res) => {
 exports.updateProposal = async (req, res) => {
     try {
         const { proposalId, updates } = req.body;
-        const proposal = await Proposal.findById(proposalId);
+        const proposal = await Proposal.findById(proposalId).populate("currentEditor", "_id");
         if (!proposal) {
             return res.status(404).json({ message: "Proposal not found" });
         }
+
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        //If company and email is not the same as the proposal, return error
+        if (user.role === "company" && user.email !== proposal.companyMail) {
+            return res.status(403).json({ message: "You are not authorized to update the proposal" });
+        }
+
+        //Only company and the the current editor can update the proposal
+        if (user.role !== "company" && proposal.currentEditor._id !== user._id) {
+            return res.status(403).json({ message: "You are not authorized to update the proposal" });
+        }
+
         if (updates.deadline) proposal.deadline = updates.deadline;
         if (updates.submittedAt) proposal.submittedAt = updates.submittedAt;
         if (updates.status) proposal.status = updates.status;
@@ -479,10 +515,26 @@ exports.updateProposal = async (req, res) => {
 exports.updateGrantProposal = async (req, res) => {
     try {
         const { grantProposalId, updates } = req.body;
-        const grantProposal = await GrantProposal.findById(grantProposalId);
+        const grantProposal = await GrantProposal.findById(grantProposalId).populate("currentEditor", "_id");
         if (!grantProposal) {
             return res.status(404).json({ message: "Grant proposal not found" });
         }
+
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        //If company and email is not the same as the proposal, return error
+        if (user.role === "company" && user.email !== grantProposal.companyMail) {
+            return res.status(403).json({ message: "You are not authorized to update the grant proposal" });
+        }
+
+        //Only company and the the current editor can update the grant proposal
+        if (user.role !== "company" && grantProposal.currentEditor._id !== user._id) {
+            return res.status(403).json({ message: "You are not authorized to update the grant proposal" });
+        }
+
         if (updates.deadline) grantProposal.deadline = updates.deadline;
         if (updates.submittedAt) grantProposal.submittedAt = updates.submittedAt;
         if (updates.status) grantProposal.status = updates.status;
