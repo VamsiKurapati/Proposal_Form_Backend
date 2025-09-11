@@ -130,6 +130,26 @@ function generateStrongPassword(length = randomInt(8, 12)) {
         .join('');
 }
 
+//Helper function to get file buffer from GridFS
+async function getFileBufferFromGridFS(fileId) {
+    const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+        bucketName: "uploads"
+    });
+    const downloadStream = bucket.openDownloadStream(fileId);
+    const chunks = [];
+    return new Promise((resolve, reject) => {
+        downloadStream.on('data', (chunk) => {
+            chunks.push(chunk);
+        });
+        downloadStream.on('end', () => {
+            resolve(Buffer.concat(chunks));
+        });
+        downloadStream.on('error', (error) => {
+            reject(error);
+        });
+    });
+}
+
 exports.getProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
@@ -666,15 +686,16 @@ exports.addDocument = [
             // Construct the file URL for the uploaded document
             const fileUrl = `${process.env.BACKEND_URL || "http://localhost:5000"}/api/profile/getDocument/${req.file.id}`;
 
-            //Summarize the document
-            console.log("Document file:", req.file);
-            console.log("Document buffer:", req.file.buffer);
+            //Extract buffer from GridFS
+            const buffer = await getFileBufferFromGridFS(req.file.id);
+            console.log("Buffer:", buffer);
+
             console.log("Summarizing document");
 
             let documentSummary = null;
             try {
                 console.log("Try summarizePdfBuffer with buffer");
-                documentSummary = await summarizePdfBuffer(req.file.buffer);
+                documentSummary = await summarizePdfBuffer(buffer);
                 console.log("Summary:\n", documentSummary);
             } catch (error) {
                 console.log("Error summarizing document:", error);
