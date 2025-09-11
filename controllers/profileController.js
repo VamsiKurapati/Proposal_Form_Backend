@@ -542,7 +542,7 @@ exports.addEmployee = async (req, res) => {
             await addEmployeeToCompanyProfile(req, employeeProfile);
             //console.log("Employee added to company profile");
         } else {
-            const subscription = await Subscription.findOne({ userId: req.user._id });
+            const subscription = await Subscription.findOne({ user_id: req.user._id });
             const companyProfile = await CompanyProfile.findOne({ userId: req.user._id });
             if (!companyProfile) {
                 return res.status(404).json({ message: "Company profile not found" });
