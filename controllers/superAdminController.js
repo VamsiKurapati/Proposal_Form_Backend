@@ -17,8 +17,8 @@ exports.getCompanyStatsAndData = async (req, res) => {
   try {
     const totalCompanies = await CompanyProfile.countDocuments();
     const totalProposals = await Proposal.countDocuments();
-    const activeUsers = await User.countDocuments({ subscription_status: "active" });
-    const inactiveUsers = await User.countDocuments({ subscription_status: "inactive" });
+    const activeUsers = await User.countDocuments({ subscription_status: "active", role: "company" });
+    const inactiveUsers = await User.countDocuments({ subscription_status: "inactive", role: "company" });
 
     const companies = await CompanyProfile.find();
     // For each company, find the user's current subscription and attach plan_name
