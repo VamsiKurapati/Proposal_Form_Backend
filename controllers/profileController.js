@@ -660,7 +660,7 @@ exports.addCaseStudy = [
             }
 
             // Construct the file URL for the uploaded case study file
-            const fileUrl = `${process.env.BACKEND_URL || "http://localhost:5000"}/api/profile/getCaseStudy/${req.file.id}`;
+            const fileUrl = `${process.env.BACKEND_URL || "http://localhost:5000"}/profile/getCaseStudy/${req.file.id}`;
 
             //console.log("Adding case study");
             const companyProfile_1 = await CompanyProfile.findOneAndUpdate(
@@ -721,7 +721,7 @@ exports.addDocument = [
             }
 
             // Construct the file URL for the uploaded document
-            const fileUrl = `${process.env.BACKEND_URL || "http://localhost:5000"}/api/profile/getDocument/${req.file.id}`;
+            const fileUrl = `${process.env.BACKEND_URL || "http://localhost:5000"}/profile/getDocument/${req.file.id}`;
 
             //Extract buffer from GridFS
             const buffer = await getFileBufferFromGridFS(req.file.id);
