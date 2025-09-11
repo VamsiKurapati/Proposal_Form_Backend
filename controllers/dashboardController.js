@@ -357,6 +357,10 @@ exports.setCurrentEditor = async (req, res) => {
         }
 
         //Only company and the the current editor can set the current editor
+        console.log("User Role:", user.role);
+        console.log("Current Editor:", proposal.currentEditor._id);
+        console.log("Req sent User ID:", req.user._id);
+        console.log("Req sent User:", req.user);
         if (user.role !== "company" && proposal.currentEditor._id !== req.user._id) {
             return res.status(403).json({ message: "You are not authorized to set the current editor-1" });
         }
