@@ -351,6 +351,8 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
       }
     });
 
+    activeUsers = await User.countDocuments({ subscription_status: "active", role: "company" });
+
     res.json({
       PaymentStats: {
         "Total Revenue": totalRevenue,
