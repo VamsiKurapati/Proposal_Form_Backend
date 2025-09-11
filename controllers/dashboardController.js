@@ -499,6 +499,14 @@ exports.updateProposal = async (req, res) => {
         }
 
         if (updates.deadline) proposal.deadline = updates.deadline;
+        if (updates.deadline) {
+            const calendarEvent = await CalendarEvent.findOne({ proposalId: proposalId });
+            if (calendarEvent) {
+                calendarEvent.startDate = updates.deadline;
+                calendarEvent.endDate = updates.deadline;
+                await calendarEvent.save();
+            }
+        }
         if (updates.submittedAt) proposal.submittedAt = updates.submittedAt;
         if (updates.status) proposal.status = updates.status;
         if (updates.status && updates.status !== proposal.status) {
@@ -539,6 +547,14 @@ exports.updateGrantProposal = async (req, res) => {
         }
 
         if (updates.deadline) grantProposal.deadline = updates.deadline;
+        if (updates.deadline) {
+            const calendarEvent = await CalendarEvent.findOne({ grantId: grantProposalId });
+            if (calendarEvent) {
+                calendarEvent.startDate = updates.deadline;
+                calendarEvent.endDate = updates.deadline;
+                await calendarEvent.save();
+            }
+        }
         if (updates.submittedAt) grantProposal.submittedAt = updates.submittedAt;
         if (updates.status) grantProposal.status = updates.status;
         if (updates.status && updates.status !== grantProposal.status) {

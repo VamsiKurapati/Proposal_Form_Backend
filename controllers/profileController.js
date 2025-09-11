@@ -82,11 +82,17 @@ const passwordValidator = (password) => {
     const lowercase = 'abcdefghijklmnopqrstuvwxyz';
     const digits = '0123456789';
     const special = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+
     if (password.length < 8) return false;
-    if (!uppercase.includes(password)) return false;
-    if (!lowercase.includes(password)) return false;
-    if (!digits.includes(password)) return false;
-    if (!special.includes(password)) return false;
+
+    if (!uppercase.test(password)) return false;
+
+    if (!lowercase.test(password)) return false;
+
+    if (!digits.test(password)) return false;
+
+    if (!special.test(password)) return false;
+
     return true;
 }
 
@@ -634,7 +640,7 @@ exports.addCaseStudy = [
     singleCaseStudyUpload,
     async (req, res) => {
         try {
-            const { title, description, readTime } = req.body;
+            const { title, company } = req.body;
             const user = await User.findById(req.user._id);
             if (!user) {
                 return res.status(404).json({ message: "User not found" });
@@ -642,6 +648,13 @@ exports.addCaseStudy = [
             if (user.role !== "company") {
                 return res.status(403).json({ message: "You are not authorized to add a case study" });
             }
+
+            const companyProfile = await CompanyProfile.findOne({ userId: req.user._id });
+
+            if (!companyProfile) {
+                return res.status(404).json({ message: "Company profile not found" });
+            }
+
             if (!req.file) {
                 return res.status(400).json({ message: "No file uploaded" });
             }
@@ -650,20 +663,20 @@ exports.addCaseStudy = [
             const fileUrl = `${process.env.BACKEND_URL || "http://localhost:5000"}/api/profile/getCaseStudy/${req.file.id}`;
 
             //console.log("Adding case study");
-            const companyProfile = await CompanyProfile.findOneAndUpdate(
+            const companyProfile_1 = await CompanyProfile.findOneAndUpdate(
                 { userId: req.user._id },
                 {
                     $push: {
                         caseStudies: {
                             title,
-                            about: description, // Map 'description' to 'about' field
-                            readTime,
-                            fileUrl
+                            company,
+                            fileUrl,
                         }
                     }
                 },
                 { new: true }
             );
+            await companyProfile_1.save();
             //console.log("Case study added successfully");
             res.status(201).json({ message: "Case study added successfully" });
         } catch (error) {
