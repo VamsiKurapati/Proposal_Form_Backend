@@ -500,7 +500,7 @@ exports.updateProposal = async (req, res) => {
 
         if (updates.deadline) proposal.deadline = updates.deadline;
         if (updates.deadline) {
-            const calendarEvent = await CalendarEvent.findOne({ proposalId: proposalId });
+            const calendarEvent = await CalendarEvent.findOne({ proposalId: proposalId, status: "Deadline" });
             if (calendarEvent) {
                 calendarEvent.startDate = updates.deadline;
                 calendarEvent.endDate = updates.deadline;
@@ -510,7 +510,7 @@ exports.updateProposal = async (req, res) => {
         if (updates.submittedAt) proposal.submittedAt = updates.submittedAt;
         if (updates.status) proposal.status = updates.status;
         if (updates.status && updates.status !== proposal.status) {
-            const calendarEvent = await CalendarEvent.findOne({ proposalId: proposalId });
+            const calendarEvent = await CalendarEvent.findOne({ proposalId: proposalId, status: { $ne: "Deadline" } });
             if (calendarEvent) {
                 calendarEvent.status = updates.status;
                 await calendarEvent.save();
@@ -548,7 +548,7 @@ exports.updateGrantProposal = async (req, res) => {
 
         if (updates.deadline) grantProposal.deadline = updates.deadline;
         if (updates.deadline) {
-            const calendarEvent = await CalendarEvent.findOne({ grantId: grantProposalId });
+            const calendarEvent = await CalendarEvent.findOne({ grantId: grantProposalId, status: "Deadline" });
             if (calendarEvent) {
                 calendarEvent.startDate = updates.deadline;
                 calendarEvent.endDate = updates.deadline;
@@ -558,7 +558,7 @@ exports.updateGrantProposal = async (req, res) => {
         if (updates.submittedAt) grantProposal.submittedAt = updates.submittedAt;
         if (updates.status) grantProposal.status = updates.status;
         if (updates.status && updates.status !== grantProposal.status) {
-            const calendarEvent = await CalendarEvent.findOne({ grantId: grantProposalId });
+            const calendarEvent = await CalendarEvent.findOne({ grantId: grantProposalId, status: { $ne: "Deadline" } });
             if (calendarEvent) {
                 calendarEvent.status = updates.status;
                 await calendarEvent.save();
