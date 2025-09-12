@@ -268,6 +268,19 @@ exports.deleteImage = async (req, res) => {
     }
 };
 
+exports.deleteImageById = async (req, res) => {
+    try {
+        const fileId = req.params.fileId;
+        const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+            bucketName: "cloud_images",
+        });
+        await bucket.delete(fileId);
+        res.status(200).json({ message: "Image deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
 // New function to get image by ID (more reliable than filename)
 exports.serveImageById = async (req, res) => {
     try {
