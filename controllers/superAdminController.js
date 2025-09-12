@@ -288,6 +288,8 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
       }, {});
     }
 
+    const subcriptions = await Subscription.find().populate("user_id", "email").lean();
+
     // Add companyName to each payment
     const paymentsWithCompanyName = await Promise.all(payments.map(async (payment) => {
       const companyName = payment.user_id
@@ -298,17 +300,12 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
         ? subscriptionMap[payment.subscription_id.toString()] || "Unknown Plan"
         : "Unknown Plan";
 
-      //Attach the subscription details along with the payment
-      const subscription = payment.status === 'Success' ? await Subscription.findById(payment.subscription_id).populate("user_id", "email").lean() : null;
-
-      // console.log(subscription);
-
       return {
         ...payment.toObject(),
         companyName,
         planName,
-        email: subscription ? subscription.user_id.email : "Unknown Email",
-        ...(subscription ? subscription : {})
+        email: subcriptions.find(sub => sub._id.toString() === payment.subscription_id.toString()) ? subcriptions.find(sub => sub._id.toString() === payment.subscription_id.toString()).user_id.email ? subcriptions.find(sub => sub._id.toString() === payment.subscription_id.toString()).user_id.email : "Unknown Email" : "Unknown Email",
+        ...(subcriptions.find(sub => sub._id.toString() === payment.subscription_id.toString()) ? subcriptions.find(sub => sub._id.toString() === payment.subscription_id.toString()) : {})
       };
     }));
 
