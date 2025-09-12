@@ -979,6 +979,7 @@ exports.deleteEmployee = async (req, res) => {
         }
 
         await EmployeeProfile.findByIdAndDelete(id);
+        await User.findByIdAndDelete(userId);
 
         res.status(200).json({ message: "Employee deleted successfully" });
     } catch (error) {

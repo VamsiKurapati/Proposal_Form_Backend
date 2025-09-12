@@ -113,26 +113,26 @@ const formatFileSize = (bytes) => {
 
 const getDeadline = (deadline) => {
   let date;
-  console.log("Calculating deadline");
+  // console.log("Calculating deadline");
 
   try {
     if (deadline === "") {
       date = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-      console.log("Deadline is empty, setting to 30 days from now:", date);
+      // console.log("Deadline is empty, setting to 30 days from now:", date);
     } else {
       date = new Date(deadline);
       if (isNaN(date.getTime())) {
-        console.warn("Invalid date input:", deadline);
+        // console.warn("Invalid date input:", deadline);
         date = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-        console.log("Setting to 30 days from now:", date);
+        // console.log("Setting to 30 days from now:", date);
       } else {
-        console.log("Valid deadline provided:", date);
+        // console.log("Valid deadline provided:", date);
       }
     }
   } catch (err) {
     console.error('Error in /getDeadline:', err);
     date = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-    console.log("Error, setting to 30 days from now:", date);
+    // console.log("Error, setting to 30 days from now:", date);
   }
 
   return date;
@@ -557,7 +557,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
           // console.log("User Data", userData);
           // console.log("RFP", rfp);
 
-          console.log("Creating new proposal");
+          // console.log("Creating new proposal");
 
           const new_Proposal = new Proposal({
             rfpId: proposal._id || "",
@@ -584,7 +584,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
           await new_Proposal.save();
 
-          console.log("Creating new draft");
+          // console.log("Creating new draft");
 
           const new_Draft = new DraftRFP({
             userEmail: userEmail,
@@ -596,7 +596,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
           });
           await new_Draft.save();
 
-          console.log("Creating new calendar event");
+          //  console.log("Creating new calendar event");
 
           const new_CalendarEvent = new CalendarEvent({
             companyId: companyProfile_1._id,
@@ -611,7 +611,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
           await new_CalendarEvent.save();
 
           //Also add new calendar event with deadline
-          console.log("Creating new calendar event with deadline");
+          // console.log("Creating new calendar event with deadline");
 
           const new_CalendarEvent_Deadline = new CalendarEvent({
             companyId: companyProfile_1._id,
@@ -625,21 +625,21 @@ exports.sendDataForProposalGeneration = async (req, res) => {
           });
           await new_CalendarEvent_Deadline.save();
 
-          console.log("Updating proposal tracker");
+          // console.log("Updating proposal tracker");
 
           proposalTracker.status = "success";
           await proposalTracker.save();
 
-          console.log("Returning success response");
+          // console.log("Returning success response");
 
           return res.status(200).json({ message: 'Proposal Generation completed successfully.', proposal: processedProposal, proposalId: new_Proposal._id });
         } else if (res_data.status === "processing") {
-          console.log("Returning processing response");
+          // console.log("Returning processing response");
 
           return res.status(200).json({ message: 'Proposal Generation is still in progress. Please wait for it to complete.' });
         } else {
           await ProposalTracker.deleteOne({ rfpId: proposal._id, companyMail: userEmail });
-          console.log("Returning error response");
+          // console.log("Returning error response");
 
           return res.status(400).json({ error: 'Failed to generate proposal. Please try again later.' });
         }
