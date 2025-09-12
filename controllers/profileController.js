@@ -944,6 +944,8 @@ exports.deleteEmployee = async (req, res) => {
             return res.status(404).json({ message: "Employee profile not found" });
         }
 
+        const emprole = employeeProfile.accessLevel;
+
         const userId = employeeProfile.userId;
 
         const companyProfile = await CompanyProfile.findOne({ email: employeeProfile.companyMail });
@@ -979,7 +981,10 @@ exports.deleteEmployee = async (req, res) => {
         }
 
         await EmployeeProfile.findByIdAndDelete(id);
-        await User.findByIdAndDelete(userId);
+
+        if (emprole !== "Member") {
+            await User.findByIdAndDelete(userId);
+        }
 
         res.status(200).json({ message: "Employee deleted successfully" });
     } catch (error) {
