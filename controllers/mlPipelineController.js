@@ -112,24 +112,31 @@ const formatFileSize = (bytes) => {
 };
 
 const getDeadline = (deadline) => {
-  let date = new Date();
-  console.log("Calculating deadline", date);
+  let date;
+  console.log("Calculating deadline");
+
   try {
     if (deadline === "") {
-      date = new Date() + 30 * 24 * 60 * 60 * 1000;
-      console.log("Deadline is empty, setting to 30 days from now", date);
-    }
-    else {
+      date = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      console.log("Deadline is empty, setting to 30 days from now:", date);
+    } else {
       date = new Date(deadline);
-      console.log("Deadline is not empty, setting to", date);
+      if (isNaN(date.getTime())) {
+        console.warn("Invalid date input:", deadline);
+        date = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        console.log("Setting to 30 days from now:", date);
+      } else {
+        console.log("Valid deadline provided:", date);
+      }
     }
   } catch (err) {
     console.error('Error in /getDeadline:', err);
-    console.log("Error in /getDeadline, setting to 30 days from now", date);
-    date = new Date() + 30 * 24 * 60 * 60 * 1000;
+    date = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    console.log("Error, setting to 30 days from now:", date);
   }
+
   return date;
-}
+};
 
 
 
