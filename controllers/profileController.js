@@ -835,7 +835,7 @@ exports.deleteDocument = async (req, res) => {
         const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
             bucketName: "uploads",
         });
-        await bucket.delete(id);
+        await bucket.delete(document.fileId);
 
         companyProfile.documents = companyProfile.documents.filter(document => document._id.toString() !== id);
 
@@ -876,7 +876,7 @@ exports.deleteCaseStudy = async (req, res) => {
             bucketName: "uploads",
         });
 
-        await bucket.delete(caseStudy.fileId);
+        await bucket.delete(caseStudy.fileUrl.split("/").pop());
 
         companyProfile.caseStudies = companyProfile.caseStudies.filter(caseStudy => caseStudy._id.toString() !== id);
 
@@ -913,12 +913,6 @@ exports.deleteLicenseAndCertification = async (req, res) => {
         if (!licenseAndCertification) {
             return res.status(404).json({ message: "License and certification not found" });
         }
-
-        const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-            bucketName: "uploads",
-        });
-
-        await bucket.delete(licenseAndCertification.fileId);
 
         companyProfile.licensesAndCertifications = companyProfile.licensesAndCertifications.filter(licenseAndCertification => licenseAndCertification._id.toString() !== id);
 
