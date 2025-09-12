@@ -1059,12 +1059,12 @@ exports.handleFileUploadAndSendForRFPExtraction = [
       });
 
       // Clean up: Delete the uploaded file from GridFS after processing
-      try {
-        await bucket.delete(req.file.id);
-      } catch (deleteError) {
-        // Log error but don't fail the request since RFP was already saved
-        console.error('Failed to delete uploaded file from GridFS:', deleteError);
-      }
+      // try {
+      //   await bucket.delete(req.file.id);
+      // } catch (deleteError) {
+      //   // Log error but don't fail the request since RFP was already saved
+      //   console.error('Failed to delete uploaded file from GridFS:', deleteError);
+      // }
 
       res.status(200).json({
         message: 'RFP extracted and saved successfully',
@@ -1078,16 +1078,16 @@ exports.handleFileUploadAndSendForRFPExtraction = [
 
     } catch (err) {
       // Clean up: Delete the uploaded file from GridFS even if there's an error
-      if (req.file) {
-        try {
-          const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-            bucketName: 'uploads'
-          });
-          await bucket.delete(req.file.id);
-        } catch (deleteError) {
-          console.error('Failed to delete uploaded file from GridFS after error:', deleteError);
-        }
-      }
+      // if (req.file) {
+      //   try {
+      //     const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+      //       bucketName: 'uploads'
+      //     });
+      //     await bucket.delete(req.file.id);
+      //   } catch (deleteError) {
+      //     console.error('Failed to delete uploaded file from GridFS after error:', deleteError);
+      //   }
+      // }
 
       // Handle specific error types
       if (err.response?.status === 422) {
@@ -1277,12 +1277,12 @@ exports.handleFileUploadAndSendForGrantExtraction = [
       const newGrant = await Grant.create(grant);
 
       // Clean up: Delete the uploaded file from GridFS after processing
-      try {
-        await bucket.delete(req.file.id);
-      } catch (deleteError) {
-        // Log error but don't fail the request since RFP was already saved
-        console.error('Failed to delete uploaded file from GridFS:', deleteError);
-      }
+      // try {
+      //   await bucket.delete(req.file.id);
+      // } catch (deleteError) {
+      //   // Log error but don't fail the request since RFP was already saved
+      //   console.error('Failed to delete uploaded file from GridFS:', deleteError);
+      // }
 
       res.status(200).json({
         message: 'Grant extracted and saved successfully',
@@ -1296,16 +1296,16 @@ exports.handleFileUploadAndSendForGrantExtraction = [
 
     } catch (err) {
       // Clean up: Delete the uploaded file from GridFS even if there's an error
-      if (req.file) {
-        try {
-          const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-            bucketName: 'uploads'
-          });
-          await bucket.delete(req.file.id);
-        } catch (deleteError) {
-          console.error('Failed to delete uploaded file from GridFS after error:', deleteError);
-        }
-      }
+      // if (req.file) {
+      //   try {
+      //     const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+      //       bucketName: 'uploads'
+      //     });
+      //     await bucket.delete(req.file.id);
+      //   } catch (deleteError) {
+      //     console.error('Failed to delete uploaded file from GridFS after error:', deleteError);
+      //   }
+      // }
 
       // Handle specific error types
       if (err.response?.status === 422) {
