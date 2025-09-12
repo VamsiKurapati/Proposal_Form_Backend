@@ -546,6 +546,8 @@ exports.sendDataForProposalGeneration = async (req, res) => {
           // console.log("User Data", userData);
           // console.log("RFP", rfp);
 
+          console.log("Creating new proposal");
+
           const new_Proposal = new Proposal({
             rfpId: proposal._id || "",
             title: proposal.title || "",
@@ -571,6 +573,8 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
           await new_Proposal.save();
 
+          console.log("Creating new draft");
+
           const new_Draft = new DraftRFP({
             userEmail: userEmail,
             rfpId: proposal._id || "",
@@ -580,6 +584,8 @@ exports.sendDataForProposalGeneration = async (req, res) => {
             currentEditor: req.user._id,
           });
           await new_Draft.save();
+
+          console.log("Creating new calendar event");
 
           const new_CalendarEvent = new CalendarEvent({
             companyId: companyProfile_1._id,
@@ -594,6 +600,8 @@ exports.sendDataForProposalGeneration = async (req, res) => {
           await new_CalendarEvent.save();
 
           //Also add new calendar event with deadline
+          console.log("Creating new calendar event with deadline");
+
           const new_CalendarEvent_Deadline = new CalendarEvent({
             companyId: companyProfile_1._id,
             employeeId: req.user._id,
@@ -606,15 +614,22 @@ exports.sendDataForProposalGeneration = async (req, res) => {
           });
           await new_CalendarEvent_Deadline.save();
 
+          console.log("Updating proposal tracker");
 
           proposalTracker.status = "success";
           await proposalTracker.save();
 
+          console.log("Returning success response");
+
           return res.status(200).json({ message: 'Proposal Generation completed successfully.', proposal: processedProposal, proposalId: new_Proposal._id });
         } else if (res_data.status === "processing") {
+          console.log("Returning processing response");
+
           return res.status(200).json({ message: 'Proposal Generation is still in progress. Please wait for it to complete.' });
         } else {
-          // await ProposalTracker.deleteOne({ rfpId: proposal._id });
+          await ProposalTracker.deleteOne({ rfpId: proposal._id, companyMail: userEmail });
+          console.log("Returning error response");
+
           return res.status(400).json({ error: 'Failed to generate proposal. Please try again later.' });
         }
       }
