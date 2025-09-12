@@ -547,9 +547,9 @@ exports.sendDataForProposalGeneration = async (req, res) => {
         const res_data = res_1.data;
 
         if (res_data.status === "success") {
-          const dummy = JSON.parse(res_data.result.result);
-          // const proposalData = res_data.result.result;
-          const proposalData = dummy;
+          // const dummy = JSON.parse(res_data.result.result);
+          const proposalData = res_data.result.result;
+          // const proposalData = dummy;
 
           const processedProposal = replaceTextInJson(template_json, proposalData, userData, rfp);
 
@@ -1697,8 +1697,9 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
         const res_data = res_1.data;
 
         if (res_data.status === "success") {
-          const dummy = res_data.result.result;
-          const proposalData = JSON.parse(dummy);
+          // const dummy = res_data.result.result;
+          // const proposalData = JSON.parse(dummy);
+          const proposalData = res_data.result.result;
 
           const processedProposal = replaceTextInJson_Grant(grant_template_json, userData, grant, proposalData);
 
@@ -1870,8 +1871,9 @@ exports.getGrantProposalStatus = async (req, res) => {
       });
       const res_data = res_1.data;
       if (res_data.status === "success") {
-        const dummy = res_data.result.result;
-        const proposalData = JSON.parse(dummy);
+        // const dummy = res_data.result.result;
+        // const proposalData = JSON.parse(dummy);
+        const proposalData = res_data.result.result;
 
         const processedProposal = replaceTextInJson_Grant(grant_template_json, companyProfile_1, grant, proposalData);
         const new_prop = new GrantProposal({
