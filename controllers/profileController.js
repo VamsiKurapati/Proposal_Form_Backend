@@ -876,7 +876,7 @@ exports.deleteCaseStudy = async (req, res) => {
             bucketName: "uploads",
         });
 
-        await bucket.delete(caseStudy.fileUrl.split("/").pop());
+        await bucket.delete(new mongoose.Types.ObjectId(caseStudy.fileUrl.split("/").pop()));
 
         companyProfile.caseStudies = companyProfile.caseStudies.filter(caseStudy => caseStudy._id.toString() !== id);
 
