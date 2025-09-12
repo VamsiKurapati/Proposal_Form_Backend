@@ -556,7 +556,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
             generatedProposal: processedProposal,
             companyMail: userEmail,
             url: proposal.link || "",
-            deadline: proposal.deadline || new Date(),
+            deadline: getDeadline(proposal.deadline),
             status: "In Progress",
             submittedAt: new Date(),
             currentEditor: req.user._id,
@@ -1698,7 +1698,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
             title: grant.OPPORTUNITY_TITLE,
             client: userData.companyName,
             companyMail: userEmail,
-            deadline: grant.ESTIMATED_APPLICATION_DUE_DATE,
+            deadline: getDeadline(grant.ESTIMATED_APPLICATION_DUE_DATE),
             url: grant.OPPORTUNITY_NUMBER_LINK || "",
             status: "In Progress",
             submittedAt: new Date(),
@@ -1746,8 +1746,8 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
             proposalId: null,
             grantId: grant._id,
             title: grant.OPPORTUNITY_TITLE,
-            startDate: new Date(grant.ESTIMATED_APPLICATION_DUE_DATE) || new Date(),
-            endDate: new Date(grant.ESTIMATED_APPLICATION_DUE_DATE) || new Date(),
+            startDate: getDeadline(grant.ESTIMATED_APPLICATION_DUE_DATE),
+            endDate: getDeadline(grant.ESTIMATED_APPLICATION_DUE_DATE),
             status: "Deadline",
           });
           await new_CalendarEvent_Deadline.save();
