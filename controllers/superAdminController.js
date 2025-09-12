@@ -290,6 +290,9 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
 
     const subcriptions = await Subscription.find().populate("user_id", "email").lean();
 
+
+    console.log(subcriptions);
+
     // Add companyName to each payment
     const paymentsWithCompanyName = await Promise.all(payments.map(async (payment) => {
       const companyName = payment.user_id
