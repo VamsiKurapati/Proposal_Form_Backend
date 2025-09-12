@@ -112,15 +112,19 @@ const formatFileSize = (bytes) => {
 };
 
 const getDeadline = (deadline) => {
+  let date = new Date();
   try {
     if (deadline === "") {
-      return new Date() + 30 * 24 * 60 * 60 * 1000;
+      date = new Date() + 30 * 24 * 60 * 60 * 1000;
     }
-    return new Date(deadline);
+    else {
+      date = new Date(deadline);
+    }
   } catch (err) {
     console.error('Error in /getDeadline:', err);
-    return new Date() + 30 * 24 * 60 * 60 * 1000;
+    date = new Date() + 30 * 24 * 60 * 60 * 1000;
   }
+  return date;
 }
 
 
