@@ -290,9 +290,6 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
 
     const subcriptions = await Subscription.find().populate("user_id", "email").lean();
 
-
-    console.log(subcriptions);
-
     // Add companyName to each payment
     const paymentsWithCompanyName = await Promise.all(payments.map(async (payment) => {
       const companyName = payment.user_id
@@ -307,8 +304,14 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
         ...payment.toObject(),
         companyName,
         planName,
-        email: subcriptions.find(sub => sub._id.toString() === payment.subscription_id.toString()) ? subcriptions.find(sub => sub._id.toString() === payment.subscription_id.toString()).user_id.email ? subcriptions.find(sub => sub._id.toString() === payment.subscription_id.toString()).user_id.email : "Unknown Email" : "Unknown Email",
-        ...(subcriptions.find(sub => sub._id.toString() === payment.subscription_id.toString()) ? subcriptions.find(sub => sub._id.toString() === payment.subscription_id.toString()) : {})
+        email: (() => {
+          const subscription = subcriptions.find(sub => sub._id.toString() === payment.subscription_id.toString());
+          if (subscription && subscription.user_id && subscription.user_id.email) {
+            return subscription.user_id.email;
+          }
+          return "Unknown Email";
+        })(),
+        ...(subcriptions.find(sub => sub._id.toString() === payment.subscription_id.toString()) || {})
       };
     }));
 
