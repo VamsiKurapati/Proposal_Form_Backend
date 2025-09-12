@@ -248,11 +248,17 @@ exports.deleteImage = async (req, res) => {
             bucketName: "cloud_images",
         });
 
+        let file = null;
+
         // Find file by filename (should be unique now)
-        const file = await bucket.find({ filename: filename }).toArray();
+        file = await bucket.find({ filename: filename }).toArray();
 
         if (!file || file.length === 0) {
-            return res.status(404).json({ message: "File not found" });
+            //Try finding by fileId
+            file = await bucket.find({ _id: new mongoose.Types.ObjectId(filename) }).toArray();
+            if (!file || file.length === 0) {
+                return res.status(404).json({ message: "File not found" });
+            }
         }
 
         // If multiple files found (shouldn't happen with unique filenames), log warning
@@ -267,19 +273,6 @@ exports.deleteImage = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-
-exports.deleteImageById = async (req, res) => {
-    try {
-        const fileId = req.params.fileId;
-        const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-            bucketName: "cloud_images",
-        });
-        await bucket.delete(fileId);
-        res.status(200).json({ message: "Image deleted successfully" });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-}
 
 // New function to get image by ID (more reliable than filename)
 exports.serveImageById = async (req, res) => {
