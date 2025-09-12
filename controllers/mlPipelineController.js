@@ -630,6 +630,14 @@ exports.sendDataForProposalGeneration = async (req, res) => {
           proposalTracker.status = "success";
           await proposalTracker.save();
 
+          const subscription_1 = await Subscription.findOne({ user_id: userId });
+          if (!subscription_1) {
+            return res.status(400).json({ error: 'Subscription not found' });
+          }
+
+          subscription_1.current_rfp_proposal_generations++;
+          await subscription_1.save();
+
           // console.log("Returning success response");
 
           return res.status(200).json({ message: 'Proposal Generation completed successfully.', proposal: processedProposal, proposalId: new_Proposal._id });
@@ -652,8 +660,8 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     }
 
     //Get no.of RFP proposals generated between subscription start date and end date
-    const currentRFPs = await Proposal.find({ companyMail: userEmail, createdAt: { $gte: subscription.start_date, $lte: subscription.end_date } }).countDocuments();
-    if (subscription.max_rfp_proposal_generations <= currentRFPs) {
+    // const currentRFPs = await Proposal.find({ companyMail: userEmail, createdAt: { $gte: subscription.start_date, $lte: subscription.end_date } }).countDocuments();
+    if (subscription.max_rfp_proposal_generations <= subscription.current_rfp_proposal_generations) {
       return res.status(400).json({ error: 'You have reached the maximum number of RFP proposals' });
     }
 
@@ -1768,6 +1776,14 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
           proposalTracker.status = "success";
           await proposalTracker.save();
 
+          const subscription_1 = await Subscription.findOne({ user_id: userId });
+          if (!subscription_1) {
+            return res.status(400).json({ error: 'Subscription not found' });
+          }
+
+          subscription_1.current_grant_proposal_generations++;
+          await subscription_1.save();
+
           return res.status(200).json({ message: 'Grant Proposal Generation completed successfully.', proposal: processedProposal, proposalId: new_prop._id });
 
         } else if (res_data.status === "processing") {
@@ -1788,8 +1804,8 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
     // console.log("Subscription exists");
 
     // console.log("Checking if current grants are less than max grants");
-    const currentGrants = await GrantProposal.find({ companyMail: userEmail, createdAt: { $gte: subscription.start_date, $lte: subscription.end_date } }).countDocuments();
-    if (subscription.max_grant_proposal_generations <= currentGrants) {
+    // const currentGrants = await GrantProposal.find({ companyMail: userEmail, createdAt: { $gte: subscription.start_date, $lte: subscription.end_date } }).countDocuments();
+    if (subscription.max_grant_proposal_generations <= subscription.current_grant_proposal_generations) {
       return res.status(400).json({ error: 'You have reached the maximum number of grant proposals. Please upgrade your subscription to generate more proposals.' });
     }
     // console.log("Current grants are less than max grants");
