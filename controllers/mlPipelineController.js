@@ -113,15 +113,19 @@ const formatFileSize = (bytes) => {
 
 const getDeadline = (deadline) => {
   let date = new Date();
+  console.log("Calculating deadline", date);
   try {
     if (deadline === "") {
       date = new Date() + 30 * 24 * 60 * 60 * 1000;
+      console.log("Deadline is empty, setting to 30 days from now", date);
     }
     else {
       date = new Date(deadline);
+      console.log("Deadline is not empty, setting to", date);
     }
   } catch (err) {
     console.error('Error in /getDeadline:', err);
+    console.log("Error in /getDeadline, setting to 30 days from now", date);
     date = new Date() + 30 * 24 * 60 * 60 * 1000;
   }
   return date;
