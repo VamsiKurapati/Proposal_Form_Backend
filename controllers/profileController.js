@@ -811,6 +811,187 @@ exports.getDocument = async (req, res) => {
     }
 };
 
+exports.deleteDocument = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        if (user.role !== "company") {
+            return res.status(403).json({ message: "You are not authorized to delete a document" });
+        }
+        const { id } = req.params;
+
+        const companyProfile = await CompanyProfile.findOne({ userId: req.user._id });
+        if (!companyProfile) {
+            return res.status(404).json({ message: "Company profile not found" });
+        }
+
+        const document = companyProfile.documents.find(document => document._id.toString() === id);
+        if (!document) {
+            return res.status(404).json({ message: "Document not found" });
+        }
+
+        const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+            bucketName: "uploads",
+        });
+        await bucket.delete(id);
+
+        companyProfile.documents = companyProfile.documents.filter(document => document._id.toString() !== id);
+
+        await companyProfile.save();
+
+        res.status(200).json({ message: "Document deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.deleteCaseStudy = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (user.role !== "company") {
+            return res.status(403).json({ message: "You are not authorized to delete a case study" });
+        }
+
+        const { id } = req.params;
+
+        const companyProfile = await CompanyProfile.findOne({ userId: req.user._id });
+
+        if (!companyProfile) {
+            return res.status(404).json({ message: "Company profile not found" });
+        }
+
+        const caseStudy = companyProfile.caseStudies.find(caseStudy => caseStudy._id.toString() === id);
+        if (!caseStudy) {
+            return res.status(404).json({ message: "Case study not found" });
+        }
+
+        const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+            bucketName: "uploads",
+        });
+
+        await bucket.delete(caseStudy.fileId);
+
+        companyProfile.caseStudies = companyProfile.caseStudies.filter(caseStudy => caseStudy._id.toString() !== id);
+
+        await companyProfile.save();
+
+        res.status(200).json({ message: "Case study deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.deleteLicenseAndCertification = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (user.role !== "company") {
+            return res.status(403).json({ message: "You are not authorized to delete a license and certification" });
+        }
+
+        const { id } = req.params;
+
+        const companyProfile = await CompanyProfile.findOne({ userId: req.user._id });
+
+        if (!companyProfile) {
+            return res.status(404).json({ message: "Company profile not found" });
+        }
+
+        const licenseAndCertification = companyProfile.licensesAndCertifications.find(licenseAndCertification => licenseAndCertification._id.toString() === id);
+
+        if (!licenseAndCertification) {
+            return res.status(404).json({ message: "License and certification not found" });
+        }
+
+        const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+            bucketName: "uploads",
+        });
+
+        await bucket.delete(licenseAndCertification.fileId);
+
+        companyProfile.licensesAndCertifications = companyProfile.licensesAndCertifications.filter(licenseAndCertification => licenseAndCertification._id.toString() !== id);
+
+        await companyProfile.save();
+
+        res.status(200).json({ message: "License and certification deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.deleteEmployee = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (user.role !== "company") {
+            return res.status(403).json({ message: "You are not authorized to delete an employee" });
+        }
+
+        const { id } = req.params;
+
+        const employeeProfile = await EmployeeProfile.findById(id);
+
+        if (!employeeProfile) {
+            return res.status(404).json({ message: "Employee profile not found" });
+        }
+
+        const userId = employeeProfile.userId;
+
+        const companyProfile = await CompanyProfile.findOne({ email: employeeProfile.companyMail });
+
+        if (!companyProfile) {
+            return res.status(404).json({ message: "Company profile not found" });
+        }
+
+        const employee = companyProfile.employees.find(employee => employee.employeeId.toString() === id);
+
+        if (!employee) {
+            return res.status(404).json({ message: "Employee not found" });
+        }
+
+        companyProfile.employees = companyProfile.employees.filter(employee => employee.employeeId.toString() !== id);
+
+        await companyProfile.save();
+
+        //Check if any proposal or grant proposal's current editor is assigned to this employee and set current editor to Company
+        const proposals = await Proposal.find({ currentEditor: userId });
+
+        const grantProposals = await GrantProposal.find({ currentEditor: userId });
+
+        if (proposals.length > 0 || grantProposals.length > 0) {
+            proposals.forEach(async (proposal) => {
+                proposal.currentEditor = companyProfile.userId;
+                await proposal.save();
+            });
+            grantProposals.forEach(async (grantProposal) => {
+                grantProposal.currentEditor = companyProfile.userId;
+                await grantProposal.save();
+            });
+        }
+
+        await EmployeeProfile.findByIdAndDelete(id);
+
+        res.status(200).json({ message: "Employee deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 exports.changePassword = async (req, res) => {
     try {
         const { oldPassword, newPassword } = req.body;

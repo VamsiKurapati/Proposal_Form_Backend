@@ -4,7 +4,7 @@ const router = express.Router();
 
 const verifyUser = require('../utils/verifyUser');
 
-const { getProfile, getEmployeeProfile, getCompanyProfile, updateCompanyProfile, updateEmployeeProfile, addEmployee, removeEmployee, addCaseStudy, addLicenseAndCertification, uploadLogo, getProfileImage, getCaseStudy, addDocument, getDocument, getProposals, changePassword, getPaymentById } = require('../controllers/profileController.js');
+const { getProfile, getEmployeeProfile, getCompanyProfile, updateCompanyProfile, updateEmployeeProfile, addEmployee, removeEmployee, addCaseStudy, addLicenseAndCertification, uploadLogo, getProfileImage, getCaseStudy, addDocument, getDocument, getProposals, changePassword, getPaymentById, deleteDocument, deleteCaseStudy, deleteLicenseAndCertification, deleteEmployee } = require('../controllers/profileController.js');
 
 router.get('/getProfile', verifyUser(["company"]), getProfile);
 router.get('/getCompanyProfile', verifyUser(["employee"]), getCompanyProfile);
@@ -21,6 +21,10 @@ router.post('/addDocument', verifyUser(["company"]), addDocument);
 router.get('/getProfileImage/file/:id', getProfileImage);
 router.get('/getCaseStudy/:id', getCaseStudy);
 router.get('/getDocument/:id', getDocument);
+router.delete('/deleteDocument/:id', verifyUser(["company"]), deleteDocument);
+router.delete('/deleteCaseStudy/:id', verifyUser(["company"]), deleteCaseStudy);
+router.delete('/deleteCertification/:id', verifyUser(["company"]), deleteLicenseAndCertification);
+router.delete('/deleteEmployee/:id', verifyUser(["company"]), deleteEmployee);
 router.put('/changePassword', verifyUser(["company", "employee", "SuperAdmin"]), changePassword);
 router.get('/getPaymentById/:id', verifyUser(["company", "employee"]), getPaymentById);
 
