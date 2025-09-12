@@ -289,7 +289,7 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
     }
 
     // Add companyName to each payment
-    const paymentsWithCompanyName = payments.map(payment => {
+    const paymentsWithCompanyName = await Promise.all(payments.map(async (payment) => {
       const companyName = payment.user_id
         ? companiesMap[payment.user_id.toString()] || "Unknown Company"
         : "Unknown Company";
@@ -298,12 +298,19 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
         ? subscriptionMap[payment.subscription_id.toString()] || "Unknown Plan"
         : "Unknown Plan";
 
+      //Attach the subscription details along with the payment
+      const subscription = payment.status === 'Success' ? await Subscription.findById(payment.subscription_id).populate("user_id", "email").lean() : null;
+
+      // console.log(subscription);
+
       return {
         ...payment.toObject(),
         companyName,
-        planName
+        planName,
+        email: subscription ? subscription.user_id.email : "Unknown Email",
+        ...(subscription ? subscription : {})
       };
-    });
+    }));
 
     // Initialize stats
     let totalRevenue = 0;
