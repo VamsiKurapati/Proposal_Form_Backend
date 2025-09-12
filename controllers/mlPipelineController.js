@@ -111,6 +111,18 @@ const formatFileSize = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
+const getDeadline = (deadline) => {
+  try {
+    if (deadline === "") {
+      return new Date() + 30 * 24 * 60 * 60 * 1000;
+    }
+    return new Date(deadline);
+  } catch (err) {
+    console.error('Error in /getDeadline:', err);
+    return new Date() + 30 * 24 * 60 * 60 * 1000;
+  }
+}
+
 
 
 exports.postAllRFPs = async (req, res) => {
@@ -584,8 +596,8 @@ exports.sendDataForProposalGeneration = async (req, res) => {
             proposalId: null,
             grantId: null,
             title: proposal.title || "",
-            startDate: new Date(proposal.deadline) || new Date(),
-            endDate: new Date(proposal.deadline) || new Date(),
+            startDate: getDeadline(proposal.deadline),
+            endDate: getDeadline(proposal.deadline),
             status: "Deadline",
           });
           await new_CalendarEvent_Deadline.save();
@@ -1050,7 +1062,7 @@ exports.handleFileUploadAndSendForRFPExtraction = [
         link: rfp.link || `${process.env.BACKEND_URL}/profile/getDocument/${req.file.id}`,
         email: userEmail,
         budget: rfp.budget || 'Not found',
-        deadline: rfp.deadline || "",
+        deadline: new Date(rfp.deadline) || "",
         contact: rfp.contact || "",
         timeline: rfp.timeline || "",
         match: 100.00,
