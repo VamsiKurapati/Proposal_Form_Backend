@@ -15,9 +15,9 @@ exports.getDashboardData = async (req, res) => {
         if (role === "company") {
             const companyProfile = await CompanyProfile.findOne({ userId: user._id });
 
-            const proposals = await Proposal.find({ companyMail: companyProfile.email }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 });
+            const proposals = await Proposal.find({ companyMail: companyProfile.email }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 }).lean();
 
-            const grantProposals = await GrantProposal.find({ companyMail: companyProfile.email }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 });
+            const grantProposals = await GrantProposal.find({ companyMail: companyProfile.email }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 }).lean();
 
             const totalProposals = proposals.length + grantProposals.length;
             const inProgressProposals = proposals.filter(proposal => proposal.status === "In Progress").length + grantProposals.filter(proposal => proposal.status === "In Progress").length;
@@ -139,8 +139,8 @@ exports.getDashboardData = async (req, res) => {
                 return res.status(404).json({ message: "Company profile not found" });
             }
             //console.log(companyProfile);
-            const proposals = await Proposal.find({ companyMail: companyProfile.email }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 });
-            const grantProposals = await GrantProposal.find({ companyMail: companyProfile.email }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 });
+            const proposals = await Proposal.find({ companyMail: companyProfile.email }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 }).lean();
+            const grantProposals = await GrantProposal.find({ companyMail: companyProfile.email }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 }).lean();
 
             //console.log(proposals);
             //console.log(grantProposals);
