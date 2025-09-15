@@ -503,7 +503,9 @@ exports.updateProposal = async (req, res) => {
             const calendarEvent = await CalendarEvent.findOne({ proposalId: proposalId, status: "Deadline" });
             if (calendarEvent) {
                 calendarEvent.startDate = updates.deadline;
+                console.log("calendarEvent.startDate", calendarEvent.startDate);
                 calendarEvent.endDate = updates.deadline;
+                console.log("calendarEvent.endDate", calendarEvent.endDate);
                 await calendarEvent.save();
             }
         }
@@ -513,6 +515,7 @@ exports.updateProposal = async (req, res) => {
             const calendarEvent = await CalendarEvent.findOne({ proposalId: proposalId, status: { $ne: "Deadline" } });
             if (calendarEvent) {
                 calendarEvent.status = updates.status;
+                console.log("calendarEvent.status", calendarEvent.status);
                 await calendarEvent.save();
             }
         }
