@@ -504,19 +504,12 @@ exports.updateProposal = async (req, res) => {
             return res.status(403).json({ message: "You are not authorized to update the proposal" });
         }
 
-        console.log("updates.deadline", updates.deadline);
-        console.log("updates.submittedAt", updates.submittedAt);
-        console.log("updates.status", updates.status);
-
         if (updates.deadline) proposal.deadline = updates.deadline;
         if (updates.deadline) {
             const calendarEvent = await CalendarEvent.findOne({ proposalId: proposalId, status: "Deadline" });
-            console.log("calendarEvent", calendarEvent);
             if (calendarEvent) {
                 calendarEvent.startDate = updates.deadline;
-                console.log("calendarEvent.startDate", calendarEvent.startDate);
                 calendarEvent.endDate = updates.deadline;
-                console.log("calendarEvent.endDate", calendarEvent.endDate);
                 await calendarEvent.save();
             }
         }
@@ -524,10 +517,10 @@ exports.updateProposal = async (req, res) => {
         if (updates.submittedAt) proposal.submittedAt = updates.submittedAt;
         if (updates.submittedAt) {
             const calendarEvent = await CalendarEvent.findOne({ proposalId: proposalId, status: { $ne: "Deadline" } });
-            console.log("calendarEvent-1", calendarEvent);
             if (calendarEvent) {
                 calendarEvent.status = "Submitted";
-                console.log("calendarEvent.status", calendarEvent.status);
+                calendarEvent.startDate = proposal.submittedAt;
+                calendarEvent.endDate = proposal.submittedAt;
                 await calendarEvent.save();
             }
         }
@@ -535,10 +528,10 @@ exports.updateProposal = async (req, res) => {
         if (updates.status) proposal.status = updates.status;
         if (updates.status && updates.status !== proposal.status) {
             const calendarEvent = await CalendarEvent.findOne({ proposalId: proposalId, status: { $ne: "Deadline" } });
-            console.log("calendarEvent-2", calendarEvent);
             if (calendarEvent) {
                 calendarEvent.status = updates.status;
-                console.log("calendarEvent.status", calendarEvent.status);
+                calendarEvent.startDate = proposal.submittedAt;
+                calendarEvent.endDate = proposal.submittedAt;
                 await calendarEvent.save();
             }
         }
