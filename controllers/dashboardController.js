@@ -498,6 +498,10 @@ exports.updateProposal = async (req, res) => {
             return res.status(403).json({ message: "You are not authorized to update the proposal" });
         }
 
+        console.log("updates.deadline", updates.deadline);
+        console.log("updates.submittedAt", updates.submittedAt);
+        console.log("updates.status", updates.status);
+
         if (updates.deadline) proposal.deadline = updates.deadline;
         if (updates.deadline) {
             const calendarEvent = await CalendarEvent.findOne({ proposalId: proposalId, status: "Deadline" });
@@ -509,7 +513,18 @@ exports.updateProposal = async (req, res) => {
                 await calendarEvent.save();
             }
         }
+
         if (updates.submittedAt) proposal.submittedAt = updates.submittedAt;
+        if (updates.submittedAt) {
+            const calendarEvent = await CalendarEvent.findOne({ proposalId: proposalId, status: { $ne: "Deadline" } });
+            console.log("calendarEvent", calendarEvent);
+            if (calendarEvent) {
+                calendarEvent.status = "Submitted";
+                console.log("calendarEvent.status", calendarEvent.status);
+                await calendarEvent.save();
+            }
+        }
+
         if (updates.status) proposal.status = updates.status;
         if (updates.status && updates.status !== proposal.status) {
             const calendarEvent = await CalendarEvent.findOne({ proposalId: proposalId, status: { $ne: "Deadline" } });
