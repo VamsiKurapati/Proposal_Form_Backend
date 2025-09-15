@@ -9,6 +9,8 @@ const crypto = require("crypto");
 const path = require("path");
 const Subscription = require("../models/Subscription");
 const Notification = require("../models/Notification");
+const OTP = require("../models/OTP");
+const nodemailer = require("nodemailer");
 
 const storage = new GridFsStorage({
   url: process.env.MONGO_URI,
@@ -76,7 +78,7 @@ exports.signupWithProfile = [
       res.status(201).json({ message: "Signup and profile created successfully" });
     } catch (err) {
       console.error(err);
-      res.status(500).json({ message: "Server error" });
+      res.status(500).json({ message: err.message || "Server error" });
     }
   },
 ];
@@ -150,7 +152,7 @@ exports.login = async (req, res) => {
     }
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: err.message || "Server error" });
   }
 };
 
@@ -164,6 +166,86 @@ exports.logout = async (req, res) => {
     }
     res.status(200).json({ message: "Logout successful" });
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: err.message || "Server error" });
+  }
+};
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000);
+
+    const otpData = new OTP({ email, otp });
+
+    await otpData.save();
+
+    // send email with otp
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.MAIL_USER,
+      to: email,
+      subject: "Password Reset OTP",
+      text: `Your OTP for password reset is: ${otp}`,
+    };
+
+    transporter.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        return res.status(500).json({ message: "Email sending failed" });
+      }
+    });
+
+    res.status(200).json({ message: "Password reset email sent" });
+  } catch (err) {
+    res.status(500).json({ message: err.message || "Server error" });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    const otpData = await OTP.findOne({ email, otp });
+
+    if (!otpData) {
+      return res.status(404).json({ message: "Invalid OTP" });
+    }
+
+    if (otpData.expiresAt < new Date()) {
+      return res.status(404).json({ message: "OTP expired" });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    user.password = hashedPassword;
+
+    await user.save();
+
+    await OTP.deleteOne({ email, otp });
+
+    res.status(200).json({ message: "Password reset successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message || "Server error" });
   }
 };
