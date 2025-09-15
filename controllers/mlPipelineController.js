@@ -728,22 +728,12 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
       return res.status(404).json({ error: 'Company profile not found. Please complete your company profile first.' });
     }
 
-    // // Check if company has documents before processing
-    // if (!companyProfile_1.documents || companyProfile_1.documents.length === 0) {
-    //   return res.status(400).json({ error: 'No company documents found. Please upload company documents first.' });
-    // }
-
     const db = mongoose.connection.db;
 
     //Extract the company Documents from upload.chunks and save them in the companyProfile_1.companyDocuments
     const files = await db.collection('uploads.files')
       .find({ _id: { $in: (companyProfile_1.documents || []).map(doc => doc.fileId) } })
       .toArray();
-
-    // Check if files were found
-    if (!files || files.length === 0) {
-      return res.status(400).json({ error: 'No uploaded files found. Please ensure all company documents are properly uploaded.' });
-    }
 
     const filesWithBase64 = await Promise.all(
       files.map(async (file) => {
