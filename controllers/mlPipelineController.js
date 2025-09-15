@@ -602,7 +602,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
           const new_CalendarEvent_Deadline = new CalendarEvent({
             companyId: companyProfile_1._id,
             employeeId: req.user._id,
-            proposalId: null,
+            proposalId: new_Proposal._id,
             grantId: null,
             title: proposal.title || "",
             startDate: getDeadline(proposal.deadline),
