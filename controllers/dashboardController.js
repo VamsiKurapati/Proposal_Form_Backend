@@ -89,8 +89,8 @@ exports.getDashboardData = async (req, res) => {
             const sub_data = {
                 maxRFPs: subscription.length > 0 ? subscription[0].max_rfp_proposal_generations : 0,
                 maxGrants: subscription.length > 0 ? subscription[0].max_grant_proposal_generations : 0,
-                currentRFPs: proposals.length,
-                currentGrants: grantProposals.length,
+                currentRFPs: subscription.length > 0 ? subscription[0].current_rfp_proposal_generations : 0,
+                currentGrants: subscription.length > 0 ? subscription[0].current_grant_proposal_generations : 0,
                 plan_name: subscription.length > 0 ? subscription[0].plan_name : "None",
             };
 
@@ -99,13 +99,27 @@ exports.getDashboardData = async (req, res) => {
                 inProgressProposals,
                 submittedProposals,
                 wonProposals,
+
+                //Remove initial proposal and generated proposal from the proposals
                 proposals: {
-                    proposals: notDeletedProposals,
-                    grantProposals: notDeletedGrantProposals,
+                    proposals: notDeletedProposals.map(proposal => {
+                        const { initialProposal, generatedProposal, ...rest } = proposal;
+                        return rest;
+                    }),
+                    grantProposals: notDeletedGrantProposals.map(proposal => {
+                        const { initialProposal, generatedProposal, ...rest } = proposal;
+                        return rest;
+                    }),
                 },
                 deletedProposals: {
-                    proposals: deletedProposals,
-                    grantProposals: deletedGrantProposals,
+                    proposals: deletedProposals.map(proposal => {
+                        const { initialProposal, generatedProposal, ...rest } = proposal;
+                        return rest;
+                    }),
+                    grantProposals: deletedGrantProposals.map(proposal => {
+                        const { initialProposal, generatedProposal, ...rest } = proposal;
+                        return rest;
+                    }),
                 },
                 calendarEvents,
                 employees,
@@ -208,8 +222,8 @@ exports.getDashboardData = async (req, res) => {
             const sub_data = {
                 maxRFPs: subscription.length > 0 ? subscription[0].max_rfp_proposal_generations : 0,
                 maxGrants: subscription.length > 0 ? subscription[0].max_grant_proposal_generations : 0,
-                currentRFPs: proposals.length,
-                currentGrants: grantProposals.length,
+                currentRFPs: subscription.length > 0 ? subscription[0].current_rfp_proposal_generations : 0,
+                currentGrants: subscription.length > 0 ? subscription[0].current_grant_proposal_generations : 0,
                 plan_name: subscription.length > 0 ? subscription[0].plan_name : "None",
             };
 
@@ -219,12 +233,24 @@ exports.getDashboardData = async (req, res) => {
                 submittedProposals,
                 wonProposals,
                 proposals: {
-                    proposals: notDeletedProposals,
-                    grantProposals: notDeletedGrantProposals,
+                    proposals: notDeletedProposals.map(proposal => {
+                        const { initialProposal, generatedProposal, ...rest } = proposal;
+                        return rest;
+                    }),
+                    grantProposals: notDeletedGrantProposals.map(proposal => {
+                        const { initialProposal, generatedProposal, ...rest } = proposal;
+                        return rest;
+                    }),
                 },
                 deletedProposals: {
-                    proposals: deletedProposals,
-                    grantProposals: deletedGrantProposals,
+                    proposals: deletedProposals.map(proposal => {
+                        const { initialProposal, generatedProposal, ...rest } = proposal;
+                        return rest;
+                    }),
+                    grantProposals: deletedGrantProposals.map(proposal => {
+                        const { initialProposal, generatedProposal, ...rest } = proposal;
+                        return rest;
+                    }),
                 },
                 calendarEvents,
                 employees,
@@ -237,26 +263,6 @@ exports.getDashboardData = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-
-// exports.editProposalStatus = async (req, res) => {
-//     try {
-//         const { proposalId, status } = req.body;
-//         const proposal = await Proposal.findByIdAndUpdate(proposalId, { status }, { new: true });
-//         res.status(200).json(proposal);
-//     } catch (error) {
-//         res.status(500).json({ message: error.message });
-//     }
-// };
-
-// exports.editGrantProposalStatus = async (req, res) => {
-//     try {
-//         const { proposalId, status } = req.body;
-//         const proposal = await GrantProposal.findByIdAndUpdate(proposalId, { status }, { new: true });
-//         res.status(200).json(proposal);
-//     } catch (error) {
-//         res.status(500).json({ message: error.message });
-//     }
-// };
 
 exports.addCalendarEvent = async (req, res) => {
     try {
@@ -505,6 +511,7 @@ exports.updateProposal = async (req, res) => {
         if (updates.deadline) proposal.deadline = updates.deadline;
         if (updates.deadline) {
             const calendarEvent = await CalendarEvent.findOne({ proposalId: proposalId, status: "Deadline" });
+            console.log("calendarEvent", calendarEvent);
             if (calendarEvent) {
                 calendarEvent.startDate = updates.deadline;
                 console.log("calendarEvent.startDate", calendarEvent.startDate);
@@ -517,7 +524,7 @@ exports.updateProposal = async (req, res) => {
         if (updates.submittedAt) proposal.submittedAt = updates.submittedAt;
         if (updates.submittedAt) {
             const calendarEvent = await CalendarEvent.findOne({ proposalId: proposalId, status: { $ne: "Deadline" } });
-            console.log("calendarEvent", calendarEvent);
+            console.log("calendarEvent-1", calendarEvent);
             if (calendarEvent) {
                 calendarEvent.status = "Submitted";
                 console.log("calendarEvent.status", calendarEvent.status);
@@ -528,6 +535,7 @@ exports.updateProposal = async (req, res) => {
         if (updates.status) proposal.status = updates.status;
         if (updates.status && updates.status !== proposal.status) {
             const calendarEvent = await CalendarEvent.findOne({ proposalId: proposalId, status: { $ne: "Deadline" } });
+            console.log("calendarEvent-2", calendarEvent);
             if (calendarEvent) {
                 calendarEvent.status = updates.status;
                 console.log("calendarEvent.status", calendarEvent.status);

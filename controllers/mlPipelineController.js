@@ -547,17 +547,9 @@ exports.sendDataForProposalGeneration = async (req, res) => {
         const res_data = res_1.data;
 
         if (res_data.status === "success") {
-          // const dummy = JSON.parse(res_data.result.result);
           const proposalData = res_data.result.result;
-          // const proposalData = dummy;
 
           const processedProposal = replaceTextInJson(template_json, proposalData, userData, rfp);
-
-          // console.log("processedProposal", processedProposal);
-          // console.log("User Data", userData);
-          // console.log("RFP", rfp);
-
-          // console.log("Creating new proposal");
 
           const new_Proposal = new Proposal({
             rfpId: proposal._id || "",
@@ -584,8 +576,6 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
           await new_Proposal.save();
 
-          // console.log("Creating new draft");
-
           const new_Draft = new DraftRFP({
             userEmail: userEmail,
             rfpId: proposal._id || "",
@@ -595,8 +585,6 @@ exports.sendDataForProposalGeneration = async (req, res) => {
             currentEditor: req.user._id,
           });
           await new_Draft.save();
-
-          //  console.log("Creating new calendar event");
 
           const new_CalendarEvent = new CalendarEvent({
             companyId: companyProfile_1._id,
@@ -611,8 +599,6 @@ exports.sendDataForProposalGeneration = async (req, res) => {
           await new_CalendarEvent.save();
 
           //Also add new calendar event with deadline
-          // console.log("Creating new calendar event with deadline");
-
           const new_CalendarEvent_Deadline = new CalendarEvent({
             companyId: companyProfile_1._id,
             employeeId: req.user._id,
@@ -625,8 +611,6 @@ exports.sendDataForProposalGeneration = async (req, res) => {
           });
           await new_CalendarEvent_Deadline.save();
 
-          // console.log("Updating proposal tracker");
-
           proposalTracker.status = "success";
           await proposalTracker.save();
 
@@ -638,17 +622,11 @@ exports.sendDataForProposalGeneration = async (req, res) => {
           subscription_1.current_rfp_proposal_generations++;
           await subscription_1.save();
 
-          // console.log("Returning success response");
-
           return res.status(200).json({ message: 'Proposal Generation completed successfully.', proposal: processedProposal, proposalId: new_Proposal._id });
         } else if (res_data.status === "processing") {
-          // console.log("Returning processing response");
-
           return res.status(200).json({ message: 'Proposal Generation is still in progress. Please wait for it to complete.' });
         } else {
           await ProposalTracker.deleteOne({ rfpId: proposal._id, companyMail: userEmail });
-          // console.log("Returning error response");
-
           return res.status(400).json({ error: 'Failed to generate proposal. Please try again later.' });
         }
       }
@@ -660,7 +638,6 @@ exports.sendDataForProposalGeneration = async (req, res) => {
     }
 
     //Get no.of RFP proposals generated between subscription start date and end date
-    // const currentRFPs = await Proposal.find({ companyMail: userEmail, createdAt: { $gte: subscription.start_date, $lte: subscription.end_date } }).countDocuments();
     if (subscription.max_rfp_proposal_generations <= subscription.current_rfp_proposal_generations) {
       return res.status(400).json({ error: 'You have reached the maximum number of RFP proposals' });
     }
@@ -682,23 +659,17 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       const optimizedData = {
         user: {
           ...data.user,
-          // Truncate long text fields if needed
           companyOverview: data.user.companyOverview?.substring(0, 2000) || "",
-          // Limit case studies to first 3
           caseStudies: data.user.caseStudies?.slice(0, 3) || [],
-          // Limit past projects to first 5
           pastProjects: data.user.pastProjects?.slice(0, 5) || [],
-          // Limit employees to first 10
           employees_information: data.user.employees_information?.slice(0, 10) || []
         },
         rfp: data.rfp
       };
 
       const optimizedPayloadSize = JSON.stringify(optimizedData).length;
-      //console.log("Optimized payload size:", optimizedPayloadSize, "bytes");
 
       if (optimizedPayloadSize < payloadSize) {
-        //console.log("Using optimized payload");
         data = optimizedData;
       }
     }
