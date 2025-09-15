@@ -728,16 +728,16 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
       return res.status(404).json({ error: 'Company profile not found. Please complete your company profile first.' });
     }
 
-    // Check if company has documents before processing
-    if (!companyProfile_1.documents || companyProfile_1.documents.length === 0) {
-      return res.status(400).json({ error: 'No company documents found. Please upload company documents first.' });
-    }
+    // // Check if company has documents before processing
+    // if (!companyProfile_1.documents || companyProfile_1.documents.length === 0) {
+    //   return res.status(400).json({ error: 'No company documents found. Please upload company documents first.' });
+    // }
 
     const db = mongoose.connection.db;
 
     //Extract the company Documents from upload.chunks and save them in the companyProfile_1.companyDocuments
     const files = await db.collection('uploads.files')
-      .find({ _id: { $in: companyProfile_1.documents.map(doc => doc.fileId) } })
+      .find({ _id: { $in: (companyProfile_1.documents || []).map(doc => doc.fileId) } })
       .toArray();
 
     // Check if files were found
@@ -765,7 +765,7 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
     }, {});
 
     // Check if all required files are available
-    const missingFiles = companyProfile_1.documents.filter(doc => !filesMap[doc.fileId.toString()]);
+    const missingFiles = (companyProfile_1.documents || []).filter(doc => !filesMap[doc.fileId.toString()]);
     if (missingFiles.length > 0) {
       return res.status(400).json({
         error: 'Some company documents are missing or corrupted. Please re-upload the following documents: ' +
@@ -773,7 +773,7 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
       });
     }
 
-    const companyDocuments_1 = companyProfile_1.documents.map((doc) => {
+    const companyDocuments_1 = (companyProfile_1.documents || []).map((doc) => {
       return {
         [`${doc.name}.${doc.type}`]: `${filesMap[doc.fileId.toString()].base64}`,
       };
@@ -822,8 +822,8 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
       "website": `${companyProfile_1.website || ""}`,
       "linkedIn": `${companyProfile_1.linkedIn || ""}`,
       "certifications": certifications_1,
-      // "documents": companyDocuments_1,
-      "documents": [],
+      "documents": companyDocuments_1,
+      // "documents": [],
       "caseStudies": caseStudies_1,
       "pastProjects": pastProjects_1,
       "employees_information": employeeData_1,
