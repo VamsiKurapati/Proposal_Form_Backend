@@ -5,6 +5,8 @@ const Proposal = require("../models/Proposal");
 const GrantProposal = require("../models/GrantProposal");
 const CalendarEvent = require("../models/CalendarEvents");
 const Subscription = require("../models/Subscription");
+const DraftRFP = require("../models/DraftRFP");
+const DraftGrant = require("../models/DraftGrant");
 
 exports.getDashboardData = async (req, res) => {
     try {
@@ -462,6 +464,7 @@ exports.deletePermanently = async (req, res) => {
             return res.status(400).json({ message: "Proposal ID is required" });
         }
         await Proposal.findByIdAndDelete(proposalId);
+        await DraftRFP.deleteOne({ proposalId: proposalId });
         res.status(200).json({ message: "Proposal deleted permanently" });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -475,6 +478,7 @@ exports.deletePermanentlyGrant = async (req, res) => {
             return res.status(400).json({ message: "Grant proposal ID is required" });
         }
         await GrantProposal.findByIdAndDelete(grantProposalId);
+        await DraftGrant.deleteOne({ grantProposalId: grantProposalId });
         res.status(200).json({ message: "Grant proposal deleted permanently" });
     } catch (error) {
         res.status(500).json({ message: error.message });
