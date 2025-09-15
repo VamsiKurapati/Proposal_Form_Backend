@@ -612,6 +612,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
           await new_CalendarEvent_Deadline.save();
 
           proposalTracker.status = "success";
+          proposalTracker.proposalId = new_Proposal._id;
           await proposalTracker.save();
 
           const subscription_1 = await Subscription.findOne({ user_id: userId });
@@ -1745,6 +1746,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
 
 
           proposalTracker.status = "success";
+          proposalTracker.grantProposalId = new_prop._id;
           await proposalTracker.save();
 
           const subscription_1 = await Subscription.findOne({ user_id: userId });
