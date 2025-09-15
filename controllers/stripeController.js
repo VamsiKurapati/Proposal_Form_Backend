@@ -240,6 +240,8 @@ const activateSubscription = async (req, res) => {
                 max_viewers: plan.maxViewers,
                 max_rfp_proposal_generations: plan.maxRFPProposalGenerations,
                 max_grant_proposal_generations: plan.maxGrantProposalGenerations,
+                current_rfp_proposal_generations: 0,
+                current_grant_proposal_generations: 0,
                 canceled_at: null,
                 auto_renewal: true
             },
