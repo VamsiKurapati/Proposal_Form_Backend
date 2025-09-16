@@ -104,8 +104,8 @@ require('./utils/cronJob.js');
 // Stripe webhook must be defined BEFORE express.json() so body is not parsed
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), stripeController.handleWebhook);
 
-app.post('/api/admin/webhook', express.raw({ type: 'application/json' }), superAdminController.handleWebhook);
-app.post('/api/admin/webhookFailed', express.raw({ type: 'application/json' }), superAdminController.handleWebhookFailed);
+app.post('/api/admin/webhook', express.raw({ type: 'application/json' }), superAdminController.handleEnterpriseCheckoutSessionCompleted);
+app.post('/api/admin/webhookFailed', express.raw({ type: 'application/json' }), superAdminController.handleEnterpriseCheckoutSessionFailed);
 
 
 app.use(express.json());
