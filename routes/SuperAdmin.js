@@ -22,7 +22,9 @@ const { getCompanyStatsAndData,
      getContactData,
      deleteContactData,
      updateContactData,
-     handleEnterpriseCheckoutSessionCompleted
+     handleEnterpriseCheckoutSessionCompleted,
+     handleEnterpriseCheckoutSessionFailed
+
 } = require('../controllers/superAdminController');
 
 router.get('/getCompanyStatsAndData', verifyUser(["SuperAdmin"]), getCompanyStatsAndData);
@@ -64,6 +66,7 @@ router.put('/updateContactData/:id', verifyUser(["SuperAdmin"]), updateContactDa
 
 //Webhook
 router.post('/webhook', handleEnterpriseCheckoutSessionCompleted);
+router.post('/webhookFailed', handleEnterpriseCheckoutSessionFailed);
 
 
 module.exports = router;

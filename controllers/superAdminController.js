@@ -799,6 +799,7 @@ exports.sendEmail = async (req, res) => {
 
 exports.handleEnterpriseCheckoutSessionCompleted = async (session) => {
   try {
+    console.log('Enterprise Checkout Session Completed:', session);
     const customPlanId = new URL(session.success_url).searchParams.get('customPlanId');
     if (!customPlanId) return;
 
@@ -887,6 +888,7 @@ exports.handleEnterpriseCheckoutSessionCompleted = async (session) => {
 
 exports.handleEnterpriseCheckoutSessionFailed = async (session) => {
   try {
+    console.log('Enterprise Checkout Session Failed:', session);
     const customPlanId = new URL(session.cancel_url).searchParams.get('customPlanId');
     if (!customPlanId) return;
 
