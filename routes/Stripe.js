@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 
-const { createPaymentIntent, activateSubscription, handleWebhook } = require('../controllers/stripeController');
+const { createPaymentIntent, activateSubscription } = require('../controllers/stripeController');
 
 // Simple token verification middleware
 const verifyToken = (req, res, next) => {
@@ -53,6 +53,6 @@ router.post('/create-payment-intent', createPaymentIntent);
 router.post('/activate-subscription', activateSubscription);
 
 // Webhook Routes
-router.post('/webhook', handleWebhook);
+// router.post('/webhook', handleWebhook);
 
 module.exports = router; 

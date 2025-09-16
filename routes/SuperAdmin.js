@@ -22,8 +22,7 @@ const { getCompanyStatsAndData,
      getContactData,
      deleteContactData,
      updateContactData,
-     handleEnterpriseCheckoutSessionCompleted,
-     handleEnterpriseCheckoutSessionFailed
+     handleWebhook
 
 } = require('../controllers/superAdminController');
 
@@ -65,8 +64,7 @@ router.delete('/deleteContactData/:id', verifyUser(["SuperAdmin"]), deleteContac
 router.put('/updateContactData/:id', verifyUser(["SuperAdmin"]), updateContactData);
 
 //Webhook
-router.post('/webhook', handleEnterpriseCheckoutSessionCompleted);
-router.post('/webhookFailed', handleEnterpriseCheckoutSessionFailed);
+router.post('/webhook', handleWebhook);
 
 
 module.exports = router;

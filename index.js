@@ -16,9 +16,11 @@ const stripeRoute = require('./routes/Stripe.js');
 const SubscriptionPlan = require('./models/SubscriptionPlan.js');
 const Subscription = require('./models/Subscription.js');
 const nodemailer = require('nodemailer');
-const stripeController = require('./controllers/stripeController');
 const Contact = require('./models/Contact.js');
 const superAdminController = require('./controllers/superAdminController');
+
+const dbConnect = require('./utils/dbConnect.js');
+require('./utils/cronJob.js');
 
 const getSubscriptionPlansData = async (req, res) => {
   try {
@@ -97,15 +99,7 @@ const sendEmail = async (req, res) => {
   }
 };
 
-
-const dbConnect = require('./utils/dbConnect.js');
-require('./utils/cronJob.js');
-
-// Stripe webhook must be defined BEFORE express.json() so body is not parsed
-app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), stripeController.handleWebhook);
-
-app.post('/api/admin/webhook', express.raw({ type: 'application/json' }), superAdminController.handleEnterpriseCheckoutSessionCompleted);
-app.post('/api/admin/webhookFailed', express.raw({ type: 'application/json' }), superAdminController.handleEnterpriseCheckoutSessionFailed);
+app.post('/api/admin/webhook', express.raw({ type: 'application/json' }), superAdminController.handleWebhook);
 
 
 app.use(express.json());

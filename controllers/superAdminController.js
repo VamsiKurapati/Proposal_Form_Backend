@@ -797,7 +797,7 @@ exports.sendEmail = async (req, res) => {
   }
 };
 
-exports.handleEnterpriseCheckoutSessionCompleted = async (session) => {
+const handleEnterpriseCheckoutSessionCompleted = async (session) => {
   try {
     console.log('Enterprise Checkout Session Completed:', session);
     const customPlanId = new URL(session.success_url).searchParams.get('customPlanId');
@@ -886,7 +886,7 @@ exports.handleEnterpriseCheckoutSessionCompleted = async (session) => {
   }
 };
 
-exports.handleEnterpriseCheckoutSessionFailed = async (session) => {
+const handleEnterpriseCheckoutSessionFailed = async (session) => {
   try {
     console.log('Enterprise Checkout Session Failed:', session);
     const customPlanId = new URL(session.cancel_url).searchParams.get('customPlanId');
@@ -924,6 +924,54 @@ exports.handleEnterpriseCheckoutSessionFailed = async (session) => {
 
   } catch (err) {
     console.error('Failed to handle enterprise checkout session failed:', err);
+  }
+};
+
+exports.handleWebhook = async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+  } catch (err) {
+    console.error('Webhook signature verification failed:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  const session = event.data.object;
+
+  try {
+    switch (event.type) {
+      case 'checkout.session.completed':
+        console.log('Webhook: Payment completed');
+        await handleEnterpriseCheckoutSessionCompleted(session);
+        break;
+
+      case 'checkout.session.expired':
+        console.log('Webhook: Checkout session expired');
+        await handleEnterpriseCheckoutSessionFailed(session);
+        break;
+
+      case 'checkout.session.async_payment_failed':
+        console.log('Webhook: Async payment failed');
+        await handleEnterpriseCheckoutSessionFailed(session);
+        break;
+
+      case 'checkout.session.async_payment_succeeded':
+        console.log('Webhook: Async payment succeeded');
+        await handleEnterpriseCheckoutSessionCompleted(session);
+        break;
+
+      default:
+        console.log(`Webhook: Unhandled event type: ${event.type}`);
+    }
+
+    res.status(200).json({ received: true });
+
+  } catch (error) {
+    console.error('Error processing webhook event:', error);
+    res.status(500).json({ error: 'Webhook processing failed' });
   }
 };
 
