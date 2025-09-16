@@ -527,6 +527,13 @@ exports.sendEmail = async (req, res) => {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       customer_email: email,
+      metadata: {
+        maxEditors,
+        maxViewers,
+        maxRFPProposalGenerations,
+        maxGrantProposalGenerations,
+        planType
+      },
       line_items: [{
         price_data: {
           currency: 'usd',
@@ -609,17 +616,20 @@ const handleEnterpriseCheckoutSessionCompleted = async (session) => {
 
     await Subscription.deleteMany({ user_id: user._id });
 
+    const customPlan = await CustomPlan.findById(customPlanId);
+    if (!customPlan) return;
+
     const subscription = new Subscription({
       user_id: user._id,
       plan_name: 'Custom Enterprise Plan',
       plan_price: session.amount_total / 100,
       start_date: new Date(),
-      end_date: session.current_period_end ? new Date(session.current_period_end * 1000) : new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-      renewal_date: session.current_period_end ? new Date(session.current_period_end * 1000) : new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-      max_editors: session.metadata?.maxEditors || 0,
-      max_viewers: session.metadata?.maxViewers || 0,
-      max_rfp_proposal_generations: session.metadata?.maxRFPProposalGenerations || 0,
-      max_grant_proposal_generations: session.metadata?.maxGrantProposalGenerations || 0,
+      end_date: session.metadata?.planType === "monthly" ? new Date(new Date().setMonth(new Date().getMonth() + 1)) : new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+      renewal_date: session.metadata?.planType === "monthly" ? new Date(new Date().setMonth(new Date().getMonth() + 1)) : new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+      max_editors: session.metadata?.maxEditors || customPlan.maxEditors || 0,
+      max_viewers: session.metadata?.maxViewers || customPlan.maxViewers || 0,
+      max_rfp_proposal_generations: session.metadata?.maxRFPProposalGenerations || customPlan.maxRFPProposalGenerations || 0,
+      max_grant_proposal_generations: session.metadata?.maxGrantProposalGenerations || customPlan.maxGrantProposalGenerations || 0,
       auto_renewal: true,
       stripeSubscriptionId: session.subscription || null,
       stripePriceId: session.items?.data?.[0]?.price?.id || null
@@ -629,27 +639,26 @@ const handleEnterpriseCheckoutSessionCompleted = async (session) => {
     await Payment.create({
       user_id: user._id,
       subscription_id: subscription._id,
-      companyName: session.customer_email,
+      companyName: user.fullName,
       price: session.amount_total / 100,
-      currency: session.currency,
+      currency: (session.currency || "usd").toUpperCase(),
       status: 'Success',
       paid_at: new Date(),
       transaction_id: session.payment_intent || session.id,
       payment_method: 'stripe',
-      payment_status: 'Success',
-      payment_date: new Date()
     });
 
     await Notification.create({
       user_id: user._id,
       type: 'Subscription',
       title: 'Enterprise Plan Payment Successful',
-      description: 'Your payment for the custom Enterprise Plan was successful.',
+      description: 'A payment for the custom Enterprise Plan was successful for ' + user.email + '.',
       created_at: new Date()
     });
 
-    await User.findOneAndUpdate({ email: session.customer_email }, {
-      subscription_status: 'active'
+    await User.findOneAndUpdate({ email: user.email }, {
+      subscription_status: 'active',
+      subscription_id: subscription._id
     });
 
     const transporter = nodemailer.createTransport({
@@ -664,7 +673,7 @@ const handleEnterpriseCheckoutSessionCompleted = async (session) => {
 
     const mailOptions = {
       from: process.env.MAIL_USER,
-      to: session.customer_email,
+      to: user.email,
       subject: 'Enterprise Plan Payment Successful',
       html: `
               <h2>Enterprise Plan Payment Successful</h2>
@@ -693,6 +702,17 @@ const handleEnterpriseCheckoutSessionFailed = async (session) => {
       paidAt: new Date()
     });
 
+    const user = await User.findOne({ email: session.customer_email });
+    if (!user || user.role !== "company") return;
+
+    await Notification.create({
+      user_id: user._id,
+      type: 'Subscription',
+      title: 'Enterprise Plan Payment Failed',
+      description: 'A payment for the custom Enterprise Plan failed for ' + user.email + '.',
+      created_at: new Date()
+    });
+
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 465,
@@ -705,7 +725,7 @@ const handleEnterpriseCheckoutSessionFailed = async (session) => {
 
     const mailOptions = {
       from: process.env.MAIL_USER,
-      to: session.customer_email,
+      to: user.email,
       subject: 'Enterprise Plan Payment Failed',
       html: `
               <h2>Enterprise Plan Payment Failed</h2>

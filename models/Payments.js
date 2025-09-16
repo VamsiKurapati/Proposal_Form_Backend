@@ -15,6 +15,11 @@ const paymentSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  currency: {
+    type: String,
+    required: true,
+    default: "USD"
+  },
   status: {
     type: String,
     enum: ['Success', 'Failed', 'Pending', 'Refunded', 'Pending Refund'],
