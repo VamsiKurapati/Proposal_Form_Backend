@@ -602,7 +602,7 @@ exports.sendEmail = async (req, res) => {
       payment_behavior: 'default_incomplete',
       cancel_at_period_end: false,
       metadata: {
-        userId: user._id,
+        userId: user._id.toString(),
         planId: "Enterprise",
         planName: "Enterprise",
         billingCycle: planType === "monthly" ? "monthly" : "yearly",
