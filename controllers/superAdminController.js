@@ -562,124 +562,234 @@ exports.priorityCronJob = async (req, res) => {
 // };
 
 
+// exports.sendEmail = async (req, res) => {
+//   try {
+//     const { email, price, planType, maxEditors, maxViewers, maxRFPProposalGenerations, maxGrantProposalGenerations } = req.body;
+
+//     const user = await User.findOne({ email });
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     // delete any existing custom plan with the same email
+//     await CustomPlan.deleteMany({ email });
+
+//     const customPlan = new CustomPlan({ userId: user._id, email, price, planType, maxEditors, maxViewers, maxRFPProposalGenerations, maxGrantProposalGenerations });
+//     await customPlan.save();
+
+//     // create stripe customer if not exists
+//     const customer = await stripe.customers.create({
+//       email: user.email,
+//     });
+//     user.stripeCustomerId = customer.id;
+//     await user.save();
+
+//     // create stripe product first
+//     const product = await stripe.products.create({
+//       name: `Custom Enterprise Plan (${planType})`,
+//       type: 'service'
+//     });
+
+//     // create stripe price for the product
+//     const stripePrice = await stripe.prices.create({
+//       unit_amount: Math.round(price * 100), // Convert to cents
+//       currency: 'usd',
+//       product: product.id,
+//       recurring: {
+//         interval: planType === "monthly" ? "month" : "year"
+//       }
+//     });
+
+//     // create stripe subscription if not exists
+//     const subscription = await stripe.subscriptions.create({
+//       customer: customer.id,
+//       items: [{
+//         price: stripePrice.id
+//       }],
+//       payment_behavior: 'default_incomplete',
+//       cancel_at_period_end: false,
+//       metadata: {
+//         userId: user._id.toString(),
+//         planId: "Enterprise",
+//         planName: "Enterprise",
+//         billingCycle: planType === "monthly" ? "monthly" : "yearly",
+//         planPriceCents: Math.round(price * 100)
+//       }
+//     });
+
+//     // user.subscription_id = subscription.id;
+//     // await user.save();
+
+//     //create a payment url and send it to the user by email
+//     const paymentUrl = await stripe.checkout.sessions.create({
+//       // customer: customer.id,
+//       customer_email: email,
+//       payment_method: 'stripe',
+//       payment_method_types: ['card'],
+//       line_items: [{
+//         price_data: {
+//           currency: 'usd',
+//           product_data: {
+//             name: `Custom Enterprise Plan Payment`
+//           },
+//           unit_amount: Math.round(price * 100),  // Convert USD to cents
+//         },
+//         quantity: 1,
+//       }],
+//       mode: 'payment',
+//       success_url: `${process.env.FRONTEND_URL}/dashboard`,
+//       cancel_url: `${process.env.FRONTEND_URL}/dashboard`,
+//     });
+
+//     console.log(paymentUrl);
+
+//     const transporter = nodemailer.createTransport({
+//       host: "smtp.gmail.com",
+//       port: 465,
+//       secure: true,
+//       auth: {
+//         user: process.env.MAIL_USER,
+//         pass: process.env.MAIL_PASS,
+//       },
+//     });
+
+//     const mailOptions = {
+//       from: process.env.MAIL_USER,
+//       to: email,
+//       subject: `RFP2GRANTS - Enterprise Subscription Plan Request`,
+//       html: `
+//       <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
+//         <h2 style="color: #2563EB;">RFP2GRANTS - Enterprise Subscription Plan Request</h2>
+//         <p><strong>Email:</strong> ${email}</p>
+//         <p><strong>Price:</strong> ${price || "Not provided"}</p>
+//         <p><strong>Plan Type:</strong> ${planType || "Not provided"}</p>   
+//         <p><strong>Max Editors:</strong> ${maxEditors || "Not specified"}</p>
+//         <p><strong>Max Viewers:</strong> ${maxViewers || "Not specified"}</p>
+//         <p><strong>Max RFP Proposal Generations:</strong> ${maxRFPProposalGenerations || "Not specified"}</p>
+//         <p><strong>Max Grant Proposal Generations:</strong> ${maxGrantProposalGenerations || "Not specified"}</p>
+//         <hr />
+//         <p>Please pay the amount to the following payment URL:</p>
+//         <p><strong>Payment URL:</strong> ${paymentUrl.url}</p>
+//         <p style="font-size: 12px; color: #666;">This email was generated from the Enterprise Plan Request.</p>
+//       </div>
+//     `,
+//     };
+
+//     const info = await transporter.sendMail(mailOptions);
+//     console.log("Email sent: " + info.response);
+//     res.status(200).json({ message: "Custom plan created successfully and email sent to the user" });
+//   } catch (error) {
+//     console.error("Error in sendEmail:", error);
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
 exports.sendEmail = async (req, res) => {
   try {
-    const { email, price, planType, maxEditors, maxViewers, maxRFPProposalGenerations, maxGrantProposalGenerations } = req.body;
+    const {
+      email,
+      price,
+      planType,
+      maxEditors,
+      maxViewers,
+      maxRFPProposalGenerations,
+      maxGrantProposalGenerations
+    } = req.body;
 
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // delete any existing custom plan with the same email
+    // Delete any existing custom plan for this email
     await CustomPlan.deleteMany({ email });
 
-    const customPlan = new CustomPlan({ userId: user._id, email, price, planType, maxEditors, maxViewers, maxRFPProposalGenerations, maxGrantProposalGenerations });
+    const customPlan = new CustomPlan({
+      userId: user._id,
+      email,
+      price,
+      planType,
+      maxEditors,
+      maxViewers,
+      maxRFPProposalGenerations,
+      maxGrantProposalGenerations
+    });
     await customPlan.save();
 
-    // create stripe customer if not exists
-    const customer = await stripe.customers.create({
-      email: user.email,
-    });
-    user.stripeCustomerId = customer.id;
-    await user.save();
+    // Ensure Stripe customer exists
+    let stripeCustomerId = user.stripeCustomerId;
+    if (!stripeCustomerId) {
+      const customer = await stripe.customers.create({
+        email: user.email
+      });
+      stripeCustomerId = customer.id;
+      user.stripeCustomerId = stripeCustomerId;
+      await user.save();
+    }
 
-    // create stripe product first
-    const product = await stripe.products.create({
-      name: `Custom Enterprise Plan (${planType})`,
-      type: 'service'
-    });
-
-    // create stripe price for the product
-    const stripePrice = await stripe.prices.create({
-      unit_amount: Math.round(price * 100), // Convert to cents
-      currency: 'usd',
-      product: product.id,
-      recurring: {
-        interval: planType === "monthly" ? "month" : "year"
-      }
-    });
-
-    // create stripe subscription if not exists
-    const subscription = await stripe.subscriptions.create({
-      customer: customer.id,
-      items: [{
-        price: stripePrice.id
-      }],
-      payment_behavior: 'default_incomplete',
-      cancel_at_period_end: false,
-      metadata: {
-        userId: user._id.toString(),
-        planId: "Enterprise",
-        planName: "Enterprise",
-        billingCycle: planType === "monthly" ? "monthly" : "yearly",
-        planPriceCents: Math.round(price * 100)
-      }
-    });
-
-    // user.subscription_id = subscription.id;
-    // await user.save();
-
-    //create a payment url and send it to the user by email
-    const paymentUrl = await stripe.checkout.sessions.create({
-      customer: customer.id,
-      customer_email: email,
-      payment_method: 'stripe',
+    // Create Stripe Checkout Session (for one-time enterprise payment)
+    const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
+      customer_email: email,
       line_items: [{
         price_data: {
           currency: 'usd',
           product_data: {
-            name: `Custom Enterprise Plan Payment`
+            name: `Custom Enterprise Plan (${planType})`
           },
-          unit_amount: Math.round(price * 100),  // Convert USD to cents
+          unit_amount: Math.round(price * 100),  // In cents
         },
-        quantity: 1,
+        quantity: 1
       }],
       mode: 'payment',
-      success_url: `${process.env.FRONTEND_URL}/dashboard`,
-      cancel_url: `${process.env.FRONTEND_URL}/dashboard`,
+      success_url: `${process.env.FRONTEND_URL}/enterprise-success`,
+      cancel_url: `${process.env.FRONTEND_URL}/enterprise-cancelled`,
     });
 
-    console.log(paymentUrl);
-
+    // Send payment URL via email
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 465,
       secure: true,
       auth: {
         user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASS,
-      },
+        pass: process.env.MAIL_PASS
+      }
     });
 
     const mailOptions = {
       from: process.env.MAIL_USER,
       to: email,
-      subject: `RFP2GRANTS - Enterprise Subscription Plan Request`,
+      subject: `RFP2GRANTS - Your Enterprise Plan Payment Link`,
       html: `
-      <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
-        <h2 style="color: #2563EB;">RFP2GRANTS - Enterprise Subscription Plan Request</h2>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Price:</strong> ${price || "Not provided"}</p>
-        <p><strong>Plan Type:</strong> ${planType || "Not provided"}</p>   
-        <p><strong>Max Editors:</strong> ${maxEditors || "Not specified"}</p>
-        <p><strong>Max Viewers:</strong> ${maxViewers || "Not specified"}</p>
-        <p><strong>Max RFP Proposal Generations:</strong> ${maxRFPProposalGenerations || "Not specified"}</p>
-        <p><strong>Max Grant Proposal Generations:</strong> ${maxGrantProposalGenerations || "Not specified"}</p>
-        <hr />
-        <p>Please pay the amount to the following payment URL:</p>
-        <p><strong>Payment URL:</strong> ${paymentUrl.url}</p>
-        <p style="font-size: 12px; color: #666;">This email was generated from the Enterprise Plan Request.</p>
-      </div>
-    `,
+              <h2>Enterprise Plan Payment Link</h2>
+              <p>Hello ${user.fullName || ''},</p>
+              <p>Your custom enterprise plan has been created with the following details:</p>
+              <ul>
+                  <li><strong>Price:</strong> $${price}</li>
+                  <li><strong>Plan Type:</strong> ${planType}</li>
+                  <li><strong>Max Editors:</strong> ${maxEditors}</li>
+                  <li><strong>Max Viewers:</strong> ${maxViewers}</li>
+                  <li><strong>Max RFP Proposal Generations:</strong> ${maxRFPProposalGenerations}</li>
+                  <li><strong>Max Grant Proposal Generations:</strong> ${maxGrantProposalGenerations}</li>
+              </ul>
+
+              <hr />
+              <p>Please complete your payment securely using this link:</p>
+              <a href="${session.url}" target="_blank">Complete Payment</a>
+              <p>Thank you for your business!</p>
+          `
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent: " + info.response);
-    res.status(200).json({ message: "Custom plan created successfully and email sent to the user" });
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({
+      message: 'Custom enterprise plan created and email sent successfully',
+      checkoutUrl: session.url
+    });
+
   } catch (error) {
-    console.error("Error in sendEmail:", error);
+    console.error('Error in sendEmail controller:', error);
     res.status(500).json({ message: error.message });
   }
 };
