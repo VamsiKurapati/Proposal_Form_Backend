@@ -587,12 +587,20 @@ exports.sendEmail = async (req, res) => {
     // create stripe subscription if not exists
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
-      items: [{ price: Math.round(price * 100) }],
-      payment_method: 'stripe',
-      status: 'trialing',
+      items: [{
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: `Custom Enterprise Plan (${planType})`
+          },
+          unit_amount: Math.round(price * 100), // Convert to cents
+          recurring: {
+            interval: planType === "monthly" ? "month" : "year"
+          }
+        }
+      }],
+      payment_behavior: 'default_incomplete',
       cancel_at_period_end: false,
-      current_period_start: new Date(),
-      current_period_end: new Date(new Date().setFullYear(new Date().getFullYear() + (planType === "monthly" ? 1 : 0))),
       metadata: {
         userId: user._id,
         planId: "Enterprise",
