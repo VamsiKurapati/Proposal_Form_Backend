@@ -616,8 +616,9 @@ exports.sendEmail = async (req, res) => {
         planPriceCents: Math.round(price * 100)
       }
     });
-    user.subscription_id = subscription.id;
-    await user.save();
+
+    // user.subscription_id = subscription.id;
+    // await user.save();
 
     //create a payment url and send it to the user by email
     const paymentUrl = await stripe.checkout.sessions.create({

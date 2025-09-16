@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema({
   subscription_status: { type: String, enum: ["active", "inactive", "expired"], default: "inactive" },
   subscription_id: { type: mongoose.Schema.Types.ObjectId, ref: "Subscription", default: null },
   stripeCustomerId: { type: String, default: null },
+  stripeSubscriptionId: { type: String, default: null },
   payment_method_id: { type: String, default: null }
 }, { timestamps: true });
 
