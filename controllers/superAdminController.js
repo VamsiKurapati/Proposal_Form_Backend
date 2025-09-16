@@ -697,11 +697,11 @@ exports.sendEmail = async (req, res) => {
     } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    if (!user || user.role !== "company") {
+      return res.status(404).json({ message: "User not found or user is not a company" });
     }
 
-    // Delete any existing custom plan for this email
+    // Delete any existing custom plans for this email
     await CustomPlan.deleteMany({ email });
 
     const customPlan = new CustomPlan({
@@ -712,7 +712,8 @@ exports.sendEmail = async (req, res) => {
       maxEditors,
       maxViewers,
       maxRFPProposalGenerations,
-      maxGrantProposalGenerations
+      maxGrantProposalGenerations,
+      status: 'payment_link_generated'  // Track initial status
     });
     await customPlan.save();
 
@@ -727,7 +728,7 @@ exports.sendEmail = async (req, res) => {
       await user.save();
     }
 
-    // Create Stripe Checkout Session (for one-time enterprise payment)
+    // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       customer_email: email,
@@ -737,16 +738,20 @@ exports.sendEmail = async (req, res) => {
           product_data: {
             name: `Custom Enterprise Plan (${planType})`
           },
-          unit_amount: Math.round(price * 100),  // In cents
+          unit_amount: Math.round(price * 100),
         },
         quantity: 1
       }],
       mode: 'payment',
-      success_url: `${process.env.FRONTEND_URL}/enterprise-success`,
+      success_url: `${process.env.FRONTEND_URL}/enterprise-success?customPlanId=${customPlan._id}`,
       cancel_url: `${process.env.FRONTEND_URL}/enterprise-cancelled`,
     });
 
-    // Send payment URL via email
+    customPlan.stripeCheckoutSessionId = session.id;
+    customPlan.checkoutUrl = session.url;
+    await customPlan.save();
+
+    // Send payment link via email
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 465,
@@ -773,8 +778,6 @@ exports.sendEmail = async (req, res) => {
                   <li><strong>Max RFP Proposal Generations:</strong> ${maxRFPProposalGenerations}</li>
                   <li><strong>Max Grant Proposal Generations:</strong> ${maxGrantProposalGenerations}</li>
               </ul>
-
-              <hr />
               <p>Please complete your payment securely using this link:</p>
               <a href="${session.url}" target="_blank">Complete Payment</a>
               <p>Thank you for your business!</p>
@@ -791,6 +794,134 @@ exports.sendEmail = async (req, res) => {
   } catch (error) {
     console.error('Error in sendEmail controller:', error);
     res.status(500).json({ message: error.message });
+  }
+};
+
+exports.handleEnterpriseCheckoutSessionCompleted = async (session) => {
+  try {
+    const customPlanId = new URL(session.success_url).searchParams.get('customPlanId');
+    if (!customPlanId) return;
+
+    await CustomPlan.findByIdAndUpdate(customPlanId, {
+      status: 'paid',
+      paymentIntentId: session.payment_intent || session.id,
+      paidAt: new Date()
+    });
+
+    const user = await User.findOne({ email: session.customer_email });
+    if (!user || user.role !== "company") return;
+
+    await Subscription.deleteMany({ user_id: user._id });
+
+    const subscription = new Subscription({
+      user_id: user._id,
+      plan_name: 'Custom Enterprise Plan',
+      plan_price: session.amount_total / 100,
+      start_date: new Date(),
+      end_date: session.current_period_end ? new Date(session.current_period_end * 1000) : new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+      renewal_date: session.current_period_end ? new Date(session.current_period_end * 1000) : new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+      max_editors: session.metadata?.maxEditors || 0,
+      max_viewers: session.metadata?.maxViewers || 0,
+      max_rfp_proposal_generations: session.metadata?.maxRFPProposalGenerations || 0,
+      max_grant_proposal_generations: session.metadata?.maxGrantProposalGenerations || 0,
+      auto_renewal: true,
+      stripeSubscriptionId: session.subscription || null,
+      stripePriceId: session.items?.data?.[0]?.price?.id || null
+    });
+    await subscription.save();
+
+    await Payment.create({
+      user_id: user._id,
+      subscription_id: subscription._id,
+      companyName: session.customer_email,
+      price: session.amount_total / 100,
+      currency: session.currency,
+      status: 'Success',
+      paid_at: new Date(),
+      transaction_id: session.payment_intent || session.id,
+      payment_method: 'stripe',
+      payment_status: 'Success',
+      payment_date: new Date()
+    });
+
+    await Notification.create({
+      user_id: user._id,
+      type: 'Subscription',
+      title: 'Enterprise Plan Payment Successful',
+      description: 'Your payment for the custom Enterprise Plan was successful.',
+      created_at: new Date()
+    });
+
+    await User.findOneAndUpdate({ email: session.customer_email }, {
+      subscription_status: 'active'
+    });
+
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS
+      }
+    });
+
+    const mailOptions = {
+      from: process.env.MAIL_USER,
+      to: session.customer_email,
+      subject: 'Enterprise Plan Payment Successful',
+      html: `
+              <h2>Enterprise Plan Payment Successful</h2>
+              <p>Hello,</p>
+              <p>Your payment for the custom Enterprise Plan was successful.</p>
+              <p>Thank you for your business!</p>
+          `
+    };
+
+    await transporter.sendMail(mailOptions);
+
+  } catch (err) {
+    console.error('Failed to handle enterprise checkout session completion:', err);
+  }
+};
+
+exports.handleEnterpriseCheckoutSessionFailed = async (session) => {
+  try {
+    const customPlanId = new URL(session.cancel_url).searchParams.get('customPlanId');
+    if (!customPlanId) return;
+
+    await CustomPlan.findByIdAndUpdate(customPlanId, {
+      status: 'failed',
+      paymentIntentId: session.payment_intent || session.id,
+      paidAt: new Date()
+    });
+
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS
+      }
+    });
+
+    const mailOptions = {
+      from: process.env.MAIL_USER,
+      to: session.customer_email,
+      subject: 'Enterprise Plan Payment Failed',
+      html: `
+              <h2>Enterprise Plan Payment Failed</h2>
+              <p>Hello,</p>
+              <p>Your payment for the custom Enterprise Plan failed.</p>
+              <p>Please try again or contact support.</p>
+          `
+    };
+
+    await transporter.sendMail(mailOptions);
+
+  } catch (err) {
+    console.error('Failed to handle enterprise checkout session failed:', err);
   }
 };
 

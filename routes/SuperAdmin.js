@@ -21,7 +21,8 @@ const { getCompanyStatsAndData,
      editCustomPlan,
      getContactData,
      deleteContactData,
-     updateContactData
+     updateContactData,
+     handleEnterpriseCheckoutSessionCompleted
 } = require('../controllers/superAdminController');
 
 router.get('/getCompanyStatsAndData', verifyUser(["SuperAdmin"]), getCompanyStatsAndData);
@@ -60,6 +61,9 @@ router.put('/editPaymentDetails/:id', verifyUser(["SuperAdmin"]), editPaymentDet
 router.get('/getContactData', verifyUser(["SuperAdmin"]), getContactData);
 router.delete('/deleteContactData/:id', verifyUser(["SuperAdmin"]), deleteContactData);
 router.put('/updateContactData/:id', verifyUser(["SuperAdmin"]), updateContactData);
+
+//Webhook
+router.post('/webhook', handleEnterpriseCheckoutSessionCompleted);
 
 
 module.exports = router;
