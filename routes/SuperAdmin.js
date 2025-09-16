@@ -4,25 +4,25 @@ const verifyUser = require('../utils/verifyUser');
 
 const { getCompanyStatsAndData,
      updateCompanyStatus,
-      getNotificationData,
-       getSupportStatsAndData,
-        updateSupportTicket,
-         addAdminMessage, 
-         getSubscriptionPlansData, 
-         updateSubscriptionPlanPrice, 
-         getPaymentsSummaryAndData, 
-         updateSubscriptionPlanIsContact, 
-         sendEmail,
-          getCustomPlanData,
-           deleteCustomPlan,
-           createCustomPlan,
-           getPaymentDetails,
-           editPaymentDetails,
-           editCustomPlan,
-           getContactData,
-           deleteContactData,
-           updateContactData
- } = require('../controllers/superAdminController');
+     getNotificationData,
+     getSupportStatsAndData,
+     updateSupportTicket,
+     addAdminMessage,
+     getSubscriptionPlansData,
+     updateSubscriptionPlanPrice,
+     getPaymentsSummaryAndData,
+     updateSubscriptionPlanIsContact,
+     sendEmail,
+     getCustomPlanData,
+     deleteCustomPlan,
+     createCustomPlan,
+     getPaymentDetails,
+     editPaymentDetails,
+     editCustomPlan,
+     getContactData,
+     deleteContactData,
+     updateContactData
+} = require('../controllers/superAdminController');
 
 router.get('/getCompanyStatsAndData', verifyUser(["SuperAdmin"]), getCompanyStatsAndData);
 router.put('/updateCompanyStatus/:id', verifyUser(["SuperAdmin"]), updateCompanyStatus);
