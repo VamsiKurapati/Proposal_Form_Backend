@@ -584,20 +584,27 @@ exports.sendEmail = async (req, res) => {
     user.stripeCustomerId = customer.id;
     await user.save();
 
+    // create stripe product first
+    const product = await stripe.products.create({
+      name: `Custom Enterprise Plan (${planType})`,
+      type: 'service'
+    });
+
+    // create stripe price for the product
+    const stripePrice = await stripe.prices.create({
+      unit_amount: Math.round(price * 100), // Convert to cents
+      currency: 'usd',
+      product: product.id,
+      recurring: {
+        interval: planType === "monthly" ? "month" : "year"
+      }
+    });
+
     // create stripe subscription if not exists
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
       items: [{
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: `Custom Enterprise Plan (${planType})`
-          },
-          unit_amount: Math.round(price * 100), // Convert to cents
-          recurring: {
-            interval: planType === "monthly" ? "month" : "year"
-          }
-        }
+        price: stripePrice.id
       }],
       payment_behavior: 'default_incomplete',
       cancel_at_period_end: false,
