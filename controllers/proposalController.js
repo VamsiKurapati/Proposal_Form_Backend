@@ -120,7 +120,7 @@ exports.basicComplianceCheckPdf = [
 
       const jsonString = await convertPdfToJsonFile(fileBuffer);
 
-      console.log("JSON extracted: ", jsonString);
+      //console.log("JSON extracted: ", jsonString);
 
       // Parse the JSON string to an object
       let jsonData;
@@ -228,7 +228,8 @@ exports.advancedComplianceCheckPdf = [
   singleFileUpload,
   async (req, res) => {
     try {
-      const { file, rfpId } = req.body;
+      const { file } = req;
+      const { rfpId } = req.body;
 
       let userEmail = req.user.email;
       let userId = req.user._id;
@@ -264,7 +265,7 @@ exports.advancedComplianceCheckPdf = [
       const fileBuffer = await getFileBufferFromGridFS(file.id);
       const jsonString = await convertPdfToJsonFile(fileBuffer);
 
-      console.log("JSON extracted: ", jsonString);
+      //console.log("JSON extracted: ", jsonString);
 
       let jsonData;
       try {
@@ -336,7 +337,7 @@ exports.generatePDF = async (req, res) => {
 
     const pdf = await axios.post(`${process.env.PIPELINE_URL}/download-pdf`, { "project": project, "isCompressed": isCompressed }, { responseType: "arraybuffer" });
 
-    console.log("PDF: ", pdf.data);
+    //console.log("PDF: ", pdf.data);
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename="proposal.pdf"');
@@ -367,11 +368,11 @@ exports.deleteExpiredProposals = async () => {
     });
 
     if (expiredProposals.length === 0) {
-      // console.log('No expired proposals found to delete.');
+      // //console.log('No expired proposals found to delete.');
       return;
     }
 
-    // console.log(`Found ${expiredProposals.length} expired proposals to delete.`);
+    // //console.log(`Found ${expiredProposals.length} expired proposals to delete.`);
 
     // Delete each expired proposal and its associated files
     for (const proposal of expiredProposals) {
@@ -385,7 +386,7 @@ exports.deleteExpiredProposals = async () => {
           for (const file of proposal.uploadedDocuments) {
             try {
               await bucket.delete(new mongoose.Types.ObjectId(file.fileId));
-              // console.log(`Deleted file: ${file.fileId}`);
+              // //console.log(`Deleted file: ${file.fileId}`);
             } catch (err) {
               console.error(`Failed to delete file ${file.fileId}:`, err.message);
             }
@@ -394,7 +395,7 @@ exports.deleteExpiredProposals = async () => {
 
         // Delete the proposal from database
         await Proposal.findByIdAndDelete(proposal._id);
-        // console.log(`Deleted proposal: ${proposal._id} - ${proposal.title}`);
+        // //console.log(`Deleted proposal: ${proposal._id} - ${proposal.title}`);
 
       } catch (err) {
         console.error(`Failed to delete proposal ${proposal._id}:`, err.message);
