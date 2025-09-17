@@ -37,7 +37,6 @@ function chunkText(text, maxChunkSize = 100000) {
 
 async function processLargeDocument(text, openai) {
     const chunks = chunkText(text, 80000); // Smaller chunks to be safe
-    console.log(`Processing ${chunks.length} chunks...`);
 
     const extractedSections = {
         summary: 'Text not found',
@@ -61,8 +60,6 @@ async function processLargeDocument(text, openai) {
 
     // Process each chunk and accumulate information
     for (let i = 0; i < chunks.length; i++) {
-        console.log(`Processing chunk ${i + 1}/${chunks.length}...`);
-
         const chunkPrompt = `Extract information from this PDF text chunk and return a JSON object. Look for content related to these sections and extract ALL relevant text (do not summarize):
 
 Required sections: summary, objectives, proposed_solution, deliverables, project_plan_tech_stack, timeline, risk_assessment, budget_estimate, team_details, certifications_awards, case_studies, past_projects, partnership_overview, references_proven_results, why_us, terms_conditions, cover_letter
@@ -71,17 +68,22 @@ If a section is not found in this chunk, use 'Text not found' as the value.
 Return ONLY a valid JSON object.`;
 
         const completion = await openai.chat.completions.create({
-            model: "gpt-4o",
+            model: "gpt-4.1-mini",
             messages: [
                 { role: "system", content: chunkPrompt },
                 { role: "user", content: chunks[i] }
             ],
-            temperature: 0.0,
-            max_tokens: 8192
+            temperature: 0.0
         });
+        if (!completion) {
+            throw new Error("No completion from OpenAI");
+        }
 
         try {
-            const chunkResponse = completion.choices[0].message.content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+            const chunkResponse = completion?.choices[0]?.message?.content?.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+            if (!chunkResponse) {
+                throw new Error("No JSON response from OpenAI");
+            }
             const chunkData = JSON.parse(chunkResponse);
 
             // Merge non-empty sections from this chunk
@@ -107,11 +109,9 @@ async function convertPdfToJson(text) {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     const estimatedTokens = estimateTokenCount(text);
-    console.log(`PDF text length: ${text.length} characters (~${estimatedTokens} tokens)`);
 
     // If the text is very large, we might need to process it in chunks
     if (estimatedTokens > 120000) { // GPT-4o has ~128k context limit
-        console.log('Text is very large, processing in chunks...');
         return await processLargeDocument(text, openai);
     }
 
@@ -146,20 +146,41 @@ Required JSON keys (extract FULL content for each):
 If a section is not found in the document, use 'Text not found' as the value.
 Return ONLY a valid JSON object with no other text, no markdown formatting, no code blocks, and no additional explanation.`;
 
-    const completion = await openai.chat.completions.create({
-        model: "gpt-4.1-mini",
-        messages: [
-            { role: "system", content: prompt },
-            { role: "user", content: text }
-        ],
-        temperature: 0.0,
-        max_tokens: 12288 // Increased for comprehensive extraction
-    });
+    let completion;
 
-    let jsonResponse = completion.choices[0].message.content;
+    try {
+        completion = await openai.chat.completions.create({
+            model: "gpt-4.1-mini",
+            messages: [
+                { role: "system", content: prompt },
+                { role: "user", content: text }
+            ],
+            temperature: 0.0
+        });
+    } catch (error) {
+        //Try once more with gpt-4.1-mini model
+        try {
+            completion = await openai.chat.completions.create({
+                model: "gpt-4.1-mini",
+                messages: [
+                    { role: "system", content: prompt },
+                    { role: "user", content: text }
+                ],
+                temperature: 0.0
+            });
+        } catch (error) {
+            console.error("Failed to parse JSON response:", error);
+            throw new Error(`Invalid JSON response from OpenAI: ${error.message}`);
+        }
+    } finally {
+        //No need to return anything
+    }
 
-    console.log(`OpenAI response length: ${jsonResponse.length} characters`);
-    console.log(`Tokens used: ${completion.usage?.total_tokens || 'unknown'}`);
+
+    let jsonResponse = completion?.choices[0]?.message?.content;
+    if (!jsonResponse) {
+        throw new Error("No JSON response from OpenAI");
+    }
 
     // Clean up the response - remove markdown formatting if present
     jsonResponse = jsonResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
@@ -175,7 +196,6 @@ Return ONLY a valid JSON object with no other text, no markdown formatting, no c
             const hasContent = value && value !== 'Text not found' && value.trim().length > 0;
             sectionStatus[key] = hasContent ? `${value.length} chars` : 'No content';
         });
-        console.log('Section extraction status:', sectionStatus);
 
         return JSON.stringify(parsedJson, null, 2); // Return formatted JSON string
     } catch (parseError) {
