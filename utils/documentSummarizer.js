@@ -27,7 +27,7 @@ async function summarizeText(text) {
     const prompt = "You are a helpful assistant that summarizes documents in bullet points.";
 
     const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: "gpt-4.1-nano",
         messages: [
             { role: "system", content: prompt },
             { role: "user", content: text }

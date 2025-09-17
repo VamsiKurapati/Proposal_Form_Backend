@@ -120,8 +120,6 @@ exports.basicComplianceCheckPdf = [
 
       const jsonString = await convertPdfToJsonFile(fileBuffer);
 
-      //console.log("JSON extracted: ", jsonString);
-
       // Parse the JSON string to an object
       let jsonData;
       try {
@@ -228,7 +226,6 @@ exports.advancedComplianceCheckPdf = [
   singleFileUpload,
   async (req, res) => {
     try {
-      console.log("Starting advanced compliance check PDF at:", new Date().toISOString());
       const { file } = req;
       const { rfpId } = req.body;
 
@@ -265,7 +262,6 @@ exports.advancedComplianceCheckPdf = [
 
       const fileBuffer = await getFileBufferFromGridFS(file.id);
 
-      console.log("Starting PDF to JSON conversion at:", new Date().toISOString());
       const jsonString = await convertPdfToJsonFile(fileBuffer);
 
       //console.log("JSON extracted: ", jsonString);
@@ -285,24 +281,18 @@ exports.advancedComplianceCheckPdf = [
 
       errorData.data = jsonData;
 
-      console.log("JSONData: ", jsonData);
+      const resBasicCompliance = await axios.post(`${process.env.PIPELINE_URL}/basic-compliance`, jsonData, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
 
-      console.log("JSON parsed successfully at:", new Date().toISOString());
+      const dataBasicCompliance = resBasicCompliance.data.report;
 
-      // const resBasicCompliance = await axios.post(`${process.env.PIPELINE_URL}/basic-compliance`, jsonData, {
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Accept': 'application/json'
-      //   }
-      // });
-
-      // const dataBasicCompliance = resBasicCompliance.data.report;
-
-      // const firstKey = Object.keys(dataBasicCompliance)[0];
-      // const firstValue = dataBasicCompliance[firstKey];
-      // const compliance_dataBasicCompliance = firstValue["compliance_flags"];
-
-      const compliance_dataBasicCompliance = {};
+      const firstKey = Object.keys(dataBasicCompliance)[0];
+      const firstValue = dataBasicCompliance[firstKey];
+      const compliance_dataBasicCompliance = firstValue["compliance_flags"];
 
       const rfp = await MatchedRFP.findOne({ _id: rfpId, email: userEmail }) || await RFP.findOne({ _id: rfpId, email: userEmail });
 
@@ -319,10 +309,6 @@ exports.advancedComplianceCheckPdf = [
         "Timeline": rfp.timeline || "Not found",
       };
 
-      console.log("RFP_1: ", rfp_1);
-
-      console.log("Starting advanced compliance check at:", new Date().toISOString());
-
       const resProposal = await axios.post(`${process.env.PIPELINE_URL}/advance-compliance`, {
         "rfp": rfp_1,
         "proposal": jsonData,
@@ -333,11 +319,7 @@ exports.advancedComplianceCheckPdf = [
         }
       });
 
-      console.log("ResProposal: ", resProposal.data);
-
       const dataAdvancedCompliance = resProposal.data.report;
-
-      console.log("Advanced compliance check completed at:", new Date().toISOString());
 
       res.status(200).json({ compliance_dataBasicCompliance, dataAdvancedCompliance });
 
