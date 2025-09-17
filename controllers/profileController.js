@@ -172,7 +172,7 @@ exports.getProfile = async (req, res) => {
 
         console.log("Deadlines_1:", deadlines_1);
 
-        const deadlines = deadlines_1.map(async (deadline) => {
+        const deadlinesPromises = deadlines_1.map(async (deadline) => {
             const proposal = deadline.proposalId ? await Proposal.findById(deadline.proposalId).lean() : null;
             const grantProposal = deadline.grantId ? await GrantProposal.findById(deadline.grantId).lean() : null;
             const status = proposal?.status || grantProposal?.status || "Not Submitted";
@@ -185,6 +185,9 @@ exports.getProfile = async (req, res) => {
                 };
             }
         });
+
+        const deadlinesResults = await Promise.all(deadlinesPromises);
+        const deadlines = deadlinesResults.filter(deadline => deadline !== undefined);
 
         console.log("Deadlines:", deadlines);
 
