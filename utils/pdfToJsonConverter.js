@@ -27,13 +27,12 @@ async function convertPdfToJson(text) {
     const prompt = "You are a helpful assistant that extracts text from a pdf and converts it to json. Do not hallucinate any information. Do not include any other information in the json. Extract only the text that is present in the pdf. The json should be using the following keys: summary, objectives, proposed_solution, deliverables, project_plan_tech_stack, timeline, risk_assessment, budget_estimate, team_details, certifications_awards, case_studies, past_projects, partnership_overview, references_proven_results, why_us, terms_conditions, cover_letter. If a section is not found in the document, use 'Text not found' as the value. Return ONLY a valid JSON object with no other text, no markdown formatting, no code blocks, and no additional explanation.";
 
     const completion = await openai.chat.completions.create({
-        model: "gpt-5o",
+        model: "gpt-4o",
         messages: [
             { role: "system", content: prompt },
             { role: "user", content: text }
         ],
-        temperature: 0.0,
-        max_tokens: 4096
+        temperature: 0.0
     });
 
     let jsonResponse = completion.choices[0].message.content;
