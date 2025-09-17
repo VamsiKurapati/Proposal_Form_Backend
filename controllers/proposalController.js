@@ -7,6 +7,8 @@ const RFP = require('../models/RFP');
 const DraftRFP = require('../models/DraftRFP');
 const GrantProposal = require('../models/GrantProposal');
 const DraftGrant = require('../models/DraftGrant');
+const Subscription = require('../models/Subscription');
+const CompanyProfile = require('../models/CompanyProfile');
 
 const { getStructuredJson } = require('../utils/get_structured_json');
 const { decompress } = require('../utils/decompress');
@@ -91,6 +93,24 @@ exports.basicComplianceCheckPdf = [
   async (req, res) => {
     try {
       const { file } = req;
+
+      let userEmail = req.user.email;
+      let userId = req.user._id;
+      if (req.user.role === "employee") {
+        const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+        userEmail = employeeProfile.companyMail;
+        const companyProfile = await CompanyProfile.findOne({ email: userEmail });
+        if (!companyProfile) {
+          return res.status(404).json({ message: "Company profile not found" });
+        }
+        userId = companyProfile.userId;
+      }
+
+      //check for active subscription
+      const subscription = await Subscription.findOne({ user_id: userId });
+      if (!subscription || subscription.end_date < new Date()) {
+        return res.status(404).json({ message: "Subscription not found or expired" });
+      }
 
       if (!file) {
         return res.status(400).json({ message: "No file uploaded" });
@@ -203,6 +223,112 @@ exports.advancedComplianceCheck = async (req, res) => {
     res.status(statusCode).json({ message: 'Advanced compliance check failed', error: responseData || error.message });
   }
 };
+
+exports.advancedComplianceCheckPdf = [
+  singleFileUpload,
+  async (req, res) => {
+    try {
+      const { file, rfpId } = req.body;
+
+      let userEmail = req.user.email;
+      let userId = req.user._id;
+
+      if (req.user.role === "employee") {
+        const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+        if (!employeeProfile) {
+          return res.status(404).json({ message: "Employee profile not found" });
+        }
+        userEmail = employeeProfile.companyMail;
+        const companyProfile = await CompanyProfile.findOne({ email: userEmail });
+        if (!companyProfile) {
+          return res.status(404).json({ message: "Company profile not found" });
+        }
+        userId = companyProfile.userId;
+      }
+
+      //check for active subscription
+      const subscription = await Subscription.findOne({ user_id: userId });
+      if (!subscription || subscription.end_date < new Date()) {
+        return res.status(404).json({ message: "Subscription not found or expired" });
+      }
+
+      //check if subscription is pro or enterprise or custom
+      if (subscription.plan_name !== "Pro" && subscription.plan_name !== "Enterprise" && subscription.plan_name !== "Custom Enterprise Plan") {
+        return res.status(404).json({ message: "You are not authorized to use this feature" });
+      }
+
+      if (!file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const fileBuffer = await getFileBufferFromGridFS(file.id);
+      const jsonString = await convertPdfToJsonFile(fileBuffer);
+
+      console.log("JSON extracted: ", jsonString);
+
+      let jsonData;
+      try {
+        jsonData = JSON.parse(jsonString);
+      } catch (parseError) {
+        console.error('Failed to parse JSON from PDF converter:', parseError);
+        errorData.data = jsonString;
+        return res.status(500).json({
+          message: "Failed to parse extracted JSON data",
+          error: parseError.message,
+          data: errorData
+        });
+      }
+
+      errorData.data = jsonData;
+
+      const resBasicCompliance = await axios.post(`${process.env.PIPELINE_URL}/basic-compliance`, jsonData, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+
+      const dataBasicCompliance = resBasicCompliance.data.report;
+
+      const firstKey = Object.keys(dataBasicCompliance)[0];
+      const firstValue = dataBasicCompliance[firstKey];
+      const compliance_dataBasicCompliance = firstValue["compliance_flags"];
+
+      const rfp = await MatchedRFP.findOne({ _id: rfpId, email: userEmail }) || await RFP.findOne({ _id: rfpId, email: userEmail });
+
+      const rfp_1 = {
+        "RFP Title": rfp.title || "Not found",
+        "RFP Description": rfp.description || "Not found",
+        "Match Score": rfp.match || 0,
+        "Budget": rfp.budget || "Not found",
+        "Deadline": rfp.deadline || "Not found",
+        "Issuing Organization": rfp.organization || "Not found",
+        "Industry": rfp.organizationType || "Not found",
+        "URL": rfp.link || "Not found",
+        "Contact Information": rfp.contact || "Not found",
+        "Timeline": rfp.timeline || "Not found",
+      };
+
+      const resProposal = await axios.post(`${process.env.PIPELINE_URL}/advanced-compliance`, {
+        "rfp": rfp_1,
+        "proposal": jsonData,
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+
+      const dataAdvancedCompliance = resProposal.data.report;
+
+      res.status(200).json({ compliance_dataBasicCompliance, dataAdvancedCompliance });
+
+    } catch (error) {
+      console.error('Error in advancedComplianceCheckPdf:', error);
+      res.status(500).json({ message: error.message, data: errorData });
+    }
+  }
+];
 
 exports.generatePDF = async (req, res) => {
   try {
