@@ -8,7 +8,7 @@ const GrantProposalSchema = new mongoose.Schema({
     client: { type: String, required: true },
     generatedProposal: { type: Object, default: null },
     companyMail: { type: String, required: true },
-    deadline: { type: String, required: true },
+    deadline: { type: Date, required: true },
     url: { type: String, required: false, default: "" },
     status: { type: String, required: true },
     submittedAt: { type: Date, default: Date.now },
