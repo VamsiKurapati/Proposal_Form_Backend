@@ -24,7 +24,7 @@ async function extractPdfText(filePathOrBuffer) {
 async function convertPdfToJson(text) {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-    const prompt = "You are a helpful assistant that extracts text from a pdf and converts it to json. Do not hallucinate any information. Do not include any other information in the json. Extract only the text that is present in the pdf. The json should be using the following keys: summary, objectives, proposed_solution, deliverables, project_plan_tech_stack, timeline, risk_assessment, budget_estimate, team_details, certifications_awards, case_studies, past_projects, partnership_overview, references_proven_results, why_us, terms_conditions, cover_letter";
+    const prompt = "You are a helpful assistant that extracts text from a pdf and converts it to json. Do not hallucinate any information. Do not include any other information in the json. Extract only the text that is present in the pdf. The json should be using the following keys: summary, objectives, proposed_solution, deliverables, project_plan_tech_stack, timeline, risk_assessment, budget_estimate, team_details, certifications_awards, case_studies, past_projects, partnership_overview, references_proven_results, why_us, terms_conditions, cover_letter. Return a pure json object with no other text or markdown.";
 
     const completion = await openai.chat.completions.create({
         model: "gpt-4o",

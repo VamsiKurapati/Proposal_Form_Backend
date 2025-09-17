@@ -27,6 +27,11 @@ const storage = new GridFsStorage({
 const upload = multer({ storage });
 const singleFileUpload = upload.single('file');
 
+const errorData = {
+  message: "Error in basicComplianceCheckPdf",
+  data: null
+};
+
 require('dotenv').config();
 
 //Helper function to get file buffer from GridFS
@@ -96,6 +101,7 @@ exports.basicComplianceCheckPdf = [
       const json = await convertPdfToJsonFile(fileBuffer);
 
       console.log("JSON extracted: ", json);
+      errorData.data = json;
 
       const resProposal = await axios.post(`${process.env.PIPELINE_URL}/basic-compliance`, json, {
         headers: {
@@ -115,7 +121,7 @@ exports.basicComplianceCheckPdf = [
       res.status(200).json(compliance_data);
     } catch (error) {
       console.error('Error in basicComplianceCheckPdf:', error);
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error.message, data: errorData });
     }
   }
 ];
