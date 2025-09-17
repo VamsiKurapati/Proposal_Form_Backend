@@ -98,12 +98,27 @@ exports.basicComplianceCheckPdf = [
 
       const fileBuffer = await getFileBufferFromGridFS(file.id);
 
-      const json = await convertPdfToJsonFile(fileBuffer);
+      const jsonString = await convertPdfToJsonFile(fileBuffer);
 
-      console.log("JSON extracted: ", json);
-      errorData.data = json;
+      console.log("JSON extracted: ", jsonString);
 
-      const resProposal = await axios.post(`${process.env.PIPELINE_URL}/basic-compliance`, json, {
+      // Parse the JSON string to an object
+      let jsonData;
+      try {
+        jsonData = JSON.parse(jsonString);
+      } catch (parseError) {
+        console.error('Failed to parse JSON from PDF converter:', parseError);
+        errorData.data = jsonString;
+        return res.status(500).json({
+          message: "Failed to parse extracted JSON data",
+          error: parseError.message,
+          data: errorData
+        });
+      }
+
+      errorData.data = jsonData;
+
+      const resProposal = await axios.post(`${process.env.PIPELINE_URL}/basic-compliance`, jsonData, {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
