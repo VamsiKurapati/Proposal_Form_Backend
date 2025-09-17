@@ -310,7 +310,7 @@ exports.advancedComplianceCheckPdf = [
         "Timeline": rfp.timeline || "Not found",
       };
 
-      const resProposal = await axios.post(`${process.env.PIPELINE_URL}/advanced-compliance`, {
+      const resProposal = await axios.post(`${process.env.PIPELINE_URL}/advance-compliance`, {
         "rfp": rfp_1,
         "proposal": jsonData,
       }, {
