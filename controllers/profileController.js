@@ -177,6 +177,19 @@ exports.getProfile = async (req, res) => {
             const grantProposal = deadline.grantId ? await GrantProposal.findById(deadline.grantId).lean() : null;
             const status = proposal?.status || grantProposal?.status || "Not Submitted";
             const endDate = new Date(proposal?.deadline || grantProposal?.deadline);
+            console.log("End Date:", endDate);
+            console.log("New Date:", new Date());
+            console.log("End Date > New Date:", endDate > new Date());
+
+            if (proposal || grantProposal) {
+                console.log("Proposal || Grant Proposal:", proposal || grantProposal);
+                console.log("Status !== Not Submitted:", status !== "Not Submitted");
+            }
+
+            if (status !== "Not Submitted") {
+                console.log("Status !== Not Submitted:", status);
+            }
+
             if ((proposal || grantProposal) && status !== "Not Submitted" && endDate > new Date()) {
                 return {
                     title: deadline.title,
