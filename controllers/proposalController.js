@@ -10,8 +10,44 @@ const DraftGrant = require('../models/DraftGrant');
 
 const { getStructuredJson } = require('../utils/get_structured_json');
 const { decompress } = require('../utils/decompress');
+const { convertPdfToJsonFile } = require('../utils/pdfToJsonConverter');
+const { GridFsStorage } = require("multer-gridfs-storage");
+const multer = require("multer");
+
+const storage = new GridFsStorage({
+  url: process.env.MONGO_URI,
+  file: (req, file) => {
+    return {
+      bucketName: "uploads",
+      filename: file.originalname,
+    };
+  },
+});
+
+const upload = multer({ storage });
+const singleFileUpload = upload.single('file');
 
 require('dotenv').config();
+
+//Helper function to get file buffer from GridFS
+async function getFileBufferFromGridFS(fileId) {
+  const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+    bucketName: "uploads"
+  });
+  const downloadStream = bucket.openDownloadStream(fileId);
+  const chunks = [];
+  return new Promise((resolve, reject) => {
+    downloadStream.on('data', (chunk) => {
+      chunks.push(chunk);
+    });
+    downloadStream.on('end', () => {
+      resolve(Buffer.concat(chunks));
+    });
+    downloadStream.on('error', (error) => {
+      reject(error);
+    });
+  });
+}
 
 exports.basicComplianceCheck = async (req, res) => {
   try {
@@ -44,6 +80,41 @@ exports.basicComplianceCheck = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+exports.basicComplianceCheckPdf = [
+  singleFileUpload,
+  async (req, res) => {
+    try {
+      const { file } = req;
+
+      if (!file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const fileBuffer = await getFileBufferFromGridFS(file.id);
+      const json = await convertPdfToJsonFile(fileBuffer);
+
+      const resProposal = await axios.post(`${process.env.PIPELINE_URL}/basic-compliance`, json, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+
+      const data = resProposal.data.report;
+
+      const firstKey = Object.keys(data)[0];
+      const firstValue = data[firstKey];
+
+      const compliance_data = firstValue["compliance_flags"];
+
+      res.status(200).json(compliance_data);
+    } catch (error) {
+      console.error('Error in basicComplianceCheckPdf:', error);
+      res.status(500).json({ message: error.message });
+    }
+  }
+];
 
 exports.advancedComplianceCheck = async (req, res) => {
   try {

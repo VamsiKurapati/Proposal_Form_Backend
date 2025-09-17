@@ -14,7 +14,7 @@ const multer = require("multer");
 const nodemailer = require("nodemailer");
 const Subscription = require("../models/Subscription");
 const Payment = require("../models/Payments");
-const { summarizePdfBuffer, summarizePdf } = require("../utils/documentSummarizer");
+const { summarizePdfBuffer } = require("../utils/documentSummarizer");
 const CalendarEvent = require("../models/CalendarEvents");
 
 const storage = new GridFsStorage({
