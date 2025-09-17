@@ -170,7 +170,7 @@ exports.getProfile = async (req, res) => {
 
         const deadlines_1 = await CalendarEvent.find({ companyId: companyProfile._id, status: "Deadline", endDate: { $gte: new Date() } });
 
-        // console.log("Deadlines:", deadlines_1);
+        console.log("Deadlines_1:", deadlines_1);
 
         const deadlines = deadlines_1.map(async (deadline) => {
             const proposal = deadline.proposalId ? await Proposal.findById(deadline.proposalId) : null;
@@ -186,7 +186,7 @@ exports.getProfile = async (req, res) => {
             }
         });
 
-        // console.log("Deadlines:", deadlines);
+        console.log("Deadlines:", deadlines);
 
         const data = {
             companyName: companyProfile.companyName,
