@@ -282,18 +282,20 @@ exports.advancedComplianceCheckPdf = [
 
       errorData.data = jsonData;
 
-      const resBasicCompliance = await axios.post(`${process.env.PIPELINE_URL}/basic-compliance`, jsonData, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-      });
+      // const resBasicCompliance = await axios.post(`${process.env.PIPELINE_URL}/basic-compliance`, jsonData, {
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'Accept': 'application/json'
+      //   }
+      // });
 
-      const dataBasicCompliance = resBasicCompliance.data.report;
+      // const dataBasicCompliance = resBasicCompliance.data.report;
 
-      const firstKey = Object.keys(dataBasicCompliance)[0];
-      const firstValue = dataBasicCompliance[firstKey];
-      const compliance_dataBasicCompliance = firstValue["compliance_flags"];
+      // const firstKey = Object.keys(dataBasicCompliance)[0];
+      // const firstValue = dataBasicCompliance[firstKey];
+      // const compliance_dataBasicCompliance = firstValue["compliance_flags"];
+
+      const compliance_dataBasicCompliance = {};
 
       const rfp = await MatchedRFP.findOne({ _id: rfpId, email: userEmail }) || await RFP.findOne({ _id: rfpId, email: userEmail });
 
