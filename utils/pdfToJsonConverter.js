@@ -147,7 +147,7 @@ If a section is not found in the document, use 'Text not found' as the value.
 Return ONLY a valid JSON object with no other text, no markdown formatting, no code blocks, and no additional explanation.`;
 
     const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: "gpt-4.1-nano",
         messages: [
             { role: "system", content: prompt },
             { role: "user", content: text }
