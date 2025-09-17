@@ -92,7 +92,10 @@ exports.basicComplianceCheckPdf = [
       }
 
       const fileBuffer = await getFileBufferFromGridFS(file.id);
+
       const json = await convertPdfToJsonFile(fileBuffer);
+
+      console.log("JSON extracted: ", json);
 
       const resProposal = await axios.post(`${process.env.PIPELINE_URL}/basic-compliance`, json, {
         headers: {
@@ -104,6 +107,7 @@ exports.basicComplianceCheckPdf = [
       const data = resProposal.data.report;
 
       const firstKey = Object.keys(data)[0];
+
       const firstValue = data[firstKey];
 
       const compliance_data = firstValue["compliance_flags"];
