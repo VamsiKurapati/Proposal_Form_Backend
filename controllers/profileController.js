@@ -839,6 +839,8 @@ exports.deleteDocument = async (req, res) => {
 
         companyProfile.documents = companyProfile.documents.filter(document => document._id.toString() !== id);
 
+        companyProfile.documentSummaries = companyProfile.documentSummaries.filter(documentSummary => documentSummary.fileId.toString() !== document.fileId.toString());
+
         await companyProfile.save();
 
         res.status(200).json({ message: "Document deleted successfully" });
