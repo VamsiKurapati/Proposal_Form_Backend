@@ -226,6 +226,7 @@ exports.advancedComplianceCheckPdf = [
   singleFileUpload,
   async (req, res) => {
     try {
+      console.log("Request received for advanced compliance check PDF at: ", new Date().toISOString());
       const { file } = req;
       const { rfpId } = req.body;
 
@@ -245,24 +246,37 @@ exports.advancedComplianceCheckPdf = [
         userId = companyProfile.userId;
       }
 
+      console.log("Checking for active subscription at: ", new Date().toISOString());
       //check for active subscription
       const subscription = await Subscription.findOne({ user_id: userId });
       if (!subscription || subscription.end_date < new Date()) {
         return res.status(404).json({ message: "Subscription not found or expired" });
       }
 
+      console.log("Subscription found at: ", new Date().toISOString());
+
       //check if subscription is pro or enterprise or custom
       if (subscription.plan_name !== "Pro" && subscription.plan_name !== "Enterprise" && subscription.plan_name !== "Custom Enterprise Plan") {
         return res.status(404).json({ message: "You are not authorized to use this feature" });
       }
 
+      console.log("Subscription is valid at: ", new Date().toISOString());
+
       if (!file) {
         return res.status(400).json({ message: "No file uploaded" });
       }
 
+      console.log("File Buffer retrieval started at: ", new Date().toISOString());
+
       const fileBuffer = await getFileBufferFromGridFS(file.id);
 
+      console.log("File Buffer retrieved at: ", new Date().toISOString());
+
+      console.log("JSON string extraction started at: ", new Date().toISOString());
+
       const jsonString = await convertPdfToJsonFile(fileBuffer);
+
+      console.log("JSON string extracted at: ", new Date().toISOString());
 
       //console.log("JSON extracted: ", jsonString);
 
@@ -279,6 +293,8 @@ exports.advancedComplianceCheckPdf = [
         });
       }
 
+      console.log("JSON parsed at: ", new Date().toISOString());
+
       errorData.data = jsonData;
 
       const resBasicCompliance = await axios.post(`${process.env.PIPELINE_URL}/basic-compliance`, jsonData, {
@@ -288,11 +304,15 @@ exports.advancedComplianceCheckPdf = [
         }
       });
 
+      console.log("Basic compliance check started at: ", new Date().toISOString());
+
       const dataBasicCompliance = resBasicCompliance.data.report;
 
       const firstKey = Object.keys(dataBasicCompliance)[0];
       const firstValue = dataBasicCompliance[firstKey];
       const compliance_dataBasicCompliance = firstValue["compliance_flags"];
+
+      console.log("Basic compliance check completed at: ", new Date().toISOString());
 
       const rfp = await MatchedRFP.findOne({ _id: rfpId, email: userEmail }) || await RFP.findOne({ _id: rfpId, email: userEmail });
 
@@ -309,6 +329,8 @@ exports.advancedComplianceCheckPdf = [
         "Timeline": rfp.timeline || "Not found",
       };
 
+      console.log("RFP data prepared at: ", new Date().toISOString());
+
       const resProposal = await axios.post(`${process.env.PIPELINE_URL}/advance-compliance`, {
         "rfp": rfp_1,
         "proposal": jsonData,
@@ -319,7 +341,11 @@ exports.advancedComplianceCheckPdf = [
         }
       });
 
+      console.log("Advanced compliance check started at: ", new Date().toISOString());
+
       const dataAdvancedCompliance = resProposal.data.report;
+
+      console.log("Advanced compliance check completed at: ", new Date().toISOString());
 
       res.status(200).json({ compliance_dataBasicCompliance, dataAdvancedCompliance });
 
