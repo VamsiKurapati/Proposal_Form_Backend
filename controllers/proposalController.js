@@ -278,8 +278,6 @@ exports.advancedComplianceCheckPdf = [
 
       console.log("JSON string extracted at: ", new Date().toISOString());
 
-      //console.log("JSON extracted: ", jsonString);
-
       let jsonData;
       try {
         jsonData = JSON.parse(jsonString);
@@ -295,7 +293,11 @@ exports.advancedComplianceCheckPdf = [
 
       console.log("JSON parsed at: ", new Date().toISOString());
 
+      console.log("JSON data: ", jsonData);
+
       errorData.data = jsonData;
+
+      console.log("Basic compliance check started at: ", new Date().toISOString());
 
       const resBasicCompliance = await axios.post(`${process.env.PIPELINE_URL}/basic-compliance`, jsonData, {
         headers: {
@@ -304,15 +306,13 @@ exports.advancedComplianceCheckPdf = [
         }
       });
 
-      console.log("Basic compliance check started at: ", new Date().toISOString());
+      console.log("Basic compliance check completed at: ", new Date().toISOString());
 
       const dataBasicCompliance = resBasicCompliance.data.report;
 
       const firstKey = Object.keys(dataBasicCompliance)[0];
       const firstValue = dataBasicCompliance[firstKey];
       const compliance_dataBasicCompliance = firstValue["compliance_flags"];
-
-      console.log("Basic compliance check completed at: ", new Date().toISOString());
 
       const rfp = await MatchedRFP.findOne({ _id: rfpId, email: userEmail }) || await RFP.findOne({ _id: rfpId, email: userEmail });
 
@@ -329,7 +329,7 @@ exports.advancedComplianceCheckPdf = [
         "Timeline": rfp.timeline || "Not found",
       };
 
-      console.log("RFP data prepared at: ", new Date().toISOString());
+      console.log("Advanced compliance check started at: ", new Date().toISOString());
 
       const resProposal = await axios.post(`${process.env.PIPELINE_URL}/advance-compliance`, {
         "rfp": rfp_1,
@@ -341,11 +341,9 @@ exports.advancedComplianceCheckPdf = [
         }
       });
 
-      console.log("Advanced compliance check started at: ", new Date().toISOString());
+      console.log("Advanced compliance check completed at: ", new Date().toISOString());
 
       const dataAdvancedCompliance = resProposal.data.report;
-
-      console.log("Advanced compliance check completed at: ", new Date().toISOString());
 
       res.status(200).json({ compliance_dataBasicCompliance, dataAdvancedCompliance });
 
