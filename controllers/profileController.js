@@ -228,13 +228,13 @@ exports.getProfile = async (req, res) => {
             deadlines: deadlines,
             activities: []
         };
-        const Proposals = await Proposal.find({ companyMail: companyProfile.email });
+        const Proposals = await Proposal.find({ companyMail: companyProfile.email }).lean();
         //Remove initialProposal and generatedProposal from the proposals
         const Proposals_1 = Proposals.map(proposal => {
             const { initialProposal, generatedProposal, ...rest } = proposal;
             return rest;
         });
-        const GrantProposals = await GrantProposal.find({ companyMail: companyProfile.email });
+        const GrantProposals = await GrantProposal.find({ companyMail: companyProfile.email }).lean();
         const GrantProposals_1 = GrantProposals.map(proposal => {
             const { initialProposal, generatedProposal, ...rest } = proposal;
             return rest;
@@ -307,12 +307,12 @@ exports.getCompanyProfile = async (req, res) => {
             return res.status(404).json({ message: "Company profile not found" });
         }
 
-        const Proposals = await Proposal.find({ companyMail: companyProfile.email });
+        const Proposals = await Proposal.find({ companyMail: companyProfile.email }).lean();
         const Proposals_1 = Proposals.map(proposal => {
             const { initialProposal, generatedProposal, ...rest } = proposal;
             return rest;
         });
-        const GrantProposals = await GrantProposal.find({ companyMail: companyProfile.email });
+        const GrantProposals = await GrantProposal.find({ companyMail: companyProfile.email }).lean();
         const GrantProposals_1 = GrantProposals.map(proposal => {
             const { initialProposal, generatedProposal, ...rest } = proposal;
             return rest;
@@ -346,10 +346,18 @@ exports.getProposals = async (req, res) => {
             companyMail = employeeProfile.companyMail;
         }
 
-        const proposals = await Proposal.find({ companyMail: companyMail }).populate("currentEditor", "_id fullName email");
-        const grantProposals = await GrantProposal.find({ companyMail: companyMail }).populate("currentEditor", "_id fullName email");
+        const proposals = await Proposal.find({ companyMail: companyMail }).populate("currentEditor", "_id fullName email").lean();
+        const proposals_1 = proposals.map(proposal => {
+            const { initialProposal, generatedProposal, ...rest } = proposal;
+            return rest;
+        });
+        const grantProposals = await GrantProposal.find({ companyMail: companyMail }).populate("currentEditor", "_id fullName email").lean();
+        const grantProposals_1 = grantProposals.map(proposal => {
+            const { initialProposal, generatedProposal, ...rest } = proposal;
+            return rest;
+        });
 
-        const finalProposals = [...proposals, ...grantProposals];
+        const finalProposals = [...proposals_1, ...grantProposals_1];
         res.status(200).json(finalProposals);
     } catch (error) {
         res.status(500).json({ message: error.message });
