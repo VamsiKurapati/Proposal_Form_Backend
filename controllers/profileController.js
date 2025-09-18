@@ -229,17 +229,26 @@ exports.getProfile = async (req, res) => {
             activities: []
         };
         const Proposals = await Proposal.find({ companyMail: companyProfile.email });
+        //Remove initialProposal and generatedProposal from the proposals
+        const Proposals_1 = Proposals.map(proposal => {
+            const { initialProposal, generatedProposal, ...rest } = proposal;
+            return rest;
+        });
         const GrantProposals = await GrantProposal.find({ companyMail: companyProfile.email });
-        const totalProposals = Proposals.length + GrantProposals.length;
-        const wonProposals = Proposals.filter(proposal => proposal.status === "Won").length + GrantProposals.filter(proposal => proposal.status === "Won").length;
+        const GrantProposals_1 = GrantProposals.map(proposal => {
+            const { initialProposal, generatedProposal, ...rest } = proposal;
+            return rest;
+        });
+        const totalProposals = Proposals_1.length + GrantProposals_1.length;
+        const wonProposals = Proposals_1.filter(proposal => proposal.status === "Won").length + GrantProposals_1.filter(proposal => proposal.status === "Won").length;
         const successRate = totalProposals === 0 ? "0.00" : ((wonProposals / totalProposals) * 100).toFixed(2);
         const data_1 = {
             ...data,
             totalProposals,
-            activeProposals: Proposals.filter(proposal => proposal.status === "In Progress").length + GrantProposals.filter(proposal => proposal.status === "In Progress").length,
+            activeProposals: Proposals_1.filter(proposal => proposal.status === "In Progress").length + GrantProposals_1.filter(proposal => proposal.status === "In Progress").length,
             wonProposals,
             successRate,
-            proposals: [...Proposals, ...GrantProposals],
+            proposals: [...Proposals_1, ...GrantProposals_1],
         };
         res.status(200).json(data_1);
     } catch (error) {
@@ -299,14 +308,22 @@ exports.getCompanyProfile = async (req, res) => {
         }
 
         const Proposals = await Proposal.find({ companyMail: companyProfile.email });
+        const Proposals_1 = Proposals.map(proposal => {
+            const { initialProposal, generatedProposal, ...rest } = proposal;
+            return rest;
+        });
         const GrantProposals = await GrantProposal.find({ companyMail: companyProfile.email });
+        const GrantProposals_1 = GrantProposals.map(proposal => {
+            const { initialProposal, generatedProposal, ...rest } = proposal;
+            return rest;
+        });
         const requiredData = {
             companyName: companyProfile.companyName,
             adminName: companyProfile.adminName,
             industry: companyProfile.industry,
             bio: companyProfile.bio,
             employees: companyProfile.employees,
-            proposals: [...Proposals, ...GrantProposals],
+            proposals: [...Proposals_1, ...GrantProposals_1],
             caseStudies: companyProfile.caseStudies,
         };
 
