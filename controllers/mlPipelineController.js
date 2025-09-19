@@ -315,44 +315,6 @@ exports.unsaveRFP = async (req, res) => {
   }
 };
 
-exports.saveDraftRFP = async (req, res) => {
-  try {
-    let userEmail = req.user.email;
-    if (req.user.role === "employee") {
-      const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
-      userEmail = employeeProfile.companyMail;
-    }
-
-    const { rfpId, rfp } = req.body;
-
-    const existing = await DraftRFP.findOne({ userEmail, rfpId });
-    if (existing) {
-      return res.status(200).json({ message: 'Already saved' });
-    }
-
-    const cleanRFP = {
-      title: rfp.title,
-      description: rfp.description,
-      logo: rfp.logo,
-      match: rfp.match || 0,
-      budget: rfp.budget,
-      deadline: rfp.deadline,
-      organization: rfp.organization,
-      fundingType: rfp.fundingType,
-      organizationType: rfp.organizationType,
-      link: rfp.link,
-      contact: rfp.contact,
-      timeline: rfp.timeline,
-    };
-
-    const newDraft = await DraftRFP.create({ userEmail, rfpId, rfp: cleanRFP });
-    res.status(201).json({ message: 'RFP saved successfully', saved: newDraft });
-  } catch (err) {
-    console.error('Error in /saveDraftRFP:', err);
-    res.status(500).json({ error: 'Failed to save draft RFP' });
-  }
-};
-
 exports.sendDataForProposalGeneration = async (req, res) => {
   try {
     const { proposal } = req.body;
@@ -1370,41 +1332,6 @@ exports.unsaveGrant = async (req, res) => {
   }
 };
 
-exports.saveDraftGrant = async (req, res) => {
-  try {
-    let userEmail = req.user.email;
-    if (req.user.role === "employee") {
-      const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
-      userEmail = employeeProfile.companyMail;
-    }
-
-    const { grantId, formData } = req.body;
-    const grant = await Grant.findOne({ email: userEmail, grantId: grantId });
-    const new_DraftGrant = new DraftGrant({
-      grantId: grant._id,
-      email: userEmail,
-      grant: grant,
-      project_inputs: formData,
-      proposal: grant.generatedProposal || null,
-    });
-    await new_DraftGrant.save();
-    res.status(200).json({ message: "Draft grant saved successfully" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-exports.unsaveDraftGrant = async (req, res) => {
-  try {
-    const { draftGrantId } = req.body;
-    const draftGrant = await DraftGrant.findOne({ _id: draftGrantId });
-    await draftGrant.deleteOne();
-    res.status(200).json({ message: "Draft grant unsaved successfully" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
 exports.getRecentAndSavedGrants = async (req, res) => {
   try {
     let userEmail = req.user.email;
@@ -1734,7 +1661,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
 
   } catch (err) {
     console.error('Error in /sendDataForProposalGeneration:', err);
-    res.status(500).json({ error: 'Failed to send data for proposal generation' });
+    return res.status(500).json({ error: 'Failed to send data for proposal generation' });
   }
 };
 
@@ -1861,7 +1788,7 @@ exports.getGrantProposalStatus = async (req, res) => {
     }
   } catch (err) {
     console.error('Error in /getGrantProposalStatus:', err.message);
-    res.status(500).json({ error: 'Failed to get grant proposal status' });
+    return res.status(500).json({ error: 'Failed to get grant proposal status' });
   }
 };
 
@@ -1869,7 +1796,9 @@ exports.triggerGrant = async () => {
   try {
     const grants = await axios.get(`${process.env.PIPELINE_URL}/grants/trigger`);
     const grant_data = await Grant.insertMany(grants);
+    return res.status(200).json({ message: "Grants triggered successfully", grant_data: grant_data });
   } catch (err) {
     console.error('Error in /triggerGrant:', err);
+    return res.status(500).json({ error: 'Failed to trigger grants' });
   }
 };
