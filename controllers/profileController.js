@@ -170,16 +170,10 @@ exports.getProfile = async (req, res) => {
 
         const deadlines_1 = await CalendarEvent.find({ companyId: companyProfile._id, status: "Deadline", endDate: { $gte: new Date() } });
 
-        console.log("Deadlines_1:", deadlines_1);
-
         const deadlinesPromises = deadlines_1.map(async (deadline) => {
             const proposal = deadline.proposalId ? await Proposal.findById(deadline.proposalId).lean() : null;
             const grantProposal = deadline.grantId ? await GrantProposal.findById(deadline.grantId).lean() : null;
             const status = proposal?.status || grantProposal?.status || "Not Submitted";
-            const endDate = new Date(proposal?.deadline || grantProposal?.deadline);
-            console.log("End Date:", endDate);
-            console.log("New Date:", new Date());
-            console.log("End Date > New Date:", endDate > new Date());
 
             if (proposal || grantProposal) {
                 console.log("Proposal || Grant Proposal:", proposal || grantProposal);
@@ -190,19 +184,17 @@ exports.getProfile = async (req, res) => {
                 console.log("Status !== Not Submitted:", status);
             }
 
-            if ((proposal || grantProposal) && status !== "Not Submitted" && endDate > new Date()) {
+            if ((proposal || grantProposal) && status !== "Not Submitted") {
                 return {
                     title: deadline.title,
                     status: status,
-                    endDate: endDate.toISOString(),
+                    endDate: deadline.endDate,
                 };
             }
         });
 
         const deadlinesResults = await Promise.all(deadlinesPromises);
         const deadlines = deadlinesResults.filter(deadline => deadline !== undefined);
-
-        console.log("Deadlines:", deadlines);
 
         const data = {
             companyName: companyProfile.companyName,
