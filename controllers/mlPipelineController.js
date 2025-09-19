@@ -235,7 +235,8 @@ exports.getSavedAndDraftRFPs = async (req, res) => {
     const draftRFPs = await DraftRFP.find({ userEmail }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 }).lean();
     const draftRFPs_1 = draftRFPs.map((item) => {
       return {
-        generatedProposal: item.generatedProposal,
+        //generatedProposal: item.generatedProposal,
+        docx_base64: item.docx_base64,
         currentEditor: item.currentEditor,
         proposalId: item.proposalId,
         rfpId: item.rfpId,
@@ -1455,7 +1456,8 @@ exports.getSavedAndDraftGrants = async (req, res) => {
       return {
         _id: item.grant._id,
         ...item.grant,
-        generatedProposal: item.generatedProposal,
+        //generatedProposal: item.generatedProposal,
+        docx_base64: item.docx_base64,
         currentEditor: item.currentEditor,
         proposalId: item.proposalId,
         grantId: item.grantId,
