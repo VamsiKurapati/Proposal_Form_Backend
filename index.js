@@ -106,7 +106,7 @@ app.use(express.json());
 
 // CORS Configuration
 app.use(cors({
-  origin: ["https://proposal-form-frontend.vercel.app", "https://ai-rfp-new.vercel.app"],
+  origin: ["https://proposal-form-frontend.vercel.app", "https://ai-rfp-new.vercel.app", "https://rfp2grants.ai"],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
