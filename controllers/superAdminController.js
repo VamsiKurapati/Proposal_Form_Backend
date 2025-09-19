@@ -458,29 +458,35 @@ exports.updateSubscriptionPlanIsContact = async (req, res) => {
 };
 
 // Priority Cron Job
-exports.priorityCronJob = async (req, res) => {
+exports.priorityCronJob = async () => {
   try {
     //Get all support tickets and update the priority of the ticket to "Medium" if ticket.createdAt is more than 1 day and "High" if ticket.createdAt is more than 48 hours
     const supportTickets = await Support.find().sort({ createdAt: -1 }).lean();
-    supportTickets.forEach(async ticket => {
-      const createdAt = new Date(ticket.createdAt);
-      const now = new Date();
-      const diffTime = Math.abs(now - createdAt);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      if (diffDays > 1) {
-        ticket.priority = "Medium";
+
+    await Promise.all(
+      supportTickets.map(async ticket => {
+        const createdAt = new Date(ticket.createdAt);
+        const now = new Date();
+        const diffTime = Math.abs(now - createdAt);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays > 2) {
+          ticket.priority = "Low";
+        } else if (diffDays > 1) {
+          ticket.priority = "Medium";
+        } else {
+          ticket.priority = "High";
+        }
+
         await ticket.save();
-      } else if (diffDays > 2) {
-        ticket.priority = "High";
-        await ticket.save();
-      } else {
-        ticket.priority = "Low";
-        await ticket.save();
-      }
-    });
-    res.json({ message: "Priority updated successfully" });
+      })
+    );
+
+    return { message: "Priority updated successfully" };
+
   } catch (err) {
-    res.status(500).json({ message: "Error updating priority", error: err.message });
+    console.error('Error in priorityCronJob:', err);
+    return { message: "Error updating priority", error: err.message };
   }
 };
 
