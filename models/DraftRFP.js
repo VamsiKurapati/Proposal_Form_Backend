@@ -19,6 +19,7 @@ const DraftRFPSchema = new mongoose.Schema({
         timeline: String
     },
     generatedProposal: { type: Object, required: true },
+    docx_base64: { type: String, default: null },
     currentEditor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 }, { timestamps: true });
 

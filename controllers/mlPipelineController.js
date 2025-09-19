@@ -399,47 +399,6 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       return res.status(404).json({ error: 'Company profile not found. Please complete your company profile first.' });
     }
 
-    const db = mongoose.connection.db;
-
-    //Extract the company Documents from upload.chunks and save them in the companyProfile_1.companyDocuments
-    // const files = await db.collection('uploads.files')
-    //   .find({ _id: { $in: companyProfile_1.documents.map(doc => doc.fileId) } })
-    //   .toArray();
-
-    // const filesWithBase64 = await Promise.all(
-    //   files.map(async (file) => {
-    //     const chunks = await db.collection('uploads.chunks')
-    //       .find({ files_id: file._id })
-    //       .sort({ n: 1 })
-    //       .toArray();
-    //     const fileBuffer = Buffer.concat(chunks.map(chunk => chunk.data.buffer));
-    //     return {
-    //       ...file,
-    //       base64: fileBuffer.toString('base64'),
-    //     };
-    //   })
-    // );
-
-    // const filesMap = filesWithBase64.reduce((acc, file) => {
-    //   acc[file._id.toString()] = file;
-    //   return acc;
-    // }, {});
-
-    // Check if all required files are available
-    // const missingFiles = companyProfile_1.documents.filter(doc => !filesMap[doc.fileId.toString()]);
-    // if (missingFiles.length > 0) {
-    //   return res.status(400).json({
-    //     error: 'Some company documents are missing or corrupted. Please re-upload the following documents: ' +
-    //       missingFiles.map(doc => doc.name).join(', ')
-    //   });
-    // }
-
-    // const companyDocuments_1 = companyProfile_1.documents.map((doc) => {
-    //   return {
-    //     [`${doc.name}.${doc.type}`]: `${filesMap[doc.fileId.toString()].base64}`,
-    //   };
-    // });
-
     const companyDocuments_1 = (companyProfile_1.documentSummaries || []).map((doc) => {
       return {
         [`${doc.name}`]: `${doc.summary}`,
@@ -531,7 +490,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
       if (proposalTracker.status === "success") {
         const new_prop = await Proposal.findOne({ _id: proposalTracker.proposalId, companyMail: userEmail });
-        return res.status(200).json({ message: 'Proposal Generation completed successfully.', proposal: new_prop.generatedProposal, proposalId: new_prop._id });
+        return res.status(200).json({ message: 'Proposal Generation completed successfully.', proposal: new_prop.docx_base64, proposalId: new_prop._id });
       } else if (proposalTracker.status === "error") {
         await ProposalTracker.deleteOne({ rfpId: proposal._id, companyMail: userEmail });
         return res.status(400).json({ error: 'Failed to generate proposal. Please try again later.' });
@@ -547,16 +506,23 @@ exports.sendDataForProposalGeneration = async (req, res) => {
         const res_data = res_1.data;
 
         if (res_data.status === "success") {
-          const proposalData = res_data.result.result;
+          // const proposalData = res_data.result.result;
 
-          const processedProposal = replaceTextInJson(template_json, proposalData, userData, rfp);
+          // const processedProposal = replaceTextInJson(template_json, proposalData, userData, rfp);
+
+          const document = res_data.result.docx_base64;
+
+          const data = res_data.result.result;
 
           const new_Proposal = new Proposal({
             rfpId: proposal._id || "",
             title: proposal.title || "",
             client: proposal.organization || "Not found",
-            initialProposal: processedProposal,
-            generatedProposal: processedProposal,
+            // initialProposal: processedProposal,
+            // generatedProposal: processedProposal,
+            initialProposal: data,
+            generatedProposal: data,
+            docx_base64: document,
             companyMail: userEmail,
             url: proposal.link || "",
             deadline: getDeadline(proposal.deadline),
@@ -581,7 +547,9 @@ exports.sendDataForProposalGeneration = async (req, res) => {
             rfpId: proposal._id || "",
             proposalId: new_Proposal._id || "",
             rfp: { ...proposal },
-            generatedProposal: processedProposal,
+            // generatedProposal: processedProposal,
+            generatedProposal: data,
+            docx_base64: document,
             currentEditor: req.user._id,
           });
           await new_Draft.save();
@@ -623,7 +591,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
           subscription_1.current_rfp_proposal_generations++;
           await subscription_1.save();
 
-          return res.status(200).json({ message: 'Proposal Generation completed successfully.', proposal: processedProposal, proposalId: new_Proposal._id });
+          return res.status(200).json({ message: 'Proposal Generation completed successfully.', proposal: document, proposalId: new_Proposal._id });
         } else if (res_data.status === "processing") {
           return res.status(200).json({ message: 'Proposal Generation is still in progress. Please wait for it to complete.' });
         } else {
@@ -1533,47 +1501,6 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       return res.status(404).json({ error: 'Company profile not found. Please complete your company profile first.' });
     }
 
-    const db = mongoose.connection.db;
-
-    //Extract the company Documents from upload.chunks and save them in the companyProfile_1.companyDocuments
-    // const files = await db.collection('uploads.files')
-    //   .find({ _id: { $in: companyProfile_1.documents.map(doc => doc.fileId) } })
-    //   .toArray();
-
-    // const filesWithBase64 = await Promise.all(
-    //   files.map(async (file) => {
-    //     const chunks = await db.collection('uploads.chunks')
-    //       .find({ files_id: file._id })
-    //       .sort({ n: 1 })
-    //       .toArray();
-    //     const fileBuffer = Buffer.concat(chunks.map(chunk => chunk.data.buffer));
-    //     return {
-    //       ...file,
-    //       base64: fileBuffer.toString('base64'),
-    //     };
-    //   })
-    // );
-
-    // const filesMap = filesWithBase64.reduce((acc, file) => {
-    //   acc[file._id.toString()] = file;
-    //   return acc;
-    // }, {});
-
-    // Check if all required files are available
-    // const missingFiles = companyProfile_1.documents.filter(doc => !filesMap[doc.fileId.toString()]);
-    // if (missingFiles.length > 0) {
-    //   return res.status(400).json({
-    //     error: 'Some company documents are missing or corrupted. Please re-upload the following documents: ' +
-    //       missingFiles.map(doc => doc.name).join(', ')
-    //   });
-    // }
-
-    // const companyDocuments_1 = companyProfile_1.documents.map((doc) => {
-    //   return {
-    //     [doc.name + "." + doc.type]: filesMap[doc.fileId.toString()].base64,
-    //   };
-    // });
-
     const companyDocuments_1 = (companyProfile_1.documentSummaries || []).map((doc) => {
       return {
         [`${doc.name}`]: `${doc.summary}`,
@@ -1652,7 +1579,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
     if (proposalTracker) {
       if (proposalTracker.status === "success") {
         const new_prop = await GrantProposal.findOne({ _id: proposalTracker.proposalId, companyMail: userEmail });
-        return res.status(200).json({ message: 'Grant Proposal Generation completed successfully.', proposal: new_prop.generatedProposal, proposalId: new_prop._id });
+        return res.status(200).json({ message: 'Grant Proposal Generation completed successfully.', proposal: new_prop.docx_base64, proposalId: new_prop._id });
       } else if (proposalTracker.status === "error") {
         await ProposalTracker.deleteOne({ grantId: grant._id, companyMail: userEmail });
         return res.status(400).json({ error: 'Failed to generate grant proposal. Please try again later.' });
@@ -1669,14 +1596,19 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
         if (res_data.status === "success") {
           // const dummy = res_data.result.result;
           // const proposalData = JSON.parse(dummy);
-          const proposalData = res_data.result.result;
+          // const proposalData = res_data.result.result;
 
-          const processedProposal = replaceTextInJson_Grant(grant_template_json, userData, grant, proposalData);
+          // const processedProposal = replaceTextInJson_Grant(grant_template_json, userData, grant, proposalData);
+          const document = res_data.result.docx_base64;
+          const data = res_data.result.result;
 
           const new_prop = new GrantProposal({
             grantId: grant._id,
             project_inputs: formData,
-            initialProposal: processedProposal,
+            // initialProposal: processedProposal,
+            initialProposal: data,
+            generatedProposal: data,
+            docx_base64: document,
             title: grant.OPPORTUNITY_TITLE,
             client: userData.companyName,
             companyMail: userEmail,
@@ -1685,7 +1617,6 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
             status: "In Progress",
             submittedAt: new Date(),
             currentEditor: req.user._id,
-            generatedProposal: processedProposal,
             isDeleted: false,
             deletedAt: null,
             deletedBy: null,
@@ -1703,7 +1634,9 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
             grantId: grant._id,
             userEmail: userEmail,
             grant: grant,
-            generatedProposal: processedProposal,
+            // generatedProposal: processedProposal,
+            generatedProposal: data,
+            docx_base64: document,
             currentEditor: req.user._id,
             proposalId: new_prop._id,
           });
@@ -1747,7 +1680,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
           subscription_1.current_grant_proposal_generations++;
           await subscription_1.save();
 
-          return res.status(200).json({ message: 'Grant Proposal Generation completed successfully.', proposal: processedProposal, proposalId: new_prop._id });
+          return res.status(200).json({ message: 'Grant Proposal Generation completed successfully.', proposal: document, proposalId: new_prop._id });
 
         } else if (res_data.status === "processing") {
           return res.status(200).json({ message: 'Grant Proposal Generation is still in progress. Please wait for it to complete.' });
@@ -1826,7 +1759,7 @@ exports.getGrantProposalStatus = async (req, res) => {
     //Chheck if a proposal with the same grantId already exists
     const proposal = await GrantProposal.findOne({ grantId: grant._id, companyMail: userEmail });
     if (proposal) {
-      return res.status(200).json({ message: 'Grant Proposal Generated successfully.', proposal: proposal.generatedProposal, proposalId: proposal._id });
+      return res.status(200).json({ message: 'Grant Proposal Generated successfully.', proposal: proposal.docx_base64, proposalId: proposal._id });
     }
 
     //Check if a proposal tracker with the same grantId already exists
@@ -1838,7 +1771,7 @@ exports.getGrantProposalStatus = async (req, res) => {
 
     if (proposalTracker.status === "success") {
       const grantProposal = await GrantProposal.findOne({ _id: proposalTracker.grantProposalId, companyMail: userEmail });
-      return res.status(200).json({ message: 'Grant Proposal Generated successfully.', proposal: grantProposal.generatedProposal, proposalId: grantProposal._id });
+      return res.status(200).json({ message: 'Grant Proposal Generated successfully.', proposal: grantProposal.docx_base64, proposalId: grantProposal._id });
     } else if (proposalTracker.status === "error") {
       return res.status(400).json({ error: 'Failed to generate grant proposal. Please try again later.' });
     } else if (proposalTracker.status === "processing") {
@@ -1852,13 +1785,18 @@ exports.getGrantProposalStatus = async (req, res) => {
       if (res_data.status === "success") {
         // const dummy = res_data.result.result;
         // const proposalData = JSON.parse(dummy);
-        const proposalData = res_data.result.result;
+        // const proposalData = res_data.result.result;
 
-        const processedProposal = replaceTextInJson_Grant(grant_template_json, companyProfile_1, grant, proposalData);
+        // const processedProposal = replaceTextInJson_Grant(grant_template_json, companyProfile_1, grant, proposalData);
+        const document = res_data.result.docx_base64;
+        const data = res_data.result.result;
         const new_prop = new GrantProposal({
           grantId: grant._id,
           project_inputs: proposalTracker.formData,
-          initialProposal: processedProposal,
+          // initialProposal: processedProposal,
+          initialProposal: data,
+          generatedProposal: data,
+          docx_base64: document,
           title: grant.OPPORTUNITY_TITLE,
           client: grant.AGENCY_NAME,
           companyMail: userEmail,
@@ -1867,7 +1805,6 @@ exports.getGrantProposalStatus = async (req, res) => {
           status: "In Progress",
           submittedAt: new Date(),
           currentEditor: req.user._id,
-          generatedProposal: processedProposal,
         });
         await new_prop.save();
 
@@ -1876,7 +1813,8 @@ exports.getGrantProposalStatus = async (req, res) => {
           userEmail: userEmail,
           grant: grant,
           currentEditor: req.user._id,
-          generatedProposal: processedProposal,
+          generatedProposal: data,
+          docx_base64: document,
           proposalId: new_prop._id,
         });
         await new_Draft.save();
@@ -1910,7 +1848,7 @@ exports.getGrantProposalStatus = async (req, res) => {
         proposalTracker.grantProposalId = new_prop._id;
         await proposalTracker.save();
 
-        return res.status(200).json({ message: 'Grant Proposal Generated successfully.', proposal: processedProposal, proposalId: new_prop._id });
+        return res.status(200).json({ message: 'Grant Proposal Generated successfully.', proposal: document, proposalId: new_prop._id });
       } else if (res_data.status === "processing") {
         return res.status(200).json({ message: 'Grant Proposal Generation is still in progress. Please wait for it to complete.' });
       } else {

@@ -7,6 +7,7 @@ const GrantProposalSchema = new mongoose.Schema({
     title: { type: String, required: true },
     client: { type: String, required: true },
     generatedProposal: { type: Object, default: null },
+    docx_base64: { type: String, default: null },
     companyMail: { type: String, required: true },
     deadline: { type: Date, required: true },
     url: { type: String, required: false, default: "" },

@@ -7,6 +7,7 @@ const ProposalSchema = new mongoose.Schema({
   client: { type: String, required: true },
   initialProposal: { type: Object, required: true, default: null },
   generatedProposal: { type: Object, default: null },
+  docx_base64: { type: String, default: null },
   companyMail: { type: String, required: true },
   deadline: { type: Date, required: true },
   url: { type: String, required: false, default: "" },

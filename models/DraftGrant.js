@@ -32,6 +32,7 @@ const DraftGrantSchema = new mongoose.Schema({
         ELIGIBLE_APPLICANTS: String
     },
     generatedProposal: { type: Object, required: true },
+    docx_base64: { type: String, default: null },
     currentEditor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     proposalId: { type: mongoose.Schema.Types.ObjectId, ref: "GrantProposal", required: true },
 }, { timestamps: true });
