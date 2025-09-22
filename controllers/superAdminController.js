@@ -614,7 +614,10 @@ const handleEnterpriseCheckoutSessionCompleted = async (session) => {
   try {
     console.log('Enterprise Checkout Session Completed:', session);
     const customPlanId = new URL(session.success_url).searchParams.get('customPlanId');
-    if (!customPlanId) return;
+    if (!customPlanId) {
+      console.error('No customPlanId found in success_url');
+      return { success: false, error: 'No customPlanId found' };
+    }
 
     await CustomPlan.findByIdAndUpdate(customPlanId, {
       status: 'paid',
@@ -623,29 +626,76 @@ const handleEnterpriseCheckoutSessionCompleted = async (session) => {
     });
 
     const user = await User.findOne({ email: session.customer_email });
-    if (!user || user.role !== "company") return;
-
-    await Subscription.deleteMany({ user_id: user._id });
+    if (!user || user.role !== "company") {
+      console.error('User not found or not a company:', session.customer_email);
+      return { success: false, error: 'User not found or not a company' };
+    }
 
     const customPlan = await CustomPlan.findById(customPlanId);
-    if (!customPlan) return;
+    if (!customPlan) {
+      console.error('Custom plan not found:', customPlanId);
+      return { success: false, error: 'Custom plan not found' };
+    }
 
-    const subscription = new Subscription({
-      user_id: user._id,
-      plan_name: 'Custom Enterprise Plan',
-      plan_price: session.amount_total / 100,
-      start_date: new Date(),
-      end_date: session.metadata?.planType === "monthly" ? new Date(new Date().setMonth(new Date().getMonth() + 1)) : new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-      renewal_date: session.metadata?.planType === "monthly" ? new Date(new Date().setMonth(new Date().getMonth() + 1)) : new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-      max_editors: session.metadata?.maxEditors || customPlan.maxEditors || 0,
-      max_viewers: session.metadata?.maxViewers || customPlan.maxViewers || 0,
-      max_rfp_proposal_generations: session.metadata?.maxRFPProposalGenerations || customPlan.maxRFPProposalGenerations || 0,
-      max_grant_proposal_generations: session.metadata?.maxGrantProposalGenerations || customPlan.maxGrantProposalGenerations || 0,
-      auto_renewal: true,
-      stripeSubscriptionId: session.subscription || null,
-      stripePriceId: session.items?.data?.[0]?.price?.id || null
-    });
-    await subscription.save();
+    // Check existing subscription before deleting it to preserve unused generations
+    const existingSubscription = await Subscription.findOne({ user_id: user._id });
+
+    let newMaxRfp = customPlan.maxRFPProposalGenerations;
+    let newMaxGrant = customPlan.maxGrantProposalGenerations;
+
+    if (existingSubscription) {
+      const unusedRfp =
+        (existingSubscription.max_rfp_proposal_generations -
+          existingSubscription.current_rfp_proposal_generations) || 0;
+      const unusedGrant =
+        (existingSubscription.max_grant_proposal_generations -
+          existingSubscription.current_grant_proposal_generations) || 0;
+
+      newMaxRfp += unusedRfp;
+      newMaxGrant += unusedGrant;
+    }
+
+    // Delete existing subscriptions after checking for unused generations
+    await Subscription.deleteMany({ user_id: user._id });
+
+    const subscription = await Subscription.findOneAndUpdate(
+      { user_id: user._id },
+      {
+        $set: {
+          plan_name: "Custom Enterprise Plan",
+          plan_price: session.amount_total / 100,
+          start_date: new Date(),
+          end_date: (() => {
+            const endDate = new Date();
+            if (session.metadata?.planType === "monthly") {
+              endDate.setMonth(endDate.getMonth() + 1);
+            } else {
+              endDate.setFullYear(endDate.getFullYear() + 1);
+            }
+            return endDate;
+          })(),
+          renewal_date: (() => {
+            const renewalDate = new Date();
+            if (session.metadata?.planType === "monthly") {
+              renewalDate.setMonth(renewalDate.getMonth() + 1);
+            } else {
+              renewalDate.setFullYear(renewalDate.getFullYear() + 1);
+            }
+            return renewalDate;
+          })(),
+          max_editors: session.metadata?.maxEditors || customPlan.maxEditors || 0,
+          max_viewers: session.metadata?.maxViewers || customPlan.maxViewers || 0,
+          max_rfp_proposal_generations: newMaxRfp,
+          max_grant_proposal_generations: newMaxGrant,
+          current_rfp_proposal_generations: 0,
+          current_grant_proposal_generations: 0,
+          auto_renewal: true,
+          stripeSubscriptionId: session.subscription || null,
+          stripePriceId: session.payment_intent || session.id || null
+        }
+      },
+      { upsert: true, new: true }
+    );
 
     await Payment.create({
       user_id: user._id,
@@ -696,8 +746,12 @@ const handleEnterpriseCheckoutSessionCompleted = async (session) => {
 
     await transporter.sendMail(mailOptions);
 
+    console.log('Enterprise checkout session completed successfully for user:', user.email);
+    return { success: true, message: 'Enterprise subscription activated successfully' };
+
   } catch (err) {
     console.error('Failed to handle enterprise checkout session completion:', err);
+    return { success: false, error: err.message };
   }
 };
 

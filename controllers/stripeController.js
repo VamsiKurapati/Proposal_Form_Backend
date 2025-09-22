@@ -227,23 +227,46 @@ const activateSubscription = async (req, res) => {
             endDate.setMonth(endDate.getMonth() + 1);
         }
 
-        // Create or update subscription
+        const existingSubscription = await Subscription.findOne({ user_id: userId });
+
+        let newMaxRfp = plan.maxRFPProposalGenerations;
+        let newMaxGrant = plan.maxGrantProposalGenerations;
+
+        if (existingSubscription) {
+            const unusedRfp =
+                (existingSubscription.max_rfp_proposal_generations -
+                    existingSubscription.current_rfp_proposal_generations) || 0;
+            const unusedGrant =
+                (existingSubscription.max_grant_proposal_generations -
+                    existingSubscription.current_grant_proposal_generations) || 0;
+
+            newMaxRfp += unusedRfp;
+            newMaxGrant += unusedGrant;
+        }
+
         const subscription = await Subscription.findOneAndUpdate(
             { user_id: userId },
             {
-                plan_name: plan.name,
-                plan_price: billingCycle === STRIPE_CONFIG.BILLING_CYCLES.YEARLY ? plan.yearlyPrice : plan.monthlyPrice,
-                start_date: startDate,
-                end_date: endDate,
-                renewal_date: endDate,
-                max_editors: plan.maxEditors,
-                max_viewers: plan.maxViewers,
-                max_rfp_proposal_generations: plan.maxRFPProposalGenerations,
-                max_grant_proposal_generations: plan.maxGrantProposalGenerations,
-                current_rfp_proposal_generations: 0,
-                current_grant_proposal_generations: 0,
-                canceled_at: null,
-                auto_renewal: true
+                $set: {
+                    plan_name: plan.name,
+                    plan_price:
+                        billingCycle === STRIPE_CONFIG.BILLING_CYCLES.YEARLY
+                            ? plan.yearlyPrice
+                            : plan.monthlyPrice,
+                    start_date: startDate,
+                    end_date: endDate,
+                    renewal_date: endDate,
+                    max_editors: plan.maxEditors,
+                    max_viewers: plan.maxViewers,
+                    current_rfp_proposal_generations: 0, // reset usage
+                    current_grant_proposal_generations: 0, // reset usage
+                    max_rfp_proposal_generations: newMaxRfp, // ✅ directly set new total
+                    max_grant_proposal_generations: newMaxGrant, // ✅ directly set new total
+                    canceled_at: null,
+                    auto_renewal: true,
+                    stripeSubscriptionId: paymentIntent.id,
+                    stripePriceId: paymentIntent.metadata.planPriceId
+                }
             },
             { upsert: true, new: true }
         );
