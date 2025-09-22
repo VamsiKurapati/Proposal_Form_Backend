@@ -37,4 +37,11 @@ const DraftGrantSchema = new mongoose.Schema({
     proposalId: { type: mongoose.Schema.Types.ObjectId, ref: "GrantProposal", required: true },
 }, { timestamps: true });
 
+// Database indexes for performance optimization
+DraftGrantSchema.index({ userEmail: 1 });
+DraftGrantSchema.index({ grantId: 1 });
+DraftGrantSchema.index({ createdAt: -1 });
+// Compound index for common query patterns
+DraftGrantSchema.index({ userEmail: 1, createdAt: -1 });
+
 module.exports = mongoose.model("DraftGrant", DraftGrantSchema);

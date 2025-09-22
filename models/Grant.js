@@ -109,4 +109,15 @@ const grantSchema = new mongoose.Schema({
     timestamps: true
 });
 
+// Database indexes for performance optimization
+grantSchema.index({ OPPORTUNITY_STATUS: 1 });
+grantSchema.index({ AGENCY_CODE: 1 });
+grantSchema.index({ AGENCY_NAME: 1 });
+grantSchema.index({ CATEGORY_OF_FUNDING_ACTIVITY: 1 });
+grantSchema.index({ ESTIMATED_TOTAL_FUNDING: 1 });
+grantSchema.index({ createdAt: -1 });
+// Compound indexes for common query patterns
+grantSchema.index({ OPPORTUNITY_STATUS: 1, CATEGORY_OF_FUNDING_ACTIVITY: 1 });
+grantSchema.index({ AGENCY_CODE: 1, OPPORTUNITY_STATUS: 1 });
+
 module.exports = mongoose.model("Grant", grantSchema);

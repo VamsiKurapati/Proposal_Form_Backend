@@ -19,5 +19,15 @@ const subscriptionSchema = new mongoose.Schema({
   stripePriceId: { type: String, default: null }
 }, { timestamps: true });
 
+// Database indexes for performance optimization
+subscriptionSchema.index({ user_id: 1 });
+subscriptionSchema.index({ plan_name: 1 });
+subscriptionSchema.index({ end_date: 1 });
+subscriptionSchema.index({ stripeSubscriptionId: 1 });
+subscriptionSchema.index({ stripePriceId: 1 });
+subscriptionSchema.index({ createdAt: -1 });
+// Compound indexes for common query patterns
+subscriptionSchema.index({ user_id: 1, end_date: -1 });
+subscriptionSchema.index({ plan_name: 1, end_date: 1 });
 
 module.exports = mongoose.model("Subscription", subscriptionSchema);

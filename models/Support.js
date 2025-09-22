@@ -60,6 +60,16 @@ const supportSchema = new mongoose.Schema({
   plan_name: { type: String, default: null }
 }, { timestamps: true });
 
-
+// Database indexes for performance optimization
+supportSchema.index({ userId: 1 });
+supportSchema.index({ status: 1 });
+supportSchema.index({ category: 1 });
+supportSchema.index({ priority: 1 });
+supportSchema.index({ isOpen: 1 });
+supportSchema.index({ createdAt: -1 });
+// Compound indexes for common query patterns
+supportSchema.index({ userId: 1, status: 1 });
+supportSchema.index({ status: 1, priority: 1 });
+supportSchema.index({ category: 1, status: 1 });
 
 module.exports = mongoose.model("Support", supportSchema);

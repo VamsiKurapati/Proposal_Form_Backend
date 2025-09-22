@@ -22,4 +22,17 @@ const ProposalSchema = new mongoose.Schema({
   restoredAt: { type: Date, default: null },
 }, { timestamps: true });
 
+// Database indexes for performance optimization
+ProposalSchema.index({ rfpId: 1 });
+ProposalSchema.index({ companyMail: 1 });
+ProposalSchema.index({ status: 1 });
+ProposalSchema.index({ currentEditor: 1 });
+ProposalSchema.index({ isDeleted: 1 });
+ProposalSchema.index({ deadline: 1 });
+ProposalSchema.index({ createdAt: -1 });
+// Compound indexes for common query patterns
+ProposalSchema.index({ companyMail: 1, status: 1 });
+ProposalSchema.index({ companyMail: 1, isDeleted: 1 });
+ProposalSchema.index({ companyMail: 1, createdAt: -1 });
+
 module.exports = mongoose.model('Proposal', ProposalSchema);

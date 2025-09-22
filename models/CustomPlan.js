@@ -16,4 +16,12 @@ const customPlanSchema = new mongoose.Schema({
   paidAt: { type: Date },                    // Optional: only when paid
 }, { timestamps: true });
 
+// Database indexes for performance optimization
+customPlanSchema.index({ userId: 1 });
+customPlanSchema.index({ email: 1 });
+customPlanSchema.index({ status: 1 });
+customPlanSchema.index({ createdAt: -1 });
+// Compound index for common query patterns
+customPlanSchema.index({ userId: 1, createdAt: -1 });
+
 module.exports = mongoose.model("CustomPlan", customPlanSchema);

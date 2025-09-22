@@ -11,4 +11,13 @@ const calendarEventSchema = new mongoose.Schema({
   status: { type: String, enum: ["In Progress", "Submitted", "Won", "Rejected", "Deadline"], default: "Deadline" },
 }, { timestamps: true });
 
+// Database indexes for performance optimization
+calendarEventSchema.index({ companyId: 1 });
+calendarEventSchema.index({ employeeId: 1 });
+calendarEventSchema.index({ proposalId: 1 });
+calendarEventSchema.index({ grantId: 1 });
+calendarEventSchema.index({ createdAt: -1 });
+// Compound index for common query patterns
+calendarEventSchema.index({ companyId: 1, createdAt: -1 });
+
 module.exports = mongoose.model("CalendarEvent", calendarEventSchema);

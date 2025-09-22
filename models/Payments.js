@@ -47,4 +47,16 @@ const paymentSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
+// Database indexes for performance optimization
+paymentSchema.index({ user_id: 1 });
+paymentSchema.index({ subscription_id: 1 });
+paymentSchema.index({ status: 1 });
+paymentSchema.index({ paid_at: 1 });
+paymentSchema.index({ transaction_id: 1 });
+paymentSchema.index({ createdAt: -1 });
+// Compound indexes for common query patterns
+paymentSchema.index({ user_id: 1, status: 1 });
+paymentSchema.index({ status: 1, paid_at: -1 });
+paymentSchema.index({ subscription_id: 1, status: 1 });
+
 module.exports = mongoose.model("Payment", paymentSchema);

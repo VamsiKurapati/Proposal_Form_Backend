@@ -23,4 +23,13 @@ const DraftRFPSchema = new mongoose.Schema({
     currentEditor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 }, { timestamps: true });
 
+// Database indexes for performance optimization
+DraftRFPSchema.index({ userEmail: 1 });
+DraftRFPSchema.index({ rfpId: 1 });
+DraftRFPSchema.index({ proposalId: 1 });
+DraftRFPSchema.index({ currentEditor: 1 });
+DraftRFPSchema.index({ createdAt: -1 });
+// Compound index for common query patterns
+DraftRFPSchema.index({ userEmail: 1, createdAt: -1 });
+
 module.exports = mongoose.models.DraftRFP || mongoose.model('DraftRFP', DraftRFPSchema);

@@ -13,4 +13,14 @@ const userSchema = new mongoose.Schema({
   payment_method_id: { type: String, default: null }
 }, { timestamps: true });
 
+// Database indexes for performance optimization
+userSchema.index({ email: 1 }); // Already exists as unique, but explicit for clarity
+userSchema.index({ role: 1 });
+userSchema.index({ subscription_status: 1 });
+userSchema.index({ stripeCustomerId: 1 });
+userSchema.index({ stripeSubscriptionId: 1 });
+userSchema.index({ createdAt: -1 });
+// Compound indexes for common query patterns
+userSchema.index({ subscription_status: 1, role: 1 });
+
 module.exports = mongoose.model("User", userSchema);

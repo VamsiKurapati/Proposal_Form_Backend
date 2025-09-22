@@ -17,4 +17,13 @@ const employeeProfileSchema = new mongoose.Schema({
   logoUrl: { type: String, default: "https://via.placeholder.com/150" },
 }, { timestamps: true });
 
+// Database indexes for performance optimization
+employeeProfileSchema.index({ userId: 1 });
+employeeProfileSchema.index({ companyMail: 1 });
+employeeProfileSchema.index({ email: 1 });
+employeeProfileSchema.index({ accessLevel: 1 });
+employeeProfileSchema.index({ createdAt: -1 });
+// Compound indexes for common query patterns
+employeeProfileSchema.index({ companyMail: 1, accessLevel: 1 });
+
 module.exports = mongoose.model("EmployeeProfile", employeeProfileSchema);

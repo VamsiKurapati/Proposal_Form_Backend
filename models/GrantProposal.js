@@ -24,6 +24,20 @@ const GrantProposalSchema = new mongoose.Schema({
     restoredAt: { type: Date, default: null },
     restoredBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
     restoredAt: { type: Date, default: null },
-});
+}, { timestamps: true });
+
+// Database indexes for performance optimization
+GrantProposalSchema.index({ grantId: 1 });
+GrantProposalSchema.index({ companyMail: 1 });
+GrantProposalSchema.index({ status: 1 });
+GrantProposalSchema.index({ currentEditor: 1 });
+GrantProposalSchema.index({ isDeleted: 1 });
+GrantProposalSchema.index({ isSaved: 1 });
+GrantProposalSchema.index({ deadline: 1 });
+GrantProposalSchema.index({ createdAt: -1 });
+// Compound indexes for common query patterns
+GrantProposalSchema.index({ companyMail: 1, status: 1 });
+GrantProposalSchema.index({ companyMail: 1, isDeleted: 1 });
+GrantProposalSchema.index({ companyMail: 1, createdAt: -1 });
 
 module.exports = mongoose.model("GrantProposal", GrantProposalSchema);

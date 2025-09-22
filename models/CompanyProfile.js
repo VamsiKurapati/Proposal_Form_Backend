@@ -97,4 +97,16 @@ const companyProfileSchema = new mongoose.Schema({
   blocked: { type: Boolean, default: false },
 }, { timestamps: true });
 
+// Database indexes for performance optimization
+companyProfileSchema.index({ userId: 1 }); // Already exists as ref, but explicit for clarity
+companyProfileSchema.index({ email: 1 }); // Already exists as unique, but explicit for clarity
+companyProfileSchema.index({ industry: 1 });
+companyProfileSchema.index({ location: 1 });
+companyProfileSchema.index({ status: 1 });
+companyProfileSchema.index({ blocked: 1 });
+companyProfileSchema.index({ createdAt: -1 });
+// Compound indexes for common query patterns
+companyProfileSchema.index({ industry: 1, status: 1 });
+companyProfileSchema.index({ blocked: 1, status: 1 });
+
 module.exports = mongoose.model("CompanyProfile", companyProfileSchema);

@@ -19,4 +19,15 @@ const matchedRFPSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Database indexes for performance optimization
+matchedRFPSchema.index({ email: 1 });
+matchedRFPSchema.index({ match: -1 });
+matchedRFPSchema.index({ organizationType: 1 });
+matchedRFPSchema.index({ fundingType: 1 });
+matchedRFPSchema.index({ createdAt: -1 });
+// Compound indexes for common query patterns
+matchedRFPSchema.index({ email: 1, match: -1 });
+matchedRFPSchema.index({ email: 1, createdAt: -1 });
+matchedRFPSchema.index({ organizationType: 1, match: -1 });
+
 module.exports = mongoose.model('MatchedRFP', matchedRFPSchema);
