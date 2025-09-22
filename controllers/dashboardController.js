@@ -12,9 +12,7 @@ const ProposalTracker = require("../models/ProposalTracker");
 exports.getDashboardData = async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
-        //console.log(user);
         const role = user.role;
-        // console.log(role);
         if (role === "company") {
             const companyProfile = await CompanyProfile.findOne({ userId: user._id });
 
@@ -88,7 +86,6 @@ exports.getDashboardData = async (req, res) => {
             const employees = companyProfile.employees || [];
 
             const subscription = await Subscription.find({ user_id: user._id }).sort({ created_at: -1 }).limit(1).lean();
-            // console.log(subscription);
             const sub_data = {
                 maxRFPs: subscription.length > 0 ? subscription[0].max_rfp_proposal_generations : 0,
                 maxGrants: subscription.length > 0 ? subscription[0].max_grant_proposal_generations : 0,
@@ -131,22 +128,16 @@ exports.getDashboardData = async (req, res) => {
 
             res.status(200).json(data);
         } else if (role === "employee") {
-            //console.log("In employee role");
             const employeeProfile = await EmployeeProfile.findOne({ userId: user._id });
             if (!employeeProfile) {
                 return res.status(404).json({ message: "Employee profile not found" });
             }
-            //console.log(employeeProfile);
             const companyProfile = await CompanyProfile.findOne({ email: employeeProfile.companyMail });
             if (!companyProfile) {
                 return res.status(404).json({ message: "Company profile not found" });
             }
-            //console.log(companyProfile);
             const proposals = await Proposal.find({ companyMail: companyProfile.email }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 }).lean();
             const grantProposals = await GrantProposal.find({ companyMail: companyProfile.email }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 }).lean();
-
-            //console.log(proposals);
-            //console.log(grantProposals);
 
             const totalProposals = proposals.length + grantProposals.length;
             const inProgressProposals = proposals.filter(proposal => proposal.status === "In Progress").length + grantProposals.filter(proposal => proposal.status === "In Progress").length;
@@ -220,7 +211,6 @@ exports.getDashboardData = async (req, res) => {
             const companyUser = await User.findOne({ email: companyProfile.email });
 
             const subscription = await Subscription.find({ user_id: companyUser._id }).sort({ created_at: -1 }).limit(1).lean();
-            // console.log(subscription);
 
             const sub_data = {
                 maxRFPs: subscription.length > 0 ? subscription[0].max_rfp_proposal_generations : 0,

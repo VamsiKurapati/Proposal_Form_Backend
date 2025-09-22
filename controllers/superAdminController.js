@@ -612,10 +612,8 @@ exports.sendEmail = async (req, res) => {
 
 const handleEnterpriseCheckoutSessionCompleted = async (session) => {
   try {
-    console.log('Enterprise Checkout Session Completed:', session);
     const customPlanId = new URL(session.success_url).searchParams.get('customPlanId');
     if (!customPlanId) {
-      console.error('No customPlanId found in success_url');
       return { success: false, error: 'No customPlanId found' };
     }
 
@@ -627,13 +625,11 @@ const handleEnterpriseCheckoutSessionCompleted = async (session) => {
 
     const user = await User.findOne({ email: session.customer_email });
     if (!user || user.role !== "company") {
-      console.error('User not found or not a company:', session.customer_email);
       return { success: false, error: 'User not found or not a company' };
     }
 
     const customPlan = await CustomPlan.findById(customPlanId);
     if (!customPlan) {
-      console.error('Custom plan not found:', customPlanId);
       return { success: false, error: 'Custom plan not found' };
     }
 
@@ -746,18 +742,15 @@ const handleEnterpriseCheckoutSessionCompleted = async (session) => {
 
     await transporter.sendMail(mailOptions);
 
-    console.log('Enterprise checkout session completed successfully for user:', user.email);
     return { success: true, message: 'Enterprise subscription activated successfully' };
 
   } catch (err) {
-    console.error('Failed to handle enterprise checkout session completion:', err);
     return { success: false, error: err.message };
   }
 };
 
 const handleEnterpriseCheckoutSessionFailed = async (session) => {
   try {
-    console.log('Enterprise Checkout Session Failed:', session);
     const customPlanId = new URL(session.cancel_url).searchParams.get('customPlanId');
     if (!customPlanId) return;
 
@@ -803,7 +796,7 @@ const handleEnterpriseCheckoutSessionFailed = async (session) => {
     await transporter.sendMail(mailOptions);
 
   } catch (err) {
-    console.error('Failed to handle enterprise checkout session failed:', err);
+    console.error('Error in handleWebhook:', err);
   }
 };
 
@@ -815,7 +808,7 @@ exports.handleWebhook = async (req, res) => {
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
   } catch (err) {
-    console.error('Webhook signature verification failed:', err.message);
+    console.error('Error in handleWebhook:', err);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
@@ -824,33 +817,29 @@ exports.handleWebhook = async (req, res) => {
   try {
     switch (event.type) {
       case 'checkout.session.completed':
-        console.log('Webhook: Payment completed');
         await handleEnterpriseCheckoutSessionCompleted(session);
         break;
 
       case 'checkout.session.expired':
-        console.log('Webhook: Checkout session expired');
         await handleEnterpriseCheckoutSessionFailed(session);
         break;
 
       case 'checkout.session.async_payment_failed':
-        console.log('Webhook: Async payment failed');
         await handleEnterpriseCheckoutSessionFailed(session);
         break;
 
       case 'checkout.session.async_payment_succeeded':
-        console.log('Webhook: Async payment succeeded');
         await handleEnterpriseCheckoutSessionCompleted(session);
         break;
 
       default:
-        console.log(`Webhook: Unhandled event type: ${event.type}`);
+        console.error('Error in handleWebhook:', event.type);
     }
 
     res.status(200).json({ received: true });
 
   } catch (error) {
-    console.error('Error processing webhook event:', error);
+    console.error('Error in handleWebhook:', error);
     res.status(500).json({ error: 'Webhook processing failed' });
   }
 };
@@ -898,7 +887,6 @@ exports.editCustomPlan = async (req, res) => {
   else {
     AdminPaymenyData = paymentDetails[0];
   }
-  // console.log(AdminPaymenyData);
 
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -941,10 +929,9 @@ exports.editCustomPlan = async (req, res) => {
 
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent: " + info.response);
     res.status(200).json({ message: "Email sent successfully!" });
   } catch (error) {
-    console.error("Error in editCustomPlan:", error);
+    console.error('Error in editCustomPlan:', error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -1024,7 +1011,7 @@ exports.createCustomPlan = async (req, res) => {
       payment,
     });
   } catch (error) {
-    console.error("Error creating custom plan:", error);
+    console.error('Error in createCustomPlan:', error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };

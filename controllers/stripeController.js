@@ -132,7 +132,6 @@ const activateSubscription = async (req, res) => {
         const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
         if (paymentIntent.status !== 'succeeded') {
-            console.log('Payment not completed. Payment intent status:', paymentIntent.status);
             //Create payment record
             await Payment.create({
                 user_id: userId,
@@ -149,7 +148,6 @@ const activateSubscription = async (req, res) => {
 
         // Verify the payment intent belongs to this user
         if (paymentIntent.metadata.userId !== userId) {
-            console.log('Unauthorized access to payment intent. Payment intent user id:', paymentIntent.metadata.userId);
             //Create payment record
             await Payment.create({
                 user_id: userId,
@@ -168,7 +166,6 @@ const activateSubscription = async (req, res) => {
         const plan = await SubscriptionPlan.findById(planId);
 
         if (!plan) {
-            console.log('Plan not found. Payment intent plan id:', paymentIntent.metadata.planId);
             //Create payment record
             await Payment.create({
                 user_id: userId,
@@ -185,7 +182,6 @@ const activateSubscription = async (req, res) => {
 
         // Validate metadata and amount against DB pricing
         if (paymentIntent.metadata.planId !== planId || paymentIntent.metadata.billingCycle !== billingCycle) {
-            console.log('Payment intent metadata mismatch. Payment intent plan id:', paymentIntent.metadata.planId);
             //Create payment record
             await Payment.create({
                 user_id: userId,
@@ -202,7 +198,6 @@ const activateSubscription = async (req, res) => {
 
         const expectedAmountCents = Math.round((billingCycle === STRIPE_CONFIG.BILLING_CYCLES.YEARLY ? plan.yearlyPrice : plan.monthlyPrice) * 100);
         if (paymentIntent.amount !== expectedAmountCents) {
-            console.log('Payment amount does not match plan pricing. Payment intent amount:', paymentIntent.amount);
             //Create payment record
             await Payment.create({
                 user_id: userId,

@@ -23,7 +23,6 @@ const storage = new GridFsStorage({
         return new Promise((resolve, reject) => {
             crypto.randomBytes(16, (err, buf) => {
                 if (err) return reject(err);
-                // const filename = buf.toString("hex") + path.extname(file.originalname);
                 resolve({
                     filename: file.originalname,
                     bucketName: "uploads",
@@ -49,14 +48,6 @@ async function sendEmail(email, password) {
             }
         });
 
-        //   transporter.verify((error, success) => {
-        //       if (error) {
-        //         console.error("SMTP connection error:", error);
-        //       } else {
-        //         //console.log("SMTP server is ready to take messages");
-        //       }
-        //     });
-
         const mailOptions = {
             from: process.env.EMAIL,
             to: email,
@@ -66,10 +57,8 @@ async function sendEmail(email, password) {
 
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
-                //console.log(error);
                 reject(error);
             } else {
-                //console.log("Email sent: " + info.response);
                 resolve(info);
             }
         });
@@ -117,12 +106,10 @@ function generateStrongPassword(length = randomInt(8, 12)) {
 
     if (length < 8) throw new Error("Password length must be at least 8 characters");
 
-    // Ensure one uppercase and one special character
     let password = '';
     password += uppercase[randomInt(0, uppercase.length)];
     password += special[randomInt(0, special.length)];
 
-    // Fill the rest of the password
     const remainingLength = length - 2;
     const bytes = crypto.randomBytes(remainingLength);
 
@@ -130,14 +117,12 @@ function generateStrongPassword(length = randomInt(8, 12)) {
         password += allChars[bytes[i] % allChars.length];
     }
 
-    // Shuffle the password so required chars are not always at the beginning
     return password
         .split('')
         .sort(() => 0.5 - Math.random())
         .join('');
 }
 
-//Helper function to get file buffer from GridFS
 async function getFileBufferFromGridFS(fileId) {
     const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
         bucketName: "uploads"
@@ -174,15 +159,6 @@ exports.getProfile = async (req, res) => {
             const proposal = deadline.proposalId ? await Proposal.findById(deadline.proposalId).lean() : null;
             const grantProposal = deadline.grantId ? await GrantProposal.findById(deadline.grantId).lean() : null;
             const status = proposal?.status || grantProposal?.status || "Not Submitted";
-
-            if (proposal || grantProposal) {
-                console.log("Proposal || Grant Proposal:", proposal || grantProposal);
-                console.log("Status !== Not Submitted:", status !== "Not Submitted");
-            }
-
-            if (status !== "Not Submitted") {
-                console.log("Status !== Not Submitted:", status);
-            }
 
             if ((proposal || grantProposal) && status !== "Not Submitted") {
                 return {
@@ -221,7 +197,6 @@ exports.getProfile = async (req, res) => {
             activities: []
         };
         const Proposals = await Proposal.find({ companyMail: companyProfile.email }).lean();
-        //Remove initialProposal and generatedProposal from the proposals
         const Proposals_1 = Proposals.map(proposal => {
             const { initialProposal, generatedProposal, ...rest } = proposal;
             return rest;
@@ -365,15 +340,10 @@ exports.uploadLogo = [
                 return res.status(404).json({ message: "User not found" });
             }
 
-            //console.log(user.role);
-            //console.log(req.file);
-
             if (!req.file) {
                 return res.status(400).json({ message: "No file uploaded" });
             }
-            // Construct the file URL (assuming a /file/:id route exists for serving GridFS files)
             const logoUrl = `${req.file.id}`;
-            // Update the company profile with the new logo URL
             if (user.role === "company") {
                 await CompanyProfile.findOneAndUpdate(
                     { userId: req.user._id },
@@ -411,8 +381,6 @@ exports.updateCompanyProfile = [
             await user.save();
 
             let parsedServices = [];
-            //console.log(services);
-            //console.log(typeof services);
             if (typeof services === "string") {
                 try {
                     parsedServices = JSON.parse(services);
@@ -573,7 +541,6 @@ exports.addEmployee = async (req, res) => {
                 employeeId: new mongoose.Types.ObjectId(),
             };
             await addEmployeeToCompanyProfile(req, employeeProfile);
-            //console.log("Employee added to company profile");
         } else {
             const subscription = await Subscription.findOne({ user_id: req.user._id });
             const companyProfile = await CompanyProfile.findOne({ userId: req.user._id });
@@ -596,22 +563,16 @@ exports.addEmployee = async (req, res) => {
             }
             const user_1 = await User.findOne({ email });
             if (!user_1) {
-                //console.log("User not found");
                 const password = generateStrongPassword();
-                //console.log("Password generated: ", password);
                 const hashedPassword = await bcrypt.hash(password, 10);
                 const user_2 = await User.create({ fullName: name, email, mobile: phone, password: hashedPassword, role: "employee" });
-                //console.log("User created");
                 const employeeProfile = new EmployeeProfile({ userId: user_2._id, name, email, phone, about: shortDesc, highestQualification, skills, jobTitle, accessLevel, companyMail: user.email });
                 await employeeProfile.save();
                 await sendEmail(email, password);
-                //console.log("Employee profile created");
                 await addEmployeeToCompanyProfile(req, employeeProfile);
             } else {
-                //console.log("User found");
                 const employeeProfile = await EmployeeProfile.findOne({ userId: user_1._id });
                 if (employeeProfile) {
-                    //console.log("Employee profile found");
                     employeeProfile.name = name;
                     employeeProfile.email = email;
                     employeeProfile.phone = phone;
@@ -622,13 +583,10 @@ exports.addEmployee = async (req, res) => {
                     employeeProfile.accessLevel = accessLevel;
                     employeeProfile.companyMail = user.email;
                     await employeeProfile.save();
-                    //console.log("Employee profile updated");
                     await addEmployeeToCompanyProfile(req, employeeProfile);
                 } else {
-                    //console.log("Employee profile not found");
                     const employeeProfile = new EmployeeProfile({ userId: user_1._id, name, email, phone, about: shortDesc, highestQualification, skills, jobTitle, accessLevel, companyMail: user.email });
                     await employeeProfile.save();
-                    //console.log("Employee profile created");
                     await addEmployeeToCompanyProfile(req, employeeProfile);
                 }
             }
@@ -692,10 +650,8 @@ exports.addCaseStudy = [
                 return res.status(400).json({ message: "No file uploaded" });
             }
 
-            // Construct the file URL for the uploaded case study file
             const fileUrl = `${process.env.BACKEND_URL || "http://localhost:5000"}/profile/getCaseStudy/${req.file.id}`;
 
-            //console.log("Adding case study");
             const companyProfile_1 = await CompanyProfile.findOneAndUpdate(
                 { userId: req.user._id },
                 {
@@ -710,10 +666,8 @@ exports.addCaseStudy = [
                 { new: true }
             );
             await companyProfile_1.save();
-            //console.log("Case study added successfully");
             res.status(201).json({ message: "Case study added successfully" });
         } catch (error) {
-            //console.log(error);
             res.status(500).json({ message: error.message });
         }
     }
@@ -753,23 +707,15 @@ exports.addDocument = [
                 return res.status(400).json({ message: "No file uploaded" });
             }
 
-            // Construct the file URL for the uploaded document
             const fileUrl = `${process.env.BACKEND_URL || "http://localhost:5000"}/profile/getDocument/${req.file.id}`;
 
-            //Extract buffer from GridFS
             const buffer = await getFileBufferFromGridFS(req.file.id);
-            // console.log("Buffer:", buffer);
 
-            // console.log("Summarizing document");
 
             let documentSummary = null;
             try {
-                // console.log("Try summarizePdfBuffer with buffer");
                 documentSummary = await summarizePdfBuffer(buffer);
-                // console.log("Summary:\n", documentSummary);
             } catch (error) {
-                // console.log("Error summarizing document:", error);
-                // Continue without summary if summarization fails
             }
 
             const companyProfile = await CompanyProfile.findOneAndUpdate(
@@ -796,7 +742,6 @@ exports.addDocument = [
 
             res.status(201).json({ message: "Document added successfully" });
         } catch (error) {
-            //console.log(error);
             res.status(500).json({ message: error.message });
         }
     }
@@ -999,7 +944,6 @@ exports.deleteEmployee = async (req, res) => {
 
         await companyProfile.save();
 
-        //Check if any proposal or grant proposal's current editor is assigned to this employee and set current editor to Company
         const proposals = await Proposal.find({ currentEditor: userId });
 
         const grantProposals = await GrantProposal.find({ currentEditor: userId });
@@ -1054,7 +998,6 @@ exports.getPaymentById = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Find payment by ID
         const payment = await Payment.findOne({
             user_id: id
         });
@@ -1063,7 +1006,6 @@ exports.getPaymentById = async (req, res) => {
         }
 
 
-        // Fetch subscription (if available)
         let planName = "Unknown Plan";
         if (payment.subscription_id) {
             const subscription = await Subscription.findById(
@@ -1075,7 +1017,6 @@ exports.getPaymentById = async (req, res) => {
             }
         }
 
-        // Attach company and plan to payment
         const paymentWithDetails = {
             ...payment.toObject(),
             planName

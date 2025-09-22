@@ -113,26 +113,20 @@ const formatFileSize = (bytes) => {
 
 const getDeadline = (deadline) => {
   let date;
-  // console.log("Calculating deadline");
 
   try {
     if (deadline === "") {
       date = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-      // console.log("Deadline is empty, setting to 30 days from now:", date);
     } else {
       date = new Date(deadline);
       if (isNaN(date.getTime())) {
-        // console.warn("Invalid date input:", deadline);
         date = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-        // console.log("Setting to 30 days from now:", date);
       } else {
-        // console.log("Valid deadline provided:", date);
       }
     }
   } catch (err) {
     console.error('Error in /getDeadline:', err);
     date = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-    // console.log("Error, setting to 30 days from now:", date);
   }
 
   return date;
@@ -922,10 +916,6 @@ exports.handleFileUploadAndSendForRFPExtraction = [
         }
       }
 
-      ////console.log("API Response: ", apiResponse);
-
-      ////console.log("API Response Data: ", apiResponse.data);
-
       // Extract RFP data from API response
       let rfp = null;
       if (apiResponse.data && apiResponse.data.result && typeof apiResponse.data.result === 'object') {
@@ -936,7 +926,6 @@ exports.handleFileUploadAndSendForRFPExtraction = [
 
           if (structuredData && structuredData.structured_fields) {
             const fields = structuredData.structured_fields;
-            ////console.log("Fields: ", fields);
 
             rfp = {
               title: fields['RFP Title'] || req.file.originalname.replace('.pdf', "").replace('.txt', ""),
@@ -1166,10 +1155,6 @@ exports.handleFileUploadAndSendForGrantExtraction = [
         }
       }
 
-      ////console.log("API Response: ", apiResponse);
-
-      ////console.log("API Response Data: ", apiResponse.data);
-
       // Extract Grant data from API response
       let grant = null;
       if (apiResponse.data && apiResponse.data.result && typeof apiResponse.data.result === 'object') {
@@ -1180,7 +1165,6 @@ exports.handleFileUploadAndSendForGrantExtraction = [
 
           if (structuredData && structuredData.structured_fields) {
             const fields = structuredData.structured_fields;
-            ////console.log("Fields: ", fields);
 
             grant = fields;
           }
@@ -1219,14 +1203,6 @@ exports.handleFileUploadAndSendForGrantExtraction = [
 
       const newGrant = await Grant.create(grant);
 
-      // Clean up: Delete the uploaded file from GridFS after processing
-      // try {
-      //   await bucket.delete(req.file.id);
-      // } catch (deleteError) {
-      //   // Log error but don't fail the request since RFP was already saved
-      //   console.error('Failed to delete uploaded file from GridFS:', deleteError);
-      // }
-
       res.status(200).json({
         message: 'Grant extracted and saved successfully',
         grant: newGrant,
@@ -1238,19 +1214,6 @@ exports.handleFileUploadAndSendForGrantExtraction = [
       });
 
     } catch (err) {
-      // Clean up: Delete the uploaded file from GridFS even if there's an error
-      // if (req.file) {
-      //   try {
-      //     const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-      //       bucketName: 'uploads'
-      //     });
-      //     await bucket.delete(req.file.id);
-      //   } catch (deleteError) {
-      //     console.error('Failed to delete uploaded file from GridFS after error:', deleteError);
-      //   }
-      // }
-
-      // Handle specific error types
       if (err.response?.status === 422) {
         return res.status(422).json({
           error: 'File format not supported or invalid content',
@@ -1295,7 +1258,6 @@ exports.saveGrant = async (req, res) => {
     if (!grant) {
       return res.status(404).json({ message: "Grant not found" });
     }
-    //console.log("Grant: ", grant);
     const new_SavedGrant = new SavedGrant({
       grantId: grant._id,
       userEmail: userEmail,
@@ -1494,17 +1456,13 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
     };
 
     // Check if there is any proposal in draft with the same grantId
-    // console.log("Checking if there is any proposal in draft with the same grantId");
     const draftProposal = await DraftGrant.findOne({ grantId: grant._id, userEmail: userEmail });
     if (draftProposal) {
       return res.status(200).json({ message: 'A proposal with the same Grant ID already exists in draft. Please edit the draft proposal instead of generating a new one.' });
     }
-    // console.log("No proposal found in draft with the same grantId");
 
     // Check if there is any proposal in proposal tracker with the same grantId
-    // console.log("Checking if there is any proposal in proposal tracker with the same grantId");
     const proposalTracker = await ProposalTracker.findOne({ grantId: grant._id, companyMail: userEmail });
-    // console.log("Proposal tracker: ", proposalTracker);
     if (proposalTracker) {
       if (proposalTracker.status === "success") {
         const new_prop = await GrantProposal.findOne({ _id: proposalTracker.proposalId, companyMail: userEmail });
@@ -1619,21 +1577,16 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
         }
       }
     }
-    // console.log("No proposal found in proposal tracker with the same grantId");
 
-    // console.log("Checking if subscription exists");
     const subscription = await Subscription.findOne({ user_id: userId });
     if (!subscription || subscription.end_date < new Date()) {
       return res.status(404).json({ error: 'Subscription not found or expired. Please upgrade your subscription to generate more proposals.' });
     }
-    // console.log("Subscription exists");
 
-    // console.log("Checking if current grants are less than max grants");
     // const currentGrants = await GrantProposal.find({ companyMail: userEmail, createdAt: { $gte: subscription.start_date, $lte: subscription.end_date } }).countDocuments();
     if (subscription.max_grant_proposal_generations <= subscription.current_grant_proposal_generations) {
       return res.status(400).json({ error: 'You have reached the maximum number of grant proposals. Please upgrade your subscription to generate more proposals.' });
     }
-    // console.log("Current grants are less than max grants");
 
     const data = {
       user: userData,
@@ -1641,11 +1594,9 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       project_inputs: formData,
     };
 
-    // console.log("Sending data to mlPipeline");
     const res_1 = await axios.post(`${process.env.PROPOSAL_PIPELINE_URL}/new_grant_proposal_generation`, data);
     const res_data = res_1.data;
 
-    // console.log("Data sent to mlPipeline");
 
     const new_tracker = new ProposalTracker({
       grantId: grant._id,
@@ -1656,7 +1607,6 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       grantProposalId: null,
     });
     await new_tracker.save();
-    // console.log("Proposal tracker saved");
     return res.status(200).json({ message: 'Grant Proposal Generation is in Progress. Please visit again after some time.' });
 
   } catch (err) {
