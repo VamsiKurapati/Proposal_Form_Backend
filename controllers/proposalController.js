@@ -357,60 +357,6 @@ exports.generatePDF = async (req, res) => {
 };
 
 
-// Service to delete expired proposals and their associated files from GridFS
-
-//CRON Service
-exports.deleteExpiredProposals = async () => {
-
-  try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Set to start of today
-
-    // Find all proposals where restore_by is less than today and isDeleted is true
-    const expiredProposals = await Proposal.find({
-      isDeleted: true,
-      $and: [
-        { restoreBy: { $lt: today } },
-        { restoreBy: { $ne: null } }
-      ]
-    });
-
-    if (expiredProposals.length === 0) {
-      return;
-    }
-
-
-    // Delete each expired proposal and its associated files
-    for (const proposal of expiredProposals) {
-      try {
-        // Delete associated files from GridFS
-        if (proposal.uploadedDocuments && proposal.uploadedDocuments.length > 0) {
-          const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-            bucketName: 'uploads',
-          });
-
-          for (const file of proposal.uploadedDocuments) {
-            try {
-              await bucket.delete(new mongoose.Types.ObjectId(file.fileId));
-            } catch (err) {
-              console.error(`Failed to delete file ${file.fileId}:`, err.message);
-            }
-          }
-        }
-
-        // Delete the proposal from database
-        await Proposal.findByIdAndDelete(proposal._id);
-
-      } catch (err) {
-        console.error(`Failed to delete proposal ${proposal._id}:`, err.message);
-      }
-    }
-  } catch (error) {
-    console.error('Error in deleteExpiredProposals service:', error);
-  }
-};
-
-
 exports.autoSaveProposal = async (req, res) => {
   try {
     const { proposalId, jsonData, isCompressed } = req.body;

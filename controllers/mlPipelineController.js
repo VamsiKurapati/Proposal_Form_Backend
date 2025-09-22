@@ -1741,14 +1741,3 @@ exports.getGrantProposalStatus = async (req, res) => {
     return res.status(500).json({ error: 'Failed to get grant proposal status' });
   }
 };
-
-exports.triggerGrant = async () => {
-  try {
-    const grants = await axios.get(`${process.env.PIPELINE_URL}/grants/trigger`);
-    const grant_data = await Grant.insertMany(grants);
-    return res.status(200).json({ message: "Grants triggered successfully", grant_data: grant_data });
-  } catch (err) {
-    console.error('Error in /triggerGrant:', err);
-    return res.status(500).json({ error: 'Failed to trigger grants' });
-  }
-};
