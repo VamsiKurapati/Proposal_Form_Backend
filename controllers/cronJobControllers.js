@@ -12,26 +12,6 @@ const ProposalTracker = require('../models/ProposalTracker');
 const GrantProposal = require('../models/GrantProposal');
 const DraftGrant = require('../models/DraftGrant');
 
-async function UnzipRFP(response) {
-
-    // Get the binary gzipped data
-
-    const arrayBuffer = response.arrayBuffer();
-
-    const uint8Array = new Uint8Array(arrayBuffer);
-
-    // Decompress using pako
-
-    const decompressed = pako.ungzip(uint8Array, { to: 'string' });
-
-    // Parse the decompressed string as JSON
-
-    const jsonData = JSON.parse(decompressed);
-
-    console.log("Unzipped JSON Data:", jsonData);
-
-    return jsonData;
-};
 
 //Trigger Grant Cron Job to fetch Grants from the Grant API and save them to the database
 exports.fetchGrants = async () => {
@@ -238,7 +218,17 @@ exports.fetchRFPs = async () => {
         let decompressedData;
         try {
             // Try to decompress the data first
-            decompressedData = UnzipRFP(response);
+            const arrayBuffer = response.arrayBuffer();
+
+            const uint8Array = new Uint8Array(arrayBuffer);
+
+            // Decompress using pako
+            const decompressed = pako.ungzip(uint8Array, { to: 'string' });
+
+            // Parse the decompressed string as JSON
+            const jsonData = JSON.parse(decompressed);
+
+            decompressedData = jsonData;
         } catch (error) {
             // If decompression fails, assume the data is already uncompressed
             console.log('Data is not compressed, using as-is');
