@@ -230,14 +230,13 @@ exports.fetchRFPs = async () => {
 
             decompressedData = jsonData;
         } catch (error) {
-            // If decompression fails, assume the data is already uncompressed
-            console.log('Data is not compressed, using as-is');
-            decompressedData = response.data;
+            // If decompression fails, throw an error
+            throw new Error(error.message);
         }
 
         console.log(decompressedData);
 
-        const rfp_data = JSON.parse(decompressedData).rfp_data;
+        const rfp_data = decompressedData.rfp_data;
 
         //Check if the RFPs are already in the database and if not then save them else update them
         await Promise.all(rfp_data.map(async (rfp) => {
