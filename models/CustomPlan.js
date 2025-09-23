@@ -18,7 +18,7 @@ const customPlanSchema = new mongoose.Schema({
 
 // Database indexes for performance optimization
 customPlanSchema.index({ userId: 1 });
-customPlanSchema.index({ email: 1 });
+// Note: email index is automatically created by unique: true
 customPlanSchema.index({ status: 1 });
 customPlanSchema.index({ createdAt: -1 });
 // Compound index for common query patterns

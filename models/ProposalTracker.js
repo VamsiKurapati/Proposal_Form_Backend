@@ -25,7 +25,6 @@ ProposalTrackerSchema.index({ grantProposalId: 1, createdAt: -1 });
 ProposalTrackerSchema.index({ companyMail: 1, createdAt: -1 });
 ProposalTrackerSchema.index({ status: 1, createdAt: -1 });
 ProposalTrackerSchema.index({ trackingId: 1, createdAt: -1 });
-ProposalTrackerSchema.index({ createdAt: -1 });
 // Compound index for common query patterns
 ProposalTrackerSchema.index({ rfpId: 1, proposalId: 1, grantId: 1, grantProposalId: 1, companyMail: 1, status: 1, trackingId: 1, createdAt: -1 });
 ProposalTrackerSchema.index({ proposalId: 1, grantId: 1, grantProposalId: 1, companyMail: 1, status: 1, trackingId: 1, createdAt: -1 });
@@ -33,6 +32,5 @@ ProposalTrackerSchema.index({ grantId: 1, grantProposalId: 1, companyMail: 1, st
 ProposalTrackerSchema.index({ grantProposalId: 1, companyMail: 1, status: 1, trackingId: 1, createdAt: -1 });
 ProposalTrackerSchema.index({ companyMail: 1, status: 1, trackingId: 1, createdAt: -1 });
 ProposalTrackerSchema.index({ status: 1, trackingId: 1, createdAt: -1 });
-ProposalTrackerSchema.index({ trackingId: 1, createdAt: -1 });
 
 module.exports = mongoose.model('ProposalTracker', ProposalTrackerSchema);

@@ -99,7 +99,7 @@ const companyProfileSchema = new mongoose.Schema({
 
 // Database indexes for performance optimization
 companyProfileSchema.index({ userId: 1 }); // Already exists as ref, but explicit for clarity
-companyProfileSchema.index({ email: 1 }); // Already exists as unique, but explicit for clarity
+// Note: email index is automatically created by unique: true
 companyProfileSchema.index({ industry: 1 });
 companyProfileSchema.index({ location: 1 });
 companyProfileSchema.index({ status: 1 });

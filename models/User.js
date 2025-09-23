@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Database indexes for performance optimization
-userSchema.index({ email: 1 }); // Already exists as unique, but explicit for clarity
+// Note: email index is automatically created by unique: true
 userSchema.index({ role: 1 });
 userSchema.index({ subscription_status: 1 });
 userSchema.index({ stripeCustomerId: 1 });
