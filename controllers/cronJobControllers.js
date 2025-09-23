@@ -17,6 +17,11 @@ const DraftGrant = require('../models/DraftGrant');
 exports.fetchGrants = async () => {
     try {
         const grants = await axios.get(`${process.env.NEW_PIPELINE_URL}/grants/getgrants`);
+
+        console.log(grants);
+
+        console.log("Grants fetched successfully", grants.data);
+
         await Promise.all(grants.map(async (grant) => {
             //check if the grant is already in the database
             const existingGrant = await Grant.findOne({ OPPORTUNITY_NUMBER: grant.OPPORTUNITY_NUMBER });
@@ -237,7 +242,7 @@ exports.fetchRFPs = async () => {
 
         console.log(decompressedData);
 
-        const rfp_data = decompressedData.rfp_data;
+        const rfp_data = decompressedData;
 
         //Check if the RFPs are already in the database and if not then save them else update them
         await Promise.all(rfp_data.map(async (rfp) => {
