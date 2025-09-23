@@ -15,7 +15,7 @@ const DraftGrant = require('../models/DraftGrant');
 //Trigger Grant Cron Job to fetch Grants from the Grant API and save them to the database
 exports.fetchGrants = async () => {
     try {
-        const grants = await axios.get(`${process.env.PROPOSAL_PIPELINE_URL}/grants/getgrants`);
+        const grants = await axios.get(`${process.env.NEW_PIPELINE_URL}/grants/getgrants`);
         await Promise.all(grants.map(async (grant) => {
             //check if the grant is already in the database
             const existingGrant = await Grant.findOne({ OPPORTUNITY_NUMBER: grant.OPPORTUNITY_NUMBER });
@@ -211,7 +211,7 @@ exports.deleteExpiredGrantProposals = async () => {
 exports.fetchRFPs = async () => {
     try {
         //Fetch RFPs from the RFP API and save them to the database
-        const response = await axios.get(`${process.env.PROPOSAL_PIPELINE_URL}/rfp/getRFPs`);
+        const response = await axios.get(`${process.env.NEW_PIPELINE_URL}/rfp/getRFPs`);
 
         //We will receive compressed data, so we need to decompress it
         let decompressedData;
