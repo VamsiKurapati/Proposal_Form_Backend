@@ -16,13 +16,11 @@ const DraftGrant = require('../models/DraftGrant');
 //Trigger Grant Cron Job to fetch Grants from the Grant API and save them to the database
 exports.fetchGrants = async () => {
     try {
-        const grants = await axios.get(`${process.env.NEW_PIPELINE_URL}/grants/getgrants`);
+        const grants = await axios.get(`${process.env.NEW_PIPELINE_URL}/grant/getgrants`);
 
-        console.log(grants);
+        const grants_data = grants.data;
 
-        console.log("Grants fetched successfully", grants.data);
-
-        await Promise.all(grants.map(async (grant) => {
+        await Promise.all(grants_data.map(async (grant) => {
             //check if the grant is already in the database
             const existingGrant = await Grant.findOne({ OPPORTUNITY_NUMBER: grant.OPPORTUNITY_NUMBER });
             if (existingGrant) {
@@ -224,8 +222,6 @@ exports.fetchRFPs = async () => {
         //We will receive compressed data, so we need to decompress it
         let decompressedData;
         try {
-            // Try to decompress the data first
-            // With responseType: 'arraybuffer', response.data is an ArrayBuffer
             const uint8Array = new Uint8Array(response.data);
 
             // Decompress using pako
@@ -239,8 +235,6 @@ exports.fetchRFPs = async () => {
             // If decompression fails, throw an error
             throw new Error(error.message);
         }
-
-        console.log(decompressedData);
 
         const rfp_data = decompressedData;
 
