@@ -4,6 +4,7 @@ const SubscriptionPlan = require('../models/SubscriptionPlan');
 const Notification = require('../models/Notification');
 const User = require('../models/User');
 const Payment = require('../models/Payments');
+const { sendEmail } = require('../utils/mailSender');
 
 // Stripe Configuration
 const STRIPE_CONFIG = {
@@ -291,6 +292,24 @@ const activateSubscription = async (req, res) => {
             created_at: new Date(),
         });
         await notification.save();
+
+        const subject = `Payment Successful – ${plan.name} Plan Activated`;
+        const body = `
+            Hi ${req.user.fullName}, <br /><br />
+            
+            Your payment of ${billingCycle === STRIPE_CONFIG.BILLING_CYCLES.YEARLY ? plan.yearlyPrice : plan.monthlyPrice} for the ${plan.name} plan has been successfully processed. Your subscription is now active. <br /><br />
+
+            Plan Details:
+            &nbsp;&nbsp;&nbsp;&nbsp;Plan: ${plan.name}<br />
+            &nbsp;&nbsp;&nbsp;&nbsp;Validity: ${startDate} to ${endDate}<br />
+
+            <a href="${process.env.FRONTEND_URL}/dashboard">Go to Dashboard</a> <br /><br />
+            
+            Best regards,<br />
+            The RFP & Grants Team
+        `;
+
+        await sendEmail(req.user.email, subject, body);
 
         res.status(200).json({
             success: true,

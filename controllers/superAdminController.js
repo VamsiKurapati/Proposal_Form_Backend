@@ -701,8 +701,17 @@ const handleEnterpriseCheckoutSessionCompleted = async (session) => {
       subject: 'Enterprise Plan Payment Successful',
       html: `
               <h2>Enterprise Plan Payment Successful</h2>
-              <p>Hello,</p>
+              <p>Hello ${user.fullName || ''},</p>
               <p>Your payment for the custom Enterprise Plan was successful.</p>
+              <p>Plan Details:</p>
+              <ul>
+                <li><strong>Plan:</strong> ${customPlan.planType}</li>
+                <li><strong>Price:</strong> $${customPlan.price}</li>
+                <li><strong>Max Editors:</strong> ${customPlan.maxEditors}</li>
+                <li><strong>Max Viewers:</strong> ${customPlan.maxViewers}</li>
+                <li><strong>Max RFP Proposal Generations:</strong> ${customPlan.maxRFPProposalGenerations}</li>
+                <li><strong>Max Grant Proposal Generations:</strong> ${customPlan.maxGrantProposalGenerations}</li>
+              </ul>
               <p>Thank you for your business!</p>
           `
     };
@@ -754,7 +763,7 @@ const handleEnterpriseCheckoutSessionFailed = async (session) => {
       subject: 'Enterprise Plan Payment Failed',
       html: `
               <h2>Enterprise Plan Payment Failed</h2>
-              <p>Hello,</p>
+              <p>Hello ${user.fullName || ''},</p>
               <p>Your payment for the custom Enterprise Plan failed.</p>
               <p>Please try again or contact support.</p>
           `
