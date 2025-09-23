@@ -16,6 +16,7 @@ const Subscription = require("../models/Subscription");
 const Payment = require("../models/Payments");
 const { summarizePdfBuffer } = require("../utils/documentSummarizer");
 const CalendarEvent = require("../models/CalendarEvents");
+const { sendEmail } = require("../utils/mailSender");
 
 const storage = new GridFsStorage({
     url: process.env.MONGO_URI,
@@ -35,7 +36,7 @@ const storage = new GridFsStorage({
 
 
 // Utility function to send email and await until mail is sent
-async function sendEmail(email, password) {
+async function sendEmail_1(email, password) {
     return new Promise((resolve, reject) => {
         const transporter = nodemailer.createTransport({
             host: "smtp.gmail.com",
@@ -567,7 +568,7 @@ exports.addEmployee = async (req, res) => {
                 const user_2 = await User.create({ fullName: name, email, mobile: phone, password: hashedPassword, role: "employee" });
                 const employeeProfile = new EmployeeProfile({ userId: user_2._id, name, email, phone, about: shortDesc, highestQualification, skills, jobTitle, accessLevel, companyMail: user.email });
                 await employeeProfile.save();
-                await sendEmail(email, password);
+                await sendEmail_1(email, password);
                 await addEmployeeToCompanyProfile(req, employeeProfile);
             } else {
                 const employeeProfile = await EmployeeProfile.findOne({ userId: user_1._id });
@@ -986,6 +987,19 @@ exports.changePassword = async (req, res) => {
         }
         user.password = await bcrypt.hash(newPassword, 10);
         await user.save();
+
+        const subject = "Password Changed";
+
+        const body = `
+            Hi ${user.fullName}, <br /><br />
+            Your account password has been successfully changed. If you didn’t make this change, please reset your password immediately. <br /><br />
+            <a href="${process.env.FRONTEND_URL}/reset-password">Reset Password</a><br /><br />
+            Best regards,<br />
+            The RFP & Grants Team
+        `;
+
+        await sendEmail(user.email, subject, body);
+
         res.status(201).json({ message: "Password changed successfully" });
     } catch (error) {
         res.status(500).json({ message: error.message });
