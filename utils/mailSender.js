@@ -25,8 +25,12 @@ exports.sendEmail = async (email, subject, body) => {
 
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
+                console.log("Error sending email to ", email);
+                console.log(error);
                 reject(error);
             } else {
+                console.log("Email sent to ", email);
+                console.log(info);
                 resolve(info);
             }
         });
