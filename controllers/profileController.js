@@ -36,7 +36,7 @@ const storage = new GridFsStorage({
 
 
 // Utility function to send email and await until mail is sent
-async function sendEmail_1(email, password) {
+async function sendEmail_1(email, password, companyName, name) {
     return new Promise((resolve, reject) => {
         const transporter = nodemailer.createTransport({
             host: "smtp.gmail.com",
@@ -52,8 +52,19 @@ async function sendEmail_1(email, password) {
         const mailOptions = {
             from: process.env.EMAIL,
             to: email,
-            subject: "Welcome to the team",
-            text: `Your password is: ${password}`
+            subject: `Welcome to ${companyName} on RFP & Grants`,
+            html: `
+                Hi ${name}, <br /><br />
+                
+                An account has been created for you in ${companyName}. Use the details below to log in:<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;Email: ${email}<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;Temporary Password: ${password}<br /><br />
+                
+                <a href="${process.env.FRONTEND_URL}/login">Login Now</a><br /><br />
+
+                Best regards,<br />
+                The RFP & Grants Team
+            `
         };
 
         transporter.sendMail(mailOptions, (error, info) => {
@@ -568,8 +579,8 @@ exports.addEmployee = async (req, res) => {
                 const user_2 = await User.create({ fullName: name, email, mobile: phone, password: hashedPassword, role: "employee" });
                 const employeeProfile = new EmployeeProfile({ userId: user_2._id, name, email, phone, about: shortDesc, highestQualification, skills, jobTitle, accessLevel, companyMail: user.email });
                 await employeeProfile.save();
-                await sendEmail_1(email, password);
                 await addEmployeeToCompanyProfile(req, employeeProfile);
+                await sendEmail_1(email, password, companyProfile.companyName, name);
             } else {
                 const employeeProfile = await EmployeeProfile.findOne({ userId: user_1._id });
                 if (employeeProfile) {
@@ -584,10 +595,26 @@ exports.addEmployee = async (req, res) => {
                     employeeProfile.companyMail = user.email;
                     await employeeProfile.save();
                     await addEmployeeToCompanyProfile(req, employeeProfile);
+                    const password = generateStrongPassword();
+                    const hashedPassword = await bcrypt.hash(password, 10);
+                    await User.findOneAndUpdate(
+                        { email: email },
+                        { password: hashedPassword },
+                        { new: true }
+                    );
+                    await sendEmail_1(email, password, companyProfile.companyName, name);
                 } else {
                     const employeeProfile = new EmployeeProfile({ userId: user_1._id, name, email, phone, about: shortDesc, highestQualification, skills, jobTitle, accessLevel, companyMail: user.email });
                     await employeeProfile.save();
                     await addEmployeeToCompanyProfile(req, employeeProfile);
+                    const password = generateStrongPassword();
+                    const hashedPassword = await bcrypt.hash(password, 10);
+                    await User.findOneAndUpdate(
+                        { email: email },
+                        { password: hashedPassword },
+                        { new: true }
+                    );
+                    await sendEmail_1(email, password, companyProfile.companyName, name);
                 }
             }
         }
