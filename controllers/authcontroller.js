@@ -161,7 +161,9 @@ exports.login = async (req, res) => {
         The RFP & Grants Team
       `;
 
+      console.log("Sending email to ", user.email);
       await sendEmail(user.email, subject, body);
+      console.log("Email sent to ", user.email);
 
       return res.status(200).json({ token, user: userWithoutPassword, subscription: subscriptionData });
     } else if (user.role === "employee") {
