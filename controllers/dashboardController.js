@@ -16,9 +16,9 @@ exports.getDashboardData = async (req, res) => {
         if (role === "company") {
             const companyProfile = await CompanyProfile.findOne({ userId: user._id });
 
-            const proposals = await Proposal.find({ companyMail: companyProfile.email }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 }).lean();
+            const proposals = await Proposal.find({ companyMail: companyProfile.email }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 });
 
-            const grantProposals = await GrantProposal.find({ companyMail: companyProfile.email }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 }).lean();
+            const grantProposals = await GrantProposal.find({ companyMail: companyProfile.email }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 });
 
             const totalProposals = proposals.length + grantProposals.length;
             const inProgressProposals = proposals.filter(proposal => proposal.status === "In Progress").length + grantProposals.filter(proposal => proposal.status === "In Progress").length;
@@ -103,11 +103,13 @@ exports.getDashboardData = async (req, res) => {
                 //Remove initial proposal and generated proposal from the proposals
                 proposals: {
                     proposals: notDeletedProposals.map(proposal => {
-                        const { initialProposal, generatedProposal, ...rest } = proposal;
+                        const proposalObj = proposal.toObject();
+                        const { initialProposal, generatedProposal, ...rest } = proposalObj;
                         return rest;
                     }),
                     grantProposals: notDeletedGrantProposals.map(proposal => {
-                        const { initialProposal, generatedProposal, ...rest } = proposal;
+                        const proposalObj = proposal.toObject();
+                        const { initialProposal, generatedProposal, ...rest } = proposalObj;
                         return rest;
                     }),
                 },
@@ -136,8 +138,8 @@ exports.getDashboardData = async (req, res) => {
             if (!companyProfile) {
                 return res.status(404).json({ message: "Company profile not found" });
             }
-            const proposals = await Proposal.find({ companyMail: companyProfile.email }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 }).lean();
-            const grantProposals = await GrantProposal.find({ companyMail: companyProfile.email }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 }).lean();
+            const proposals = await Proposal.find({ companyMail: companyProfile.email }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 });
+            const grantProposals = await GrantProposal.find({ companyMail: companyProfile.email }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 });
 
             const totalProposals = proposals.length + grantProposals.length;
             const inProgressProposals = proposals.filter(proposal => proposal.status === "In Progress").length + grantProposals.filter(proposal => proposal.status === "In Progress").length;
@@ -227,11 +229,13 @@ exports.getDashboardData = async (req, res) => {
                 wonProposals,
                 proposals: {
                     proposals: notDeletedProposals.map(proposal => {
-                        const { initialProposal, generatedProposal, ...rest } = proposal;
+                        const proposalObj = proposal.toObject();
+                        const { initialProposal, generatedProposal, ...rest } = proposalObj;
                         return rest;
                     }),
                     grantProposals: notDeletedGrantProposals.map(proposal => {
-                        const { initialProposal, generatedProposal, ...rest } = proposal;
+                        const proposalObj = proposal.toObject();
+                        const { initialProposal, generatedProposal, ...rest } = proposalObj;
                         return rest;
                     }),
                 },

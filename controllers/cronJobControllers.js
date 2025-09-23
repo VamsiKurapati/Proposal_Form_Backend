@@ -12,16 +12,75 @@ const GrantProposal = require('../models/GrantProposal');
 const DraftGrant = require('../models/DraftGrant');
 
 //Trigger Grant Cron Job to fetch Grants from the Grant API and save them to the database
-exports.triggerGrant = async () => {
+exports.fetchGrants = async () => {
     try {
-        const grants = await axios.get(`${process.env.PIPELINE_URL}/grants/trigger`);
-        const grant_data = await Promise.all(grants.map(async (grant) => {
-            return await Grant.create(grant);
+        const grants = await axios.get(`${process.env.PIPELINE_URL}/grants/getgrants`);
+        await Promise.all(grants.map(async (grant) => {
+            //check if the grant is already in the database
+            const existingGrant = await Grant.findOne({ OPPORTUNITY_NUMBER: grant.OPPORTUNITY_NUMBER });
+            if (existingGrant) {
+                await Grant.findByIdAndUpdate(existingGrant._id, {
+                    OPPORTUNITY_ID: grant.OPPORTUNITY_ID || existingGrant.OPPORTUNITY_ID,
+                    OPPORTUNITY_NUMBER_LINK: grant.OPPORTUNITY_NUMBER_LINK || existingGrant.OPPORTUNITY_NUMBER_LINK,
+                    OPPORTUNITY_TITLE: grant.OPPORTUNITY_TITLE || existingGrant.OPPORTUNITY_TITLE,
+                    AGENCY_CODE: grant.AGENCY_CODE || existingGrant.AGENCY_CODE,
+                    AGENCY_NAME: grant.AGENCY_NAME || existingGrant.AGENCY_NAME,
+                    CATEGORY_OF_FUNDING_ACTIVITY: grant.CATEGORY_OF_FUNDING_ACTIVITY || existingGrant.CATEGORY_OF_FUNDING_ACTIVITY,
+                    FUNDING_CATEGORY_EXPLANATION: grant.FUNDING_CATEGORY_EXPLANATION || existingGrant.FUNDING_CATEGORY_EXPLANATION,
+                    FUNDING_INSTRUMENT_TYPE: grant.FUNDING_INSTRUMENT_TYPE || existingGrant.FUNDING_INSTRUMENT_TYPE,
+                    ASSISTANCE_LISTINGS: grant.ASSISTANCE_LISTINGS || existingGrant.ASSISTANCE_LISTINGS,
+                    ESTIMATED_TOTAL_FUNDING: grant.ESTIMATED_TOTAL_FUNDING || existingGrant.ESTIMATED_TOTAL_FUNDING,
+                    EXPECTED_NUMBER_OF_AWARDS: grant.EXPECTED_NUMBER_OF_AWARDS || existingGrant.EXPECTED_NUMBER_OF_AWARDS,
+                    AWARD_CEILING: grant.AWARD_CEILING || existingGrant.AWARD_CEILING,
+                    AWARD_FLOOR: grant.AWARD_FLOOR || existingGrant.AWARD_FLOOR,
+                    COST_SHARING_MATCH_REQUIRMENT: grant.COST_SHARING_MATCH_REQUIRMENT || existingGrant.COST_SHARING_MATCH_REQUIRMENT,
+                    LINK_TO_ADDITIONAL_INFORMATION: grant.LINK_TO_ADDITIONAL_INFORMATION || existingGrant.LINK_TO_ADDITIONAL_INFORMATION,
+                    GRANTOR_CONTACT: grant.GRANTOR_CONTACT || existingGrant.GRANTOR_CONTACT,
+                    GRANTOR_CONTACT_PHONE: grant.GRANTOR_CONTACT_PHONE || existingGrant.GRANTOR_CONTACT_PHONE,
+                    GRANTOR_CONTACT_EMAIL: grant.GRANTOR_CONTACT_EMAIL || existingGrant.GRANTOR_CONTACT_EMAIL,
+                    ESTIMATED_POST_DATE: grant.ESTIMATED_POST_DATE || existingGrant.ESTIMATED_POST_DATE,
+                    ESTIMATED_APPLICATION_DUE_DATE: grant.ESTIMATED_APPLICATION_DUE_DATE || existingGrant.ESTIMATED_APPLICATION_DUE_DATE,
+                    POSTED_DATE: grant.POSTED_DATE || existingGrant.POSTED_DATE,
+                    CLOSE_DATE: grant.CLOSE_DATE || existingGrant.CLOSE_DATE,
+                    OPPORTUNITY_STATUS: grant.OPPORTUNITY_STATUS || existingGrant.OPPORTUNITY_STATUS,
+                    FUNDING_DESCRIPTION: grant.FUNDING_DESCRIPTION || existingGrant.FUNDING_DESCRIPTION,
+                    ELIGIBLE_APPLICANTS: grant.ELIGIBLE_APPLICANTS || existingGrant.ELIGIBLE_APPLICANTS,
+                });
+            } else {
+                await Grant.create({
+                    OPPORTUNITY_NUMBER: grant.OPPORTUNITY_NUMBER,
+                    OPPORTUNITY_ID: grant.OPPORTUNITY_ID,
+                    OPPORTUNITY_NUMBER_LINK: grant.OPPORTUNITY_NUMBER_LINK,
+                    OPPORTUNITY_TITLE: grant.OPPORTUNITY_TITLE,
+                    AGENCY_CODE: grant.AGENCY_CODE,
+                    AGENCY_NAME: grant.AGENCY_NAME,
+                    CATEGORY_OF_FUNDING_ACTIVITY: grant.CATEGORY_OF_FUNDING_ACTIVITY,
+                    FUNDING_CATEGORY_EXPLANATION: grant.FUNDING_CATEGORY_EXPLANATION,
+                    FUNDING_INSTRUMENT_TYPE: grant.FUNDING_INSTRUMENT_TYPE,
+                    ASSISTANCE_LISTINGS: grant.ASSISTANCE_LISTINGS,
+                    ESTIMATED_TOTAL_FUNDING: grant.ESTIMATED_TOTAL_FUNDING,
+                    EXPECTED_NUMBER_OF_AWARDS: grant.EXPECTED_NUMBER_OF_AWARDS,
+                    AWARD_CEILING: grant.AWARD_CEILING,
+                    AWARD_FLOOR: grant.AWARD_FLOOR,
+                    COST_SHARING_MATCH_REQUIRMENT: grant.COST_SHARING_MATCH_REQUIRMENT,
+                    LINK_TO_ADDITIONAL_INFORMATION: grant.LINK_TO_ADDITIONAL_INFORMATION,
+                    GRANTOR_CONTACT: grant.GRANTOR_CONTACT,
+                    GRANTOR_CONTACT_PHONE: grant.GRANTOR_CONTACT_PHONE,
+                    GRANTOR_CONTACT_EMAIL: grant.GRANTOR_CONTACT_EMAIL,
+                    ESTIMATED_POST_DATE: grant.ESTIMATED_POST_DATE,
+                    ESTIMATED_APPLICATION_DUE_DATE: grant.ESTIMATED_APPLICATION_DUE_DATE,
+                    POSTED_DATE: grant.POSTED_DATE,
+                    CLOSE_DATE: grant.CLOSE_DATE,
+                    OPPORTUNITY_STATUS: grant.OPPORTUNITY_STATUS || "Posted",
+                    FUNDING_DESCRIPTION: grant.FUNDING_DESCRIPTION,
+                    ELIGIBLE_APPLICANTS: grant.ELIGIBLE_APPLICANTS,
+                });
+            }
         }));
-        return { message: "Grants triggered successfully", grant_data: grant_data };
+        return { message: "Grants fetched successfully" };
     } catch (err) {
-        console.error('Error in /triggerGrant:', err);
-        return { error: 'Failed to trigger grants' };
+        console.error('Error in /fetchGrants:', err);
+        return { error: 'Failed to trigger grants', error: err.message };
     }
 };
 
