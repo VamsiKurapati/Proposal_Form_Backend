@@ -161,9 +161,7 @@ exports.login = async (req, res) => {
         The RFP & Grants Team
       `;
 
-      console.log("Sending email to ", user.email);
       await sendEmail(user.email, subject, body);
-      console.log("Email sent to ", user.email);
 
       return res.status(200).json({ token, user: userWithoutPassword, subscription: subscriptionData });
     } else if (user.role === "employee") {
@@ -194,6 +192,19 @@ exports.login = async (req, res) => {
       } else {
         subscriptionData = subscription[0];
       }
+
+      const subject = "New Sign-In Alert";
+
+      const body = `
+        Hi ${user.fullName}, <br /><br />
+        We noticed a sign-in to your account from a new device or location. If this was you, no action is required. Otherwise, please secure your account immediately. <br /><br />
+        <a href="${process.env.FRONTEND_URL}/reset-password">Secure My Account/Change password</a><br /><br />
+        Best regards,<br />
+        The RFP & Grants Team
+      `;
+
+      await sendEmail(user.email, subject, body);
+
       return res.status(200).json({ token, user: data, subscription: subscriptionData });
     } else {
       return res.status(400).json({ message: "Invalid user role" });
