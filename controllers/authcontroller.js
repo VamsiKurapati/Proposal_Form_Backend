@@ -35,6 +35,25 @@ const multiUpload = upload.fields([
   { name: "proposals", maxCount: 10 },
 ]);
 
+const passwordValidator = (password) => {
+  // At least 8 characters
+  if (password.length < 8) return false;
+
+  // Regular expressions
+  const uppercase = /[A-Z]/;
+  const lowercase = /[a-z]/;
+  const digits = /[0-9]/;
+  const special = /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/;
+
+  if (!uppercase.test(password)) return false;
+  if (!lowercase.test(password)) return false;
+  if (!digits.test(password)) return false;
+  if (!special.test(password)) return false;
+
+  return true;
+};
+
+
 exports.signupWithProfile = [
   multiUpload,
   async (req, res) => {
@@ -42,6 +61,8 @@ exports.signupWithProfile = [
       const { email, fullName, password, phone, role } = req.body;
       const existing = await User.findOne({ email });
       if (existing) return res.status(400).json({ message: "Email already registered" });
+
+      if (!passwordValidator(password)) return res.status(400).json({ message: "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character" });
 
       const hashedPassword = await bcrypt.hash(password, 10);
       const user = new User({ email, fullName, password: hashedPassword, mobile: phone, role });
@@ -230,6 +251,10 @@ exports.resetPassword = async (req, res) => {
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!passwordValidator(newPassword)) {
+      return res.status(400).json({ message: "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character" });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);

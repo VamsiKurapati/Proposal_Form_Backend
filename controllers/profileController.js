@@ -67,23 +67,22 @@ async function sendEmail(email, password) {
 
 
 const passwordValidator = (password) => {
-    const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const lowercase = 'abcdefghijklmnopqrstuvwxyz';
-    const digits = '0123456789';
-    const special = '!@#$%^&*()_+-=[]{}|;:,.<>?';
-
+    // At least 8 characters
     if (password.length < 8) return false;
 
+    // Regular expressions
+    const uppercase = /[A-Z]/;
+    const lowercase = /[a-z]/;
+    const digits = /[0-9]/;
+    const special = /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/;
+
     if (!uppercase.test(password)) return false;
-
     if (!lowercase.test(password)) return false;
-
     if (!digits.test(password)) return false;
-
     if (!special.test(password)) return false;
 
     return true;
-}
+};
 
 
 const upload = multer({ storage });
