@@ -376,7 +376,7 @@ exports.updateCompanyProfile = [
             if (user.role !== "company") {
                 return res.status(403).json({ message: "You are not authorized to update this profile" });
             }
-            user.email = email;
+            // user.email = email;
             user.mobile = phone;
             await user.save();
 
@@ -431,7 +431,7 @@ exports.updateCompanyProfile = [
 
             const companyProfile = await CompanyProfile.findOneAndUpdate(
                 { userId: req.user._id },
-                { email, companyName, adminName, industry, location, linkedIn, website, services: parsedServices, establishedYear, numberOfEmployees, bio, awards: parsedAwards, clients: parsedClients, preferredIndustries: parsedPreferredIndustries },
+                { companyName, adminName, industry, location, linkedIn, website, services: parsedServices, establishedYear, numberOfEmployees, bio, awards: parsedAwards, clients: parsedClients, preferredIndustries: parsedPreferredIndustries },
                 { new: true }
             );
             res.status(200).json({ message: "Company profile updated successfully" });
@@ -454,14 +454,14 @@ exports.updateEmployeeProfile = [
                 return res.status(403).json({ message: "You are not authorized to update this profile" });
             }
 
-            user.email = email;
+            // user.email = email;
             user.mobile = phone;
             user.fullName = name;
             await user.save();
 
             const employeeProfile = await EmployeeProfile.findOneAndUpdate(
                 { userId: req.user._id },
-                { name, email, location, phone, highestQualification, skills },
+                { name, location, phone, highestQualification, skills },
                 { new: true }
             );
 
@@ -470,7 +470,7 @@ exports.updateEmployeeProfile = [
                 const employeeIndex = companyProfile.employees.findIndex(emp => emp.email === email);
                 if (employeeIndex !== -1) {
                     companyProfile.employees[employeeIndex].name = name;
-                    companyProfile.employees[employeeIndex].email = email;
+                    // companyProfile.employees[employeeIndex].email = email;
                     companyProfile.employees[employeeIndex].phone = phone;
                     companyProfile.employees[employeeIndex].highestQualification = highestQualification;
                     companyProfile.employees[employeeIndex].skills = skills;
