@@ -212,15 +212,16 @@ exports.deleteExpiredGrantProposals = async () => {
 exports.fetchRFPs = async () => {
     try {
         //Fetch RFPs from the RFP API and save them to the database
-        const response = await axios.get(`${process.env.NEW_PIPELINE_URL}/rfp/getRFPs`);
+        const response = await axios.get(`${process.env.NEW_PIPELINE_URL}/rfp/getRFPs`, {
+            responseType: 'arraybuffer' // This ensures we get binary data for decompression
+        });
 
         //We will receive compressed data, so we need to decompress it
         let decompressedData;
         try {
             // Try to decompress the data first
-            const arrayBuffer = response.arrayBuffer();
-
-            const uint8Array = new Uint8Array(arrayBuffer);
+            // With responseType: 'arraybuffer', response.data is an ArrayBuffer
+            const uint8Array = new Uint8Array(response.data);
 
             // Decompress using pako
             const decompressed = pako.ungzip(uint8Array, { to: 'string' });
