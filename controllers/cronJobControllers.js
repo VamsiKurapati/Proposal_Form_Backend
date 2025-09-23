@@ -1,5 +1,6 @@
 const axios = require('axios');
 const dotenv = require('dotenv');
+const zlib = require('zlib');
 dotenv.config();
 
 const Grant = require('../models/Grant');
@@ -14,7 +15,7 @@ const DraftGrant = require('../models/DraftGrant');
 //Trigger Grant Cron Job to fetch Grants from the Grant API and save them to the database
 exports.fetchGrants = async () => {
     try {
-        const grants = await axios.get(`${process.env.PIPELINE_URL}/grants/getgrants`);
+        const grants = await axios.get(`${process.env.PROPOSAL_PIPELINE_URL}/grants/getgrants`);
         await Promise.all(grants.map(async (grant) => {
             //check if the grant is already in the database
             const existingGrant = await Grant.findOne({ OPPORTUNITY_NUMBER: grant.OPPORTUNITY_NUMBER });
@@ -210,9 +211,22 @@ exports.deleteExpiredGrantProposals = async () => {
 exports.fetchRFPs = async () => {
     try {
         //Fetch RFPs from the RFP API and save them to the database
-        const response = await axios.get(`${process.env.PIPELINE_URL}/rfp/getRFPs`);
+        const response = await axios.get(`${process.env.PROPOSAL_PIPELINE_URL}/rfp/getRFPs`);
 
-        const rfp_data = response.data.rfp_data;
+        //We will receive compressed data, so we need to decompress it
+        let decompressedData;
+        try {
+            // Try to decompress the data first
+            decompressedData = zlib.inflateSync(response.data).toString('utf8');
+        } catch (error) {
+            // If decompression fails, assume the data is already uncompressed
+            console.log('Data is not compressed, using as-is');
+            decompressedData = response.data;
+        }
+
+        console.log(decompressedData);
+
+        const rfp_data = JSON.parse(decompressedData).rfp_data;
 
         //Check if the RFPs are already in the database and if not then save them else update them
         await Promise.all(rfp_data.map(async (rfp) => {
