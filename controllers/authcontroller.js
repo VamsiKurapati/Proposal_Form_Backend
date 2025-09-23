@@ -11,6 +11,7 @@ const Subscription = require("../models/Subscription");
 const Notification = require("../models/Notification");
 const OTP = require("../models/OTP");
 const nodemailer = require("nodemailer");
+const { sendEmail } = require("../utils/mailSender");
 
 const storage = new GridFsStorage({
   url: process.env.MONGO_URI,
@@ -96,6 +97,21 @@ exports.signupWithProfile = [
       });
       await notification.save();
 
+      const subject = `Welcome to RFP & Grants, ${fullName}!`;
+
+      const body = `
+        Hi ${fullName}, <br /><br />
+        Your account has been successfully created. <br /><br />
+        <strong>Your Login Details:</strong><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;Email: ${email}<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;Password: ${password}<br /><br />
+        <a href="${process.env.FRONTEND_URL}/login">Login to Your Account</a><br /><br />
+        Best regards,<br />
+        The RFP & Grants Team
+      `;
+
+      await sendEmail(email, subject, body);
+
       res.status(201).json({ message: "Signup and profile created successfully" });
     } catch (err) {
       console.error(err);
@@ -134,6 +150,19 @@ exports.login = async (req, res) => {
       } else {
         subscriptionData = subscription[0];
       }
+
+      const subject = "New Sign-In Alert";
+
+      const body = `
+        Hi ${user.fullName}, <br /><br />
+        We noticed a sign-in to your account from a new device or location. If this was you, no action is required. Otherwise, please secure your account immediately. <br /><br />
+        <a href="${process.env.FRONTEND_URL}/reset-password">Secure My Account/Change password</a><br /><br />
+        Best regards,<br />
+        The RFP & Grants Team
+      `;
+
+      await sendEmail(user.email, subject, body);
+
       return res.status(200).json({ token, user: userWithoutPassword, subscription: subscriptionData });
     } else if (user.role === "employee") {
       const employeeProfile = await EmployeeProfile.findOne({ userId: user._id });
