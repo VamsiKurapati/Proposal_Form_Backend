@@ -14,6 +14,18 @@ const matchedRFPSchema = new mongoose.Schema({
   type: String,
   contact: String,
   timeline: String,
+  baseType: {
+    type: String,
+    default: "Not specified"
+  },
+  setAside: {
+    type: String,
+    default: "Not specified"
+  },
+  solicitationNumber: {
+    type: String,
+    default: "Not specified"
+  },
   email: { type: String, required: true },
 }, {
   timestamps: true

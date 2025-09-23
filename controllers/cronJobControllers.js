@@ -1,4 +1,7 @@
 const axios = require('axios');
+const dotenv = require('dotenv');
+dotenv.config();
+
 const Grant = require('../models/Grant');
 const Support = require('../models/Support');
 const RFP = require('../models/RFP');
@@ -8,11 +11,13 @@ const ProposalTracker = require('../models/ProposalTracker');
 const GrantProposal = require('../models/GrantProposal');
 const DraftGrant = require('../models/DraftGrant');
 
-
+//Trigger Grant Cron Job to fetch Grants from the Grant API and save them to the database
 exports.triggerGrant = async () => {
     try {
         const grants = await axios.get(`${process.env.PIPELINE_URL}/grants/trigger`);
-        const grant_data = await Grant.insertMany(grants);
+        const grant_data = await Promise.all(grants.map(async (grant) => {
+            return await Grant.create(grant);
+        }));
         return { message: "Grants triggered successfully", grant_data: grant_data };
     } catch (err) {
         console.error('Error in /triggerGrant:', err);
@@ -20,7 +25,7 @@ exports.triggerGrant = async () => {
     }
 };
 
-// Priority Cron Job
+// Priority Cron Job to update the priority of the support tickets in the database
 exports.priorityCronJob = async () => {
     try {
         //Get all support tickets and update the priority of the ticket to "Medium" if ticket.createdAt is more than 1 day and "High" if ticket.createdAt is more than 48 hours
@@ -58,7 +63,7 @@ exports.priorityCronJob = async () => {
     }
 };
 
-// Service to delete expired proposals and their associated files from GridFS
+// Delete Expired Proposals and their associated files from GridFS Cron Job
 exports.deleteExpiredProposals = async () => {
 
     try {
@@ -101,6 +106,7 @@ exports.deleteExpiredProposals = async () => {
     }
 };
 
+// Delete Expired Grant Proposals and their associated files from GridFS Cron Job
 exports.deleteExpiredGrantProposals = async () => {
     try {
         const today = new Date();
@@ -141,20 +147,53 @@ exports.deleteExpiredGrantProposals = async () => {
     }
 };
 
+// Fetch RFPs Cron Job to fetch the RFPs from the RFP API and save them to the database
 exports.fetchRFPs = async () => {
     try {
         //Fetch RFPs from the RFP API and save them to the database
-        const rfp = await axios.get(`${process.env.PIPELINE_URL}/rfp/trigger`);
+        const response = await axios.get(`${process.env.PIPELINE_URL}/rfp/getRFPs`);
+
+        const rfp_data = response.data.rfp_data;
 
         //Check if the RFPs are already in the database and if not then save them else update them
-        for (const rfp of rfp.data.rfps) {
-            const existingRFP = await RFP.findOne({ title: rfp.title });
+        await Promise.all(rfp_data.map(async (rfp) => {
+            const existingRFP = await RFP.findOne({ solicitationNumber: rfp.solicitation_number });
             if (existingRFP) {
-                await RFP.findByIdAndUpdate(existingRFP._id, rfp);
+                await RFP.findByIdAndUpdate(existingRFP._id, {
+                    title: rfp.title,
+                    description: rfp.description,
+                    baseType: rfp.BaseType,
+                    setAside: rfp.SetASide,
+                    logo: rfp.logo,
+                    budget: rfp.budget,
+                    deadline: rfp.deadline,
+                    organization: rfp.organization,
+                    fundingType: rfp.fundingType,
+                    organizationType: rfp.organizationType,
+                    link: rfp.link,
+                    contact: rfp.contact,
+                    timeline: rfp.timeline,
+                    solicitationNumber: rfp.solicitation_number,
+                });
             } else {
-                await RFP.create(rfp);
+                await RFP.create({
+                    title: rfp.title,
+                    description: rfp.description,
+                    baseType: rfp.BaseType,
+                    setAside: rfp.SetASide,
+                    logo: rfp.logo,
+                    budget: rfp.budget,
+                    deadline: rfp.deadline,
+                    organization: rfp.organization,
+                    fundingType: rfp.fundingType,
+                    organizationType: rfp.organizationType,
+                    link: rfp.link,
+                    contact: rfp.contact,
+                    timeline: rfp.timeline,
+                    solicitationNumber: rfp.solicitation_number,
+                });
             }
-        }
+        }));
         return { message: "RFPs fetched successfully" };
     } catch (err) {
         console.error('Error in fetchRFPs service:', err);

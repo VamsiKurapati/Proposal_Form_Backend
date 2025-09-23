@@ -653,44 +653,9 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
       return res.status(404).json({ error: 'Company profile not found. Please complete your company profile first.' });
     }
 
-    const db = mongoose.connection.db;
-
-    //Extract the company Documents from upload.chunks and save them in the companyProfile_1.companyDocuments
-    const files = await db.collection('uploads.files')
-      .find({ _id: { $in: (companyProfile_1.documents || []).map(doc => doc.fileId) } })
-      .toArray();
-
-    const filesWithBase64 = await Promise.all(
-      files.map(async (file) => {
-        const chunks = await db.collection('uploads.chunks')
-          .find({ files_id: file._id })
-          .sort({ n: 1 })
-          .toArray();
-        const fileBuffer = Buffer.concat(chunks.map(chunk => chunk.data.buffer));
-        return {
-          ...file,
-          base64: fileBuffer.toString('base64'),
-        };
-      })
-    );
-
-    const filesMap = filesWithBase64.reduce((acc, file) => {
-      acc[file._id.toString()] = file;
-      return acc;
-    }, {});
-
-    // Check if all required files are available
-    const missingFiles = (companyProfile_1.documents || []).filter(doc => !filesMap[doc.fileId.toString()]);
-    if (missingFiles.length > 0) {
-      return res.status(400).json({
-        error: 'Some company documents are missing or corrupted. Please re-upload the following documents: ' +
-          missingFiles.map(doc => doc.name).join(', ')
-      });
-    }
-
-    const companyDocuments_1 = (companyProfile_1.documents || []).map((doc) => {
+    const companyDocuments_1 = (companyProfile_1.documentSummaries || []).map((doc) => {
       return {
-        [`${doc.name}.${doc.type}`]: `${filesMap[doc.fileId.toString()].base64}`,
+        [`${doc.name}`]: `${doc.summary}`,
       };
     });
 
@@ -738,7 +703,6 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
       "linkedIn": `${companyProfile_1.linkedIn || ""}`,
       "certifications": certifications_1,
       "documents": companyDocuments_1,
-      // "documents": [],
       "caseStudies": caseStudies_1,
       "pastProjects": pastProjects_1,
       "employees_information": employeeData_1,
@@ -777,6 +741,9 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
           organization: rfp['Organization'] || rfp['Issuing Organization'] || "",
           fundingType: 'Government',
           organizationType: rfp['Industry'] || "",
+          baseType: rfp['Base Type'] || "",
+          setAside: rfp['Set Aside'] || "",
+          solicitationNumber: rfp['Solicitation Number'] || "",
           link: rfp['URL'] || `${process.env.BACKEND_URL}/profile/getDocument/${req.file.id}`,
           type: 'Matched',
           contact: rfp['Contact Information'] || "",
@@ -789,7 +756,7 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
     // Validate all required fields
     const requiredFields = [
       'title', 'description', 'logo', 'match', 'budget', 'deadline',
-      'organization', 'fundingType', 'organizationType', 'link', 'type', 'contact', 'timeline', 'email'
+      'organization', 'fundingType', 'organizationType', 'link', 'type', 'contact', 'timeline', 'email', 'baseType', 'setAside', 'solicitationNumber'
     ];
 
     const invalidEntry = transformedData.find(rfp =>
