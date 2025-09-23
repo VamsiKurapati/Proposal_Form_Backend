@@ -238,7 +238,7 @@ exports.fetchRFPs = async () => {
         let decompressedData;
         try {
             // Try to decompress the data first
-            decompressedData = UnzipRFP(response.data);
+            decompressedData = UnzipRFP(response);
         } catch (error) {
             // If decompression fails, assume the data is already uncompressed
             console.log('Data is not compressed, using as-is');
