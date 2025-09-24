@@ -346,11 +346,11 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
 
     // Initialize stats
     let totalRevenue = 0;
-    let successfulPayments = 0;
-    let failedPayments = 0;
+    // let successfulPayments = 0;
+    // let failedPayments = 0;
     let revenueThisMonth = 0;
-    let totalRefunds = 0;
-    let pendingRefunds = 0;
+    // let totalRefunds = 0;
+    // let pendingRefunds = 0;
     let activeUsers = 0;
     let inactiveUsers = 0;
     const now = new Date();
@@ -359,7 +359,7 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
 
     payments.forEach(payment => {
       if (payment.status === 'Success') {
-        successfulPayments += 1;
+        // successfulPayments += 1;
         totalRevenue += payment.price;
 
         if (payment.paid_at) {
@@ -373,21 +373,21 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
         }
       }
 
-      if (payment.status === 'Failed') {
-        failedPayments += 1;
-      }
+      // if (payment.status === 'Failed') {
+      //   failedPayments += 1;
+      // }
 
-      if (payment.status === 'Refunded') {
-        totalRefunds += 1;
-      }
+      // if (payment.status === 'Refunded') {
+      //   totalRefunds += 1;
+      // }
 
-      if (
-        payment.status === 'Pending Refund' ||
-        payment.status === 'Pending Refund' ||
-        payment.status === 'Pending Refund, Refunded'
-      ) {
-        pendingRefunds += 1;
-      }
+      // if (
+      //   payment.status === 'Pending Refund' ||
+      //   payment.status === 'Pending Refund' ||
+      //   payment.status === 'Pending Refund, Refunded'
+      // ) {
+      //   pendingRefunds += 1;
+      // }
     });
 
     activeUsers = await User.countDocuments({ subscription_status: "active", role: "company" });
@@ -396,12 +396,12 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
     res.json({
       PaymentStats: {
         "Total Revenue": totalRevenue,
-        "Successful Payments": successfulPayments,
-        "Failed Payments": failedPayments,
+        // "Successful Payments": successfulPayments,
+        // "Failed Payments": failedPayments,
         "Active Subscriptions": activeUsers,
         "Inactive Subscriptions": inactiveUsers,
-        "Total Refunds": totalRefunds,
-        "Pending Refunds": pendingRefunds,
+        // "Total Refunds": totalRefunds,
+        // "Pending Refunds": pendingRefunds,
         "Revenue This Month": revenueThisMonth
       },
       PaymentData: paymentsWithCompanyName
