@@ -1588,6 +1588,7 @@ exports.getGrantProposalStatus = async (req, res) => {
     const { grant } = req.body;
 
     let userEmail = req.user.email;
+    let userId = "";
 
     let companyProfile_1 = "";
 
@@ -1599,8 +1600,10 @@ exports.getGrantProposalStatus = async (req, res) => {
       userEmail = employeeProfile.companyMail;
       companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
       const user = await User.findOne({ email: userEmail });
+      userId = user._id;
     } else {
       companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
+      userId = req.user._id;
     }
 
     //Chheck if a proposal with the same grantId already exists
@@ -1694,6 +1697,14 @@ exports.getGrantProposalStatus = async (req, res) => {
         proposalTracker.status = "success";
         proposalTracker.grantProposalId = new_prop._id;
         await proposalTracker.save();
+
+        const subscription_1 = await Subscription.findOne({ user_id: userId });
+        if (!subscription_1) {
+          return res.status(400).json({ error: 'Subscription not found' });
+        }
+
+        subscription_1.current_grant_proposal_generations++;
+        await subscription_1.save();
 
         return res.status(200).json({ message: 'Grant Proposal Generated successfully.', proposal: document, proposalId: new_prop._id });
       } else if (res_data.status === "processing") {
