@@ -148,8 +148,9 @@ exports.getSupportStatsAndData = async (req, res) => {
         }
       }
       else {
-        companyData.companyName = companiesMap[ticket.userId.toString()].companyName || "Unknown Company";
-        companyData.logoUrl = companiesMap[ticket.userId.toString()].logoUrl || null;
+        const companyInfo = companiesMap[ticket.userId.toString()];
+        companyData.companyName = companyInfo ? companyInfo.companyName : "Unknown Company";
+        companyData.logoUrl = companyInfo ? companyInfo.logoUrl : null;
       }
 
       return {
