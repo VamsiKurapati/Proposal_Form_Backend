@@ -249,7 +249,7 @@ exports.saveRFP = async (req, res) => {
 
     const existing = await SavedRFP.findOne({ userEmail, rfpId });
     if (existing) {
-      return res.status(200).json({ message: 'Already saved' });
+      return res.status(200).json({ message: 'RFP already saved' });
     }
 
     const cleanRFP = {
@@ -1213,6 +1213,12 @@ exports.saveGrant = async (req, res) => {
 
     if (!grantId) {
       return res.status(400).json({ message: "Grant ID is required" });
+    }
+
+    //Check existing saved grant
+    const existingSavedGrant = await SavedGrant.findOne({ userEmail: userEmail, grantId: grantId });
+    if (existingSavedGrant) {
+      return res.status(200).json({ message: "Grant already saved" });
     }
 
     const grant = await Grant.findOne({ _id: grantId });
