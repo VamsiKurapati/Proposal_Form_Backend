@@ -11,6 +11,7 @@ const CustomPlan = require("../models/CustomPlan");
 const PaymentDetails = require("../models/PaymentDetails");
 const Contact = require("../models/Contact");
 const GrantProposal = require("../models/GrantProposal");
+const EmployeeProfile = require("../models/EmployeeProfile");
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
@@ -120,10 +121,36 @@ exports.getSupportStatsAndData = async (req, res) => {
     }
 
     // Add companyName and logoUrl to tickets
-    const supportWithCompany = supportTickets.map(ticket => {
-      const companyData = ticket.userId
-        ? companiesMap[ticket.userId.toString()] || { companyName: "Unknown Company", logoUrl: null }
-        : { companyName: "Unknown Company", logoUrl: null };
+    const supportWithCompany = await Promise.all(supportTickets.map(async (ticket) => {
+      // const companyData = ticket.userId
+      //   ? companiesMap[ticket.userId.toString()] || { companyName: "Unknown Company", logoUrl: null }
+      //   : { companyName: "Unknown Company", logoUrl: null };
+
+      // if (ticket.userId && ticket.userRole === "employee") {
+      //   const employeeProfile = await EmployeeProfile.findOne({ userId: ticket.userId });
+      //   if (employeeProfile) {
+      //     const companyProfile = await CompanyProfile.findOne({ email: employeeProfile.companyMail });
+      //     if (companyProfile) {
+      //       companyData.companyName = companyProfile.companyName;
+      //       companyData.logoUrl = companyProfile.logoUrl;
+      //     }
+      //   }
+
+      let companyData = { companyName: "Unknown Company", logoUrl: null };
+      //check user role if employee, then fetch company name from EmployeeProfile
+      const user = await User.findById(ticket.userId);
+      if (user.role === "employee") {
+        const employeeProfile = await EmployeeProfile.findOne({ userId: ticket.userId });
+        if (employeeProfile) {
+          const companyProfile = await CompanyProfile.findOne({ email: employeeProfile.companyMail });
+          companyData.companyName = companyProfile.companyName || "Unknown Company";
+          companyData.logoUrl = companyProfile.logoUrl || null;
+        }
+      }
+      else {
+        companyData.companyName = companiesMap[ticket.userId.toString()].companyName || "Unknown Company";
+        companyData.logoUrl = companiesMap[ticket.userId.toString()].logoUrl || null;
+      }
 
       return {
         ...ticket.toObject(),
@@ -132,7 +159,7 @@ exports.getSupportStatsAndData = async (req, res) => {
 
         status: ticket.status === "Created" && !ticket.isOpen ? "Pending" : ticket.isOpen && (ticket.status !== "In Progress" && ticket.status !== "Completed" && ticket.status !== "Withdrawn") ? "Re-Opened" : ticket.status
       };
-    });
+    }));
 
     // Initialize counters
     let BillingPayments = 0;

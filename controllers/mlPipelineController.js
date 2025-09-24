@@ -112,24 +112,12 @@ const formatFileSize = (bytes) => {
 };
 
 const getDeadline = (deadline) => {
-  let date;
+  const defaultDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
-  try {
-    if (deadline === "") {
-      date = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-    } else {
-      date = new Date(deadline);
-      if (isNaN(date.getTime())) {
-        date = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-      } else {
-      }
-    }
-  } catch (err) {
-    console.error('Error in /getDeadline:', err);
-    date = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-  }
+  if (!deadline) return defaultDate;
 
-  return date;
+  const date = new Date(deadline);
+  return isNaN(date.getTime()) ? defaultDate : date;
 };
 
 
@@ -1652,7 +1640,7 @@ exports.getGrantProposalStatus = async (req, res) => {
           title: grant.OPPORTUNITY_TITLE,
           client: grant.AGENCY_NAME,
           companyMail: userEmail,
-          deadline: grant.ESTIMATED_APPLICATION_DUE_DATE,
+          deadline: getDeadline(grant.ESTIMATED_APPLICATION_DUE_DATE),
           url: grant.OPPORTUNITY_NUMBER_LINK || "",
           status: "In Progress",
           submittedAt: new Date(),
@@ -1690,8 +1678,8 @@ exports.getGrantProposalStatus = async (req, res) => {
           proposalId: null,
           grantId: grant._id,
           title: grant.OPPORTUNITY_TITLE,
-          startDate: new Date(grant.ESTIMATED_APPLICATION_DUE_DATE) || new Date(),
-          endDate: new Date(grant.ESTIMATED_APPLICATION_DUE_DATE) || new Date(),
+          startDate: getDeadline(grant.ESTIMATED_APPLICATION_DUE_DATE),
+          endDate: getDeadline(grant.ESTIMATED_APPLICATION_DUE_DATE),
           status: "Deadline",
         });
         await new_CalendarEvent_Deadline.save();
