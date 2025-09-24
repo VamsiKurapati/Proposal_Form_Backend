@@ -352,7 +352,7 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
     let totalRefunds = 0;
     let pendingRefunds = 0;
     let activeUsers = 0;
-
+    let inactiveUsers = 0;
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
@@ -391,6 +391,7 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
     });
 
     activeUsers = await User.countDocuments({ subscription_status: "active", role: "company" });
+    inactiveUsers = await User.countDocuments({ subscription_status: "inactive", role: "company" });
 
     res.json({
       PaymentStats: {
@@ -398,6 +399,7 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
         "Successful Payments": successfulPayments,
         "Failed Payments": failedPayments,
         "Active Subscriptions": activeUsers,
+        "Inactive Subscriptions": inactiveUsers,
         "Total Refunds": totalRefunds,
         "Pending Refunds": pendingRefunds,
         "Revenue This Month": revenueThisMonth
