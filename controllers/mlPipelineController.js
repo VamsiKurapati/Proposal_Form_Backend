@@ -1555,6 +1555,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       return res.status(400).json({ error: 'You have reached the maximum number of grant proposals. Please upgrade your subscription to generate more proposals.' });
     }
 
+    console.log("Generating grant proposal for grant: ", grant);
     const data = {
       user: userData,
       grant_data: grant,
