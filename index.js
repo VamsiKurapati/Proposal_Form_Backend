@@ -18,6 +18,7 @@ const Subscription = require('./models/Subscription.js');
 const nodemailer = require('nodemailer');
 const Contact = require('./models/Contact.js');
 const superAdminController = require('./controllers/superAdminController');
+const testCronRoute = require('./routes/testCron.js');
 
 const dbConnect = require('./utils/dbConnect.js');
 require('./utils/cronJob.js');
@@ -132,6 +133,8 @@ app.use('/api/support', supportRoute);
 app.use('/api/image', imageRoute);
 
 app.use('/api/stripe', stripeRoute);
+
+app.use('/api/testCron', testCronRoute);
 
 app.get('/', (req, res) => {
   res.send('Welcome to the Proposal API');
