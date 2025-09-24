@@ -49,7 +49,8 @@ const storage2 = new GridFsStorage({
 
                 const fileConfig = {
                     filename: uniqueFilename,
-                    bucketName: "cloud_images",
+                    // bucketName: "cloud_images",
+                    bucketName: "uploads",
                     metadata: {
                         originalname: file.originalname,
                         uploadedAt: new Date(),
@@ -245,7 +246,8 @@ exports.deleteImage = async (req, res) => {
     try {
         const filename = req.params.filename;
         const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-            bucketName: "cloud_images",
+            // bucketName: "cloud_images",
+            bucketName: "uploads",
         });
 
         let file = null;
@@ -284,7 +286,8 @@ exports.serveImageById = async (req, res) => {
         }
 
         const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-            bucketName: "cloud_images",
+            // bucketName: "cloud_images",
+            bucketName: "uploads",
         });
 
         const file = await bucket.find({ _id: new mongoose.Types.ObjectId(fileId) }).toArray();
