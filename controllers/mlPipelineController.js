@@ -201,7 +201,7 @@ exports.getRecommendedAndSavedRFPs = async (req, res) => {
 exports.getOtherRFPs = async (req, res) => {
   try {
     const industries = req.body.industries;
-    const otherRFPs = await RFP.find({ organizationType: { $in: industries } }).lean();
+    const otherRFPs = await RFP.find({ setAside: { $in: industries } }).lean();
 
     res.status(200).json({ otherRFPs });
   } catch (err) {
@@ -651,6 +651,12 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
     // Check if company profile exists
     if (!companyProfile_1) {
       return res.status(404).json({ error: 'Company profile not found. Please complete your company profile first.' });
+    }
+
+    //Check if company has active subscription
+    const subscription = await Subscription.findOne({ user_id: companyProfile_1.userId });
+    if (!subscription || subscription.end_date < new Date()) {
+      return res.status(400).json({ error: 'Subscription not found or expired' });
     }
 
     const companyDocuments_1 = (companyProfile_1.documentSummaries || []).map((doc) => {
