@@ -82,8 +82,16 @@ const createPaymentIntent = async (req, res) => {
         }
 
         // Create payment intent with verified amount from DB
+        const amountInCents = Math.round(expectedAmount * 100);
+
+        console.log('Creating payment intent with:');
+        console.log('- Amount:', expectedAmount);
+        console.log('- Amount in cents:', amountInCents);
+        console.log('- Customer ID:', stripeCustomerId);
+        console.log('- Plan:', plan.name);
+
         const paymentIntent = await stripe.paymentIntents.create({
-            amount: Math.round(expectedAmount * 100), // Convert to cents
+            amount: amountInCents,
             currency: 'usd',
             customer: stripeCustomerId,
             metadata: {
@@ -91,13 +99,18 @@ const createPaymentIntent = async (req, res) => {
                 planId: planId,
                 planName: plan.name,
                 billingCycle: billingCycle,
-                planPriceCents: Math.round(expectedAmount * 100).toString()
+                planPriceCents: amountInCents.toString()
             },
             automatic_payment_methods: {
                 enabled: true,
             },
-            description: `${plan.name} subscription (${billingCycle})`
+            description: `${plan.name} subscription (${billingCycle})`,
+            // Add confirmation method for better error handling
+            confirmation_method: 'manual'
         });
+
+        console.log('Payment Intent Created:', paymentIntent.id);
+        console.log('Client Secret:', paymentIntent.client_secret);
 
         res.status(200).json({
             success: true,
@@ -132,7 +145,13 @@ const activateSubscription = async (req, res) => {
         // Verify payment intent
         const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
+        console.log('Payment Intent Status:', paymentIntent.status);
+        console.log('Payment Intent Amount:', paymentIntent.amount);
+        console.log('Payment Intent Metadata:', paymentIntent.metadata);
+
         if (paymentIntent.status !== 'succeeded') {
+            console.log('Payment Intent Error:', paymentIntent.last_payment_error);
+
             //Create payment record
             await Payment.create({
                 user_id: userId,
@@ -143,7 +162,8 @@ const activateSubscription = async (req, res) => {
             });
             return res.status(400).json({
                 success: false,
-                message: 'Payment not completed'
+                message: `Payment not completed. Status: ${paymentIntent.status}`,
+                error: paymentIntent.last_payment_error?.message || 'Unknown error'
             });
         }
 
@@ -197,8 +217,16 @@ const activateSubscription = async (req, res) => {
             });
         }
 
-        const expectedAmountCents = Math.round((billingCycle === STRIPE_CONFIG.BILLING_CYCLES.YEARLY ? plan.yearlyPrice : plan.monthlyPrice) * 100);
+        const expectedAmount = billingCycle === STRIPE_CONFIG.BILLING_CYCLES.YEARLY ? plan.yearlyPrice : plan.monthlyPrice;
+        const expectedAmountCents = Math.round(expectedAmount * 100);
+
+        console.log('Expected Amount:', expectedAmount);
+        console.log('Expected Amount Cents:', expectedAmountCents);
+        console.log('Payment Intent Amount:', paymentIntent.amount);
+
         if (paymentIntent.amount !== expectedAmountCents) {
+            console.log('Amount mismatch detected');
+
             //Create payment record
             await Payment.create({
                 user_id: userId,
@@ -209,7 +237,7 @@ const activateSubscription = async (req, res) => {
             });
             return res.status(400).json({
                 success: false,
-                message: 'Payment amount does not match plan pricing'
+                message: `Payment amount does not match plan pricing. Expected: ${expectedAmountCents}, Got: ${paymentIntent.amount}`
             });
         }
 
