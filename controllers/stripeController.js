@@ -104,9 +104,7 @@ const createPaymentIntent = async (req, res) => {
             automatic_payment_methods: {
                 enabled: true,
             },
-            description: `${plan.name} subscription (${billingCycle})`,
-            // Add confirmation method for better error handling
-            confirmation_method: 'manual'
+            description: `${plan.name} subscription (${billingCycle})`
         });
 
         console.log('Payment Intent Created:', paymentIntent.id);
