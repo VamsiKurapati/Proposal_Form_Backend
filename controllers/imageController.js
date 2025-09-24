@@ -299,11 +299,11 @@ exports.serveImageById = async (req, res) => {
         const fileDoc = file[0];
 
         // Set appropriate headers
-        res.set({
-            'Content-Type': fileDoc.contentType || 'application/octet-stream',
-            'Content-Length': fileDoc.length,
-            'Cache-Control': 'public, max-age=31536000'
-        });
+        // res.set({
+        //     'Content-Type': fileDoc.contentType || 'application/octet-stream',
+        //     'Content-Length': fileDoc.length,
+        //     'Cache-Control': 'public, max-age=31536000'
+        // });
 
         const downloadStream = bucket.openDownloadStream(fileDoc._id);
         downloadStream.pipe(res);
