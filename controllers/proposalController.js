@@ -375,7 +375,19 @@ exports.advancedComplianceCheckPdf = [
       const firstValue = dataBasicCompliance[firstKey];
       const compliance_dataBasicCompliance = firstValue["compliance_flags"];
 
-      const rfp = await MatchedRFP.findOne({ _id: rfpId, email: userEmail }) || await RFP.findOne({ _id: rfpId, email: userEmail });
+      // const rfp = await MatchedRFP.findOne({ _id: rfpId, email: userEmail }) || await RFP.findOne({ _id: rfpId, email: userEmail });
+
+      let rfp = null;
+      const new_rfp = await RFP.findOne({ _id: rfpId });
+      if (new_rfp) {
+        rfp = new_rfp;
+      } else {
+        rfp = await MatchedRFP.findOne({ _id: rfpId });
+      }
+
+      if (!rfp) {
+        return res.status(404).json({ message: "RFP not found" });
+      }
 
       const rfp_1 = {
         "RFP Title": rfp.title || "Not found",
