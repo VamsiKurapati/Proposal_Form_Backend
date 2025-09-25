@@ -87,6 +87,12 @@ exports.signupWithProfile = [
         return res.status(400).json({ message: "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character" });
       }
 
+      // Validate role. Only company role is allowed
+      const validRoles = ['company'];
+      if (!validRoles.includes(role)) {
+        return res.status(400).json({ message: "Invalid role. Must be 'company'" });
+      }
+
       const existing = await User.findOne({ email: sanitizedEmail });
       if (existing) {
         return res.status(400).json({ message: "Email already registered" });

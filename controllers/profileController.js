@@ -364,6 +364,12 @@ exports.uploadLogo = [
                 return res.status(400).json({ message: "No file uploaded" });
             }
 
+            // Validate file type
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            if (!allowedTypes.includes(req.file.mimetype)) {
+                return res.status(400).json({ message: "Invalid file type. Only JPEG, PNG, and GIF images are allowed." });
+            }
+
             // Validate file size (5MB limit)
             const maxSize = 5 * 1024 * 1024; // 5MB
             if (req.file.size > maxSize) {

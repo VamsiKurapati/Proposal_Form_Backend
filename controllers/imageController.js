@@ -131,6 +131,12 @@ exports.serveTemplateImage = async (req, res) => {
             return res.status(400).json({ message: "Filename is required" });
         }
 
+        // Sanitize filename to prevent path traversal
+        const sanitizedFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '');
+        if (sanitizedFilename !== filename) {
+            return res.status(400).json({ message: "Invalid filename format" });
+        }
+
         // Find file by filename (should be unique now)
         const file = await bucket.find({ filename: filename }).toArray();
 
