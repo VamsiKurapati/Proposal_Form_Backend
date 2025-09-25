@@ -1,5 +1,5 @@
 const cron = require('node-cron');
-const { deleteExpiredProposals, fetchGrants, priorityCronJob, fetchRFPs, deleteExpiredGrantProposals } = require('../controllers/cronJobControllers');
+const { deleteExpiredProposals, fetchGrants, priorityCronJob, fetchRFPs, deleteExpiredGrantProposals, fetchRefundPayments } = require('../controllers/cronJobControllers');
 
 // Cron job to delete expired proposals every day at 12:00 AM server time
 cron.schedule('0 0 * * *', async () => {
@@ -22,4 +22,9 @@ cron.schedule('0 6 * * *', async () => {
 // Cron job to update the priority of the support tickets every hour
 cron.schedule('0 * * * *', async () => {
   await priorityCronJob();
+});
+
+// Cron job to fetch refund payments every day at 07:00 AM server time
+cron.schedule('0 7 * * *', async () => {
+  await fetchRefundPayments();
 });

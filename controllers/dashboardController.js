@@ -275,6 +275,20 @@ exports.addCalendarEvent = async (req, res) => {
             return res.status(400).json({ message: "Title, start date, and end date are required" });
         }
 
+        // Date validation
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+
+        if (isNaN(startDate.getTime())) {
+            return res.status(400).json({ message: "Invalid start date format" });
+        }
+        if (isNaN(endDate.getTime())) {
+            return res.status(400).json({ message: "Invalid end date format" });
+        }
+        if (startDate >= endDate) {
+            return res.status(400).json({ message: "Start date must be before end date" });
+        }
+
         if (user.role === "company") {
             const companyProfile = await CompanyProfile.findOne({ userId });
             if (!companyProfile) {

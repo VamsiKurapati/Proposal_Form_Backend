@@ -22,7 +22,7 @@ const paymentSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Success', 'Failed', 'Pending', 'Refunded', 'Pending Refund'],
+    enum: ['Success', 'Failed', 'Pending', 'Refunded', 'Pending Refund', 'Failed - Refund Required'],
     required: true
   },
   paid_at: {
@@ -44,6 +44,27 @@ const paymentSchema = new mongoose.Schema({
     type: String,
     required: false,
     default: null
+  },
+  // Refund fields
+  refund_id: {
+    type: String,
+    required: false,
+    default: null
+  },
+  refunded_at: {
+    type: Date,
+    required: false,
+    default: null
+  },
+  refund_reason: {
+    type: String,
+    required: false,
+    default: null
+  },
+  failure_reason: {
+    type: String,
+    required: false,
+    default: null
   }
 }, { timestamps: true });
 
@@ -58,5 +79,7 @@ paymentSchema.index({ createdAt: -1 });
 paymentSchema.index({ user_id: 1, status: 1 });
 paymentSchema.index({ status: 1, paid_at: -1 });
 paymentSchema.index({ subscription_id: 1, status: 1 });
+paymentSchema.index({ refund_id: 1 });
+paymentSchema.index({ refunded_at: -1 });
 
 module.exports = mongoose.model("Payment", paymentSchema);

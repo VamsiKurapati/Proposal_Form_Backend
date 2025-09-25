@@ -66,6 +66,12 @@ exports.getCompanyStatsAndData = async (req, res) => {
 exports.updateCompanyStatus = async (req, res) => {
   try {
     const id = req.params.id;
+
+    // Input validation
+    if (!id) {
+      return res.status(400).json({ message: "company ID is required" });
+    }
+
     const blocked = req.body.blocked === "Blocked" ? true : false;
     const updatedCompany = await CompanyProfile.findByIdAndUpdate(
       id,

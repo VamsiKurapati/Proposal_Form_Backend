@@ -1,6 +1,7 @@
 const axios = require('axios');
 const dotenv = require('dotenv');
 const pako = require('pako');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 dotenv.config();
 
 const Grant = require('../models/Grant');
@@ -11,6 +12,7 @@ const Proposal = require('../models/Proposal');
 const ProposalTracker = require('../models/ProposalTracker');
 const GrantProposal = require('../models/GrantProposal');
 const DraftGrant = require('../models/DraftGrant');
+const Payment = require('../models/Payments');
 
 
 //Trigger Grant Cron Job to fetch Grants from the Grant API and save them to the database
@@ -281,5 +283,26 @@ exports.fetchRFPs = async () => {
     } catch (err) {
         console.error('Error in fetchRFPs service:', err);
         return { message: err.message || "Error fetching RFPs" };
+    }
+};
+
+//Fetch RefundPayments Cron Job to fetch the RefundPayments from the database and update the status of the payment to "Refunded" if the payment is refunded
+exports.fetchRefundPayments = async () => {
+    try {
+        const refundPayments = await Payment.find({ status: 'Pending Refund', refund_id: { $ne: null } });
+        await Promise.all(refundPayments.map(async (refundPayment) => {
+            const refund = await stripe.refunds.retrieve(refundPayment.refund_id);
+            if (refund.status === 'succeeded') {
+                await Payment.findByIdAndUpdate(refundPayment._id, { status: 'Refunded', refunded_at: new Date() });
+            } else if (refund.status === 'failed') {
+                await Payment.findByIdAndUpdate(refundPayment._id, { status: 'Failed - Refund Required' });
+            } else {
+                await Payment.findByIdAndUpdate(refundPayment._id, { status: 'Pending Refund' });
+            }
+        }));
+        return { message: "Refund payments fetched successfully" };
+    } catch (error) {
+        console.error('Error in fetchRefundPayments service:', error);
+        return { message: error.message || "Error fetching refund payments" };
     }
 };

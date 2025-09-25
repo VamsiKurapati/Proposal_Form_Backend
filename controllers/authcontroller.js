@@ -217,7 +217,15 @@ exports.login = async (req, res) => {
 
 exports.logout = async (req, res) => {
   try {
+    if (!req.headers.authorization) {
+      return res.status(400).json({ message: "Authorization header missing" });
+    }
+
     const token = req.headers.authorization.split(" ")[1];
+    if (!token) {
+      return res.status(400).json({ message: "Token missing" });
+    }
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded.user._id);
     if (!user) {
@@ -225,6 +233,12 @@ exports.logout = async (req, res) => {
     }
     res.status(200).json({ message: "Logout successful" });
   } catch (err) {
+    if (err.name === 'JsonWebTokenError') {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+    if (err.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: "Token expired" });
+    }
     res.status(500).json({ message: err.message || "Server error" });
   }
 };
@@ -239,7 +253,9 @@ exports.forgotPassword = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000);
+    // const otp = Math.floor(100000 + Math.random() * 900000);
+    // Note: For production, use crypto.randomInt() for better security
+    const otp = crypto.randomInt(100000, 999999);
 
     const otpData = new OTP({ email, otp });
 

@@ -1,4 +1,5 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const mongoose = require('mongoose');
 const Subscription = require('../models/Subscription');
 const SubscriptionPlan = require('../models/SubscriptionPlan');
 const Notification = require('../models/Notification');
@@ -84,12 +85,6 @@ const createPaymentIntent = async (req, res) => {
         // Create payment intent with verified amount from DB
         const amountInCents = Math.round(expectedAmount * 100);
 
-        console.log('Creating payment intent with:');
-        console.log('- Amount:', expectedAmount);
-        console.log('- Amount in cents:', amountInCents);
-        console.log('- Customer ID:', stripeCustomerId);
-        console.log('- Plan:', plan.name);
-
         const paymentIntent = await stripe.paymentIntents.create({
             amount: amountInCents,
             currency: 'usd',
@@ -106,9 +101,6 @@ const createPaymentIntent = async (req, res) => {
             },
             description: `${plan.name} subscription (${billingCycle})`
         });
-
-        console.log('Payment Intent Created:', paymentIntent.id);
-        console.log('Client Secret:', paymentIntent.client_secret);
 
         res.status(200).json({
             success: true,
@@ -141,14 +133,11 @@ const activateSubscription = async (req, res) => {
         }
 
         // Verify payment intent
-        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-
-        console.log('Payment Intent Status:', paymentIntent.status);
-        console.log('Payment Intent Amount:', paymentIntent.amount);
-        console.log('Payment Intent Metadata:', paymentIntent.metadata);
+        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
+            expand: ['latest_charge']
+        });
 
         if (paymentIntent.status !== 'succeeded') {
-            console.log('Payment Intent Error:', paymentIntent.last_payment_error);
 
             //Create payment record
             await Payment.create({
@@ -218,13 +207,7 @@ const activateSubscription = async (req, res) => {
         const expectedAmount = billingCycle === STRIPE_CONFIG.BILLING_CYCLES.YEARLY ? plan.yearlyPrice : plan.monthlyPrice;
         const expectedAmountCents = Math.round(expectedAmount * 100);
 
-        console.log('Expected Amount:', expectedAmount);
-        console.log('Expected Amount Cents:', expectedAmountCents);
-        console.log('Payment Intent Amount:', paymentIntent.amount);
-
         if (paymentIntent.amount !== expectedAmountCents) {
-            console.log('Amount mismatch detected');
-
             //Create payment record
             await Payment.create({
                 user_id: userId,
@@ -266,50 +249,116 @@ const activateSubscription = async (req, res) => {
             newMaxGrant += unusedGrant;
         }
 
-        const subscription = await Subscription.findOneAndUpdate(
-            { user_id: userId },
-            {
-                $set: {
-                    plan_name: plan.name,
-                    plan_price:
-                        billingCycle === STRIPE_CONFIG.BILLING_CYCLES.YEARLY
-                            ? plan.yearlyPrice
-                            : plan.monthlyPrice,
-                    start_date: startDate,
-                    end_date: endDate,
-                    renewal_date: endDate,
-                    max_editors: plan.maxEditors,
-                    max_viewers: plan.maxViewers,
-                    current_rfp_proposal_generations: 0, // reset usage
-                    current_grant_proposal_generations: 0, // reset usage
-                    max_rfp_proposal_generations: newMaxRfp, // ✅ directly set new total
-                    max_grant_proposal_generations: newMaxGrant, // ✅ directly set new total
-                    canceled_at: null,
-                    auto_renewal: true,
-                    stripeSubscriptionId: paymentIntent.id,
-                    stripePriceId: paymentIntent.metadata.planPriceId || null
-                }
-            },
-            { upsert: true, new: true }
-        );
+        // Use transaction for data consistency with automatic refund on failure
+        const session = await mongoose.startSession();
+        session.startTransaction();
 
-        // Update user subscription status
-        await User.findByIdAndUpdate(userId, {
-            subscription_status: 'active',
-            subscription_id: subscription._id
-        });
+        let refundId = null;
+        let subscription = null;
 
-        // Create payment record
-        await Payment.create({
-            user_id: userId,
-            subscription_id: subscription._id,
-            price: billingCycle === STRIPE_CONFIG.BILLING_CYCLES.YEARLY ? plan.yearlyPrice : plan.monthlyPrice,
-            status: 'Success',
-            paid_at: new Date(),
-            transaction_id: paymentIntentId,
-            companyName: req.user.fullName,
-            payment_method: 'stripe',
-        });
+        try {
+            const subscription = await Subscription.findOneAndUpdate(
+                { user_id: userId },
+                {
+                    $set: {
+                        plan_name: plan.name,
+                        plan_price:
+                            billingCycle === STRIPE_CONFIG.BILLING_CYCLES.YEARLY
+                                ? plan.yearlyPrice
+                                : plan.monthlyPrice,
+                        start_date: startDate,
+                        end_date: endDate,
+                        renewal_date: endDate,
+                        max_editors: plan.maxEditors,
+                        max_viewers: plan.maxViewers,
+                        current_rfp_proposal_generations: 0, // reset usage
+                        current_grant_proposal_generations: 0, // reset usage
+                        max_rfp_proposal_generations: newMaxRfp, // ✅ directly set new total
+                        max_grant_proposal_generations: newMaxGrant, // ✅ directly set new total
+                        canceled_at: null,
+                        auto_renewal: true,
+                        stripeSubscriptionId: paymentIntent.id,
+                        stripePriceId: paymentIntent.metadata.planPriceId || null
+                    }
+                },
+                { upsert: true, new: true, session }
+            );
+
+            // Update user subscription status
+            await User.findByIdAndUpdate(userId, {
+                subscription_status: 'active',
+                subscription_id: subscription._id
+            }, { session });
+
+            // Create payment record
+            await Payment.create([{
+                user_id: userId,
+                subscription_id: subscription._id,
+                price: billingCycle === STRIPE_CONFIG.BILLING_CYCLES.YEARLY ? plan.yearlyPrice : plan.monthlyPrice,
+                status: 'Success',
+                paid_at: new Date(),
+                transaction_id: paymentIntentId,
+                companyName: req.user.fullName,
+                payment_method: 'stripe',
+            }], { session });
+
+            await session.commitTransaction();
+        } catch (error) {
+            // Abort database transaction
+            await session.abortTransaction();
+
+            // Initiate automatic refund
+            try {
+                const refund = await stripe.refunds.create({
+                    payment_intent: paymentIntentId,
+                    reason: 'requested_by_customer',
+                    metadata: {
+                        reason: 'database_transaction_failed',
+                        userId: userId,
+                        planId: planId,
+                        error: error.message
+                    }
+                });
+
+                refundId = refund.id;
+                // Create failed payment record with refund info
+                await Payment.create({
+                    user_id: userId,
+                    subscription_id: null,
+                    price: billingCycle === STRIPE_CONFIG.BILLING_CYCLES.YEARLY ? plan.yearlyPrice : plan.monthlyPrice,
+                    status: 'Pending Refund',
+                    paid_at: new Date(),
+                    transaction_id: paymentIntentId,
+                    refund_id: refundId,
+                    companyName: req.user.fullName,
+                    payment_method: 'stripe',
+                    failure_reason: error.message
+                });
+
+                // Send refund notification email
+                await sendRefundNotification(req.user, plan, refundId, error.message);
+
+            } catch (refundError) {
+                console.error('Failed to process refund:', refundError);
+
+                // Create payment record indicating refund failure
+                await Payment.create({
+                    user_id: userId,
+                    subscription_id: null,
+                    price: billingCycle === STRIPE_CONFIG.BILLING_CYCLES.YEARLY ? plan.yearlyPrice : plan.monthlyPrice,
+                    status: 'Failed - Refund Required',
+                    paid_at: new Date(),
+                    transaction_id: paymentIntentId,
+                    companyName: req.user.fullName,
+                    payment_method: 'stripe',
+                    failure_reason: `Database error: ${error.message}. Refund failed: ${refundError.message}`
+                });
+            }
+
+            throw error;
+        } finally {
+            session.endSession();
+        }
 
         const notification = new Notification({
             type: "Subscription",
@@ -353,7 +402,191 @@ const activateSubscription = async (req, res) => {
     }
 };
 
+// Helper function to send refund notification email
+const sendRefundNotification = async (user, plan, refundId, errorMessage) => {
+    try {
+        const subject = `Payment Refunded - ${plan.name} Plan`;
+        const body = `
+            Hi ${user.fullName}, <br /><br />
+            
+            We encountered a technical issue while processing your subscription for the ${plan.name} plan. 
+            As a result, we have automatically refunded your payment. <br /><br />
+
+            <strong>Refund Details:</strong><br />
+            &nbsp;&nbsp;&nbsp;&nbsp;Plan: ${plan.name}<br />
+            &nbsp;&nbsp;&nbsp;&nbsp;Refund ID: ${refundId}<br />
+            &nbsp;&nbsp;&nbsp;&nbsp;Amount: Refunded to original payment method<br /><br />
+
+            <strong>What happened?</strong><br />
+            ${errorMessage}<br /><br />
+
+            <strong>Next Steps:</strong><br />
+            • Your refund will appear in your account within 5-10 business days<br />
+            • You can try subscribing again once the issue is resolved<br />
+            • Contact support if you have any questions<br /><br />
+
+            We apologize for any inconvenience caused.<br /><br />
+            
+            Best regards,<br />
+            The RFP & Grants Team
+        `;
+
+        await sendEmail(user.email, subject, body);
+    } catch (emailError) {
+        console.error('Failed to send refund notification email:', emailError);
+    }
+};
+
+// Manual refund function for admin use
+const processManualRefund = async (req, res) => {
+    try {
+        const { paymentIntentId, reason, amount } = req.body;
+        const userId = req.user._id;
+
+        // Validate required fields
+        if (!paymentIntentId || !reason) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields: paymentIntentId, reason'
+            });
+        }
+
+        // Verify payment intent exists and get details
+        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+        if (!paymentIntent) {
+            return res.status(404).json({
+                success: false,
+                message: 'Payment intent not found'
+            });
+        }
+
+        if (paymentIntent.status !== 'succeeded') {
+            return res.status(400).json({
+                success: false,
+                message: 'Payment intent was not successful, cannot refund'
+            });
+        }
+
+        // Check if already refunded
+        const existingRefunds = await stripe.refunds.list({
+            payment_intent: paymentIntentId
+        });
+
+        if (existingRefunds.data.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Payment has already been refunded',
+                existingRefunds: existingRefunds.data
+            });
+        }
+
+        // Create refund
+        const refundData = {
+            payment_intent: paymentIntentId,
+            reason: 'requested_by_customer',
+            metadata: {
+                reason: reason,
+                refundedBy: userId,
+                refundedAt: new Date().toISOString()
+            }
+        };
+
+        // Add amount if partial refund
+        if (amount && amount > 0) {
+            refundData.amount = Math.round(amount * 100); // Convert to cents
+        }
+
+        const refund = await stripe.refunds.create(refundData);
+
+        // Update payment record
+        await Payment.findOneAndUpdate(
+            { transaction_id: paymentIntentId },
+            {
+                $set: {
+                    status: 'Pending Refund',
+                    refund_id: refund.id,
+                    refunded_at: new Date(),
+                    refund_reason: reason
+                }
+            }
+        );
+
+        // Cancel subscription if exists
+        const subscription = await Subscription.findOne({
+            stripeSubscriptionId: paymentIntentId
+        });
+
+        if (subscription) {
+            await Subscription.findByIdAndUpdate(subscription._id, {
+                $set: {
+                    canceled_at: new Date(),
+                    auto_renewal: false
+                }
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Refund processed successfully',
+            refund: {
+                id: refund.id,
+                amount: refund.amount,
+                status: refund.status,
+                reason: refund.reason
+            }
+        });
+
+    } catch (error) {
+        console.error('Error processing manual refund:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to process refund',
+            error: error
+        });
+    }
+};
+
+// Get refund status
+const getRefundStatus = async (req, res) => {
+    try {
+        const { paymentIntentId } = req.params;
+
+        if (!paymentIntentId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Payment intent ID is required'
+            });
+        }
+
+        // Get refunds for this payment intent
+        const refunds = await stripe.refunds.list({
+            payment_intent: paymentIntentId
+        });
+
+        // Get payment record
+        const payment = await Payment.findOne({ transaction_id: paymentIntentId });
+
+        res.status(200).json({
+            success: true,
+            paymentIntentId: paymentIntentId,
+            refunds: refunds.data,
+            paymentRecord: payment
+        });
+
+    } catch (error) {
+        console.error('Error getting refund status:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to get refund status',
+            error: error
+        });
+    }
+};
+
 module.exports = {
     createPaymentIntent,
-    activateSubscription
+    activateSubscription,
+    processManualRefund,
+    getRefundStatus
 };

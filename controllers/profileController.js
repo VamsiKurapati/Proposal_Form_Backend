@@ -527,6 +527,18 @@ exports.addEmployee = async (req, res) => {
             return res.status(400).json({ message: "All fields are required" });
         }
 
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ message: "Invalid email format" });
+        }
+
+        // Access level validation
+        const validAccessLevels = ['Member', 'Editor', 'Viewer'];
+        if (!validAccessLevels.includes(accessLevel)) {
+            return res.status(400).json({ message: "Invalid access level" });
+        }
+
         const user = await User.findById(req.user._id);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
@@ -677,6 +689,28 @@ exports.addCaseStudy = [
                 return res.status(400).json({ message: "No file uploaded" });
             }
 
+            // File validation
+            const allowedTypes = ['application/pdf', 'text/plain'];
+            if (!allowedTypes.includes(req.file.mimetype)) {
+                //Delete the file from GridFS
+                const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+                    bucketName: "uploads",
+                });
+                await bucket.delete(req.file.id);
+                return res.status(400).json({ message: "Only PDF and TXT files are allowed" });
+            }
+
+            // File size validation (5MB limit)
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (req.file.size > maxSize) {
+                //Delete the file from GridFS
+                const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+                    bucketName: "uploads",
+                });
+                await bucket.delete(req.file.id);
+                return res.status(400).json({ message: "File size exceeds 5MB limit" });
+            }
+
             const fileUrl = `${process.env.BACKEND_URL || "http://localhost:5000"}/profile/getCaseStudy/${req.file.id}`;
 
             const companyProfile_1 = await CompanyProfile.findOneAndUpdate(
@@ -732,6 +766,28 @@ exports.addDocument = [
             }
             if (!req.file) {
                 return res.status(400).json({ message: "No file uploaded" });
+            }
+
+            // File validation
+            const allowedTypes = ['application/pdf', 'text/plain'];
+            if (!allowedTypes.includes(req.file.mimetype)) {
+                //Delete the file from GridFS
+                const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+                    bucketName: "uploads",
+                });
+                await bucket.delete(req.file.id);
+                return res.status(400).json({ message: "Only PDF and TXT files are allowed" });
+            }
+
+            // File size validation (5MB limit)
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (req.file.size > maxSize) {
+                //Delete the file from GridFS
+                const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+                    bucketName: "uploads",
+                });
+                await bucket.delete(req.file.id);
+                return res.status(400).json({ message: "File size exceeds 5MB limit" });
             }
 
             const fileUrl = `${process.env.BACKEND_URL || "http://localhost:5000"}/profile/getDocument/${req.file.id}`;
@@ -944,6 +1000,10 @@ exports.deleteEmployee = async (req, res) => {
         }
 
         const { id } = req.params;
+
+        if (!id) {
+            return res.status(400).json({ message: "Employee ID is required" });
+        }
 
         const employeeProfile = await EmployeeProfile.findById(id);
 
