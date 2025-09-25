@@ -709,6 +709,8 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
       }
     };
 
+    console.log(userData);
+
     const data = {
       user: userData,
     };
