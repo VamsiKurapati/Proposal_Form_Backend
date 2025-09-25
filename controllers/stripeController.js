@@ -120,8 +120,8 @@ const createPaymentIntent = async (req, res) => {
         console.error('Error creating payment intent:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to create payment intent',
-            error: error.message
+            message: error.message || 'Failed to create payment intent',
+            error: error
         });
     }
 };
@@ -287,7 +287,7 @@ const activateSubscription = async (req, res) => {
                     canceled_at: null,
                     auto_renewal: true,
                     stripeSubscriptionId: paymentIntent.id,
-                    stripePriceId: paymentIntent.metadata.planPriceId
+                    stripePriceId: paymentIntent.metadata.planPriceId || null
                 }
             },
             { upsert: true, new: true }
@@ -347,8 +347,8 @@ const activateSubscription = async (req, res) => {
         console.error('Error activating subscription:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to activate subscription',
-            error: error.message
+            message: error.message || 'Failed to activate subscription',
+            error: error
         });
     }
 };

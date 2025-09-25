@@ -97,17 +97,17 @@ exports.getSupportStatsAndData = async (req, res) => {
     const supportTickets = await Support.find();
 
     // Extract unique user IDs
-    const userIds = supportTickets
+    const supportUserIds = supportTickets
       .map(ticket => ticket.userId)
       .filter(id => !!id); // ignore null/undefined
 
-    const uniqueUserIds = [...new Set(userIds.map(id => id.toString()))];
+    const supportUniqueUserIds = [...new Set(supportUserIds.map(id => id.toString()))];
 
     // Fetch company profiles in bulk
     let companiesMap = {};
-    if (uniqueUserIds.length > 0) {
+    if (supportUniqueUserIds.length > 0) {
       const companies = await CompanyProfile.find(
-        { _id: { $in: uniqueUserIds } },
+        { _id: { $in: supportUniqueUserIds } },
         { companyName: 1, logoUrl: 1 }
       );
 
@@ -120,35 +120,47 @@ exports.getSupportStatsAndData = async (req, res) => {
       }, {});
     }
 
+    // Bulk fetch all users
+    const users = await User.find({ _id: { $in: supportUniqueUserIds } });
+    const userMap = users.reduce((acc, user) => {
+      acc[user._id.toString()] = user;
+      return acc;
+    }, {});
+
+    // Bulk fetch all employee profiles
+    const employeeProfiles = await EmployeeProfile.find({ userId: { $in: supportUniqueUserIds } });
+    const employeeMap = employeeProfiles.reduce((acc, emp) => {
+      acc[emp.userId.toString()] = emp;
+      return acc;
+    }, {});
+
+    // Get unique company emails from employee profiles
+    const companyEmails = employeeProfiles.map(emp => emp.companyMail).filter(email => email);
+    const uniqueCompanyEmails = [...new Set(companyEmails)];
+
+    // Bulk fetch company profiles
+    const companyProfiles = await CompanyProfile.find({ email: { $in: uniqueCompanyEmails } });
+    const companyEmailMap = companyProfiles.reduce((acc, company) => {
+      acc[company.email] = company;
+      return acc;
+    }, {});
+
     // Add companyName and logoUrl to tickets
-    const supportWithCompany = await Promise.all(supportTickets.map(async (ticket) => {
-      // const companyData = ticket.userId
-      //   ? companiesMap[ticket.userId.toString()] || { companyName: "Unknown Company", logoUrl: null }
-      //   : { companyName: "Unknown Company", logoUrl: null };
-
-      // if (ticket.userId && ticket.userRole === "employee") {
-      //   const employeeProfile = await EmployeeProfile.findOne({ userId: ticket.userId });
-      //   if (employeeProfile) {
-      //     const companyProfile = await CompanyProfile.findOne({ email: employeeProfile.companyMail });
-      //     if (companyProfile) {
-      //       companyData.companyName = companyProfile.companyName;
-      //       companyData.logoUrl = companyProfile.logoUrl;
-      //     }
-      //   }
-
+    const supportWithCompany = supportTickets.map((ticket) => {
       let companyData = { companyName: "Unknown Company", logoUrl: null };
-      //check user role if employee, then fetch company name from EmployeeProfile
-      const user = await User.findById(ticket.userId);
-      if (user.role === "employee") {
-        const employeeProfile = await EmployeeProfile.findOne({ userId: ticket.userId });
+
+      const user = userMap[ticket.userId?.toString()];
+      if (user && user.role === "employee") {
+        const employeeProfile = employeeMap[ticket.userId?.toString()];
         if (employeeProfile) {
-          const companyProfile = await CompanyProfile.findOne({ email: employeeProfile.companyMail });
-          companyData.companyName = companyProfile.companyName || "Unknown Company";
-          companyData.logoUrl = companyProfile.logoUrl || null;
+          const companyProfile = companyEmailMap[employeeProfile.companyMail];
+          if (companyProfile) {
+            companyData.companyName = companyProfile.companyName || "Unknown Company";
+            companyData.logoUrl = companyProfile.logoUrl || null;
+          }
         }
-      }
-      else {
-        const companyInfo = companiesMap[ticket.userId.toString()];
+      } else {
+        const companyInfo = companiesMap[ticket.userId?.toString()];
         companyData.companyName = companyInfo ? companyInfo.companyName : "Unknown Company";
         companyData.logoUrl = companyInfo ? companyInfo.logoUrl : null;
       }
@@ -157,10 +169,9 @@ exports.getSupportStatsAndData = async (req, res) => {
         ...ticket.toObject(),
         companyName: companyData.companyName,
         logoUrl: companyData.logoUrl,
-
         status: ticket.status === "Created" && !ticket.isOpen ? "Pending" : ticket.isOpen && (ticket.status !== "In Progress" && ticket.status !== "Completed" && ticket.status !== "Withdrawn") ? "Re-Opened" : ticket.status
       };
-    }));
+    });
 
     // Initialize counters
     let BillingPayments = 0;

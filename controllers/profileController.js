@@ -477,7 +477,7 @@ exports.updateEmployeeProfile = [
             );
 
             const companyProfile = await CompanyProfile.findOne({ email: employeeProfile.companyMail });
-            if (companyProfile) {
+            if (companyProfile && companyProfile.employees) {
                 const employeeIndex = companyProfile.employees.findIndex(emp => emp.email === email);
                 if (employeeIndex !== -1) {
                     companyProfile.employees[employeeIndex].name = name;
@@ -961,13 +961,15 @@ exports.deleteEmployee = async (req, res) => {
             return res.status(404).json({ message: "Company profile not found" });
         }
 
-        const employee = companyProfile.employees.find(employee => employee.employeeId.toString() === id);
+        const employee = companyProfile.employees?.find(employee => employee.employeeId.toString() === id);
 
         if (!employee) {
             return res.status(404).json({ message: "Employee not found" });
         }
 
-        companyProfile.employees = companyProfile.employees.filter(employee => employee.employeeId.toString() !== id);
+        if (companyProfile.employees) {
+            companyProfile.employees = companyProfile.employees.filter(employee => employee.employeeId.toString() !== id);
+        }
 
         await companyProfile.save();
 
@@ -976,14 +978,14 @@ exports.deleteEmployee = async (req, res) => {
         const grantProposals = await GrantProposal.find({ currentEditor: userId });
 
         if (proposals.length > 0 || grantProposals.length > 0) {
-            proposals.forEach(async (proposal) => {
+            await Promise.all(proposals.map(async (proposal) => {
                 proposal.currentEditor = companyProfile.userId;
                 await proposal.save();
-            });
-            grantProposals.forEach(async (grantProposal) => {
+            }));
+            await Promise.all(grantProposals.map(async (grantProposal) => {
                 grantProposal.currentEditor = companyProfile.userId;
                 await grantProposal.save();
-            });
+            }));
         }
 
         await EmployeeProfile.findByIdAndDelete(id);

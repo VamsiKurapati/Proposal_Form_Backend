@@ -219,6 +219,13 @@ exports.serveCloudImage = async (req, res) => {
             return res.status(500).json({ message: "File chunks are missing or corrupted" });
         }
 
+        // Verify chunk sequence
+        for (let i = 0; i < chunks.length; i++) {
+            if (chunks[i].n !== i) {
+                return res.status(500).json({ message: "File chunks are corrupted" });
+            }
+        }
+
         const downloadStream = bucket.openDownloadStream(fileId);
 
         downloadStream.on("error", (error) => {
@@ -299,11 +306,11 @@ exports.serveImageById = async (req, res) => {
         const fileDoc = file[0];
 
         // Set appropriate headers
-        // res.set({
-        //     'Content-Type': fileDoc.contentType || 'application/octet-stream',
-        //     'Content-Length': fileDoc.length,
-        //     'Cache-Control': 'public, max-age=31536000'
-        // });
+        res.set({
+            'Content-Type': fileDoc.contentType || 'application/octet-stream',
+            'Content-Length': fileDoc.length,
+            'Cache-Control': 'public, max-age=31536000'
+        });
 
         const downloadStream = bucket.openDownloadStream(fileDoc._id);
         downloadStream.pipe(res);

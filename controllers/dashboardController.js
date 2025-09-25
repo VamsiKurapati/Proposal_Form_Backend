@@ -291,7 +291,7 @@ exports.addCalendarEvent = async (req, res) => {
             await calendarEvent.save();
             res.status(201).json({ message: "Calendar event added successfully", event: calendarEvent });
         } else if (user.role === "employee") {
-            const employeeProfile = await EmployeeProfile.findOne({ user: userId });
+            const employeeProfile = await EmployeeProfile.findOne({ userId: userId });
             if (!employeeProfile) {
                 return res.status(404).json({ message: "Employee profile not found" });
             }

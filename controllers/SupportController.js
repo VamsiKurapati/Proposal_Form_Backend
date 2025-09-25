@@ -7,7 +7,7 @@ exports.createTicket = async (req, res) => {
   try {
     const { userId, category, subCategory, description, plan_name } = req.body;
 
-    
+
 
     if (!userId || !description) {
       return res.status(400).json({ message: "userId and description are required" });
@@ -91,9 +91,9 @@ exports.reopenSupportTicket = async (req, res) => {
     }
 
     // Only allow reopening if the current status is 'Completed'
-    // if (ticket.status !== 'Completed' || ticket.status !== 'Withdrawn') {
-    //   return res.status(400).json({ message: "Only completed tickets can be re-opened" });
-    // }
+    if (ticket.status !== 'Completed' && ticket.status !== 'Withdrawn') {
+      return res.status(400).json({ message: "Only completed and withdrawn tickets can be re-opened" });
+    }
 
     ticket.status = 'Created';
     ticket.isOpen = true;

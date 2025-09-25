@@ -29,7 +29,7 @@ const storage = new GridFsStorage({
 const upload = multer({ storage });
 const singleFileUpload = upload.single('file');
 
-const errorData = {
+let errorData = {
   message: "Error in basicComplianceCheckPdf",
   data: null
 };

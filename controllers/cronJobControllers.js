@@ -85,7 +85,7 @@ exports.fetchGrants = async () => {
         return { message: "Grants fetched successfully" };
     } catch (err) {
         console.error('Error in /fetchGrants:', err);
-        return { error: 'Failed to trigger grants', error: err.message };
+        return { message: err.message || 'Failed to trigger grants' };
     }
 };
 
@@ -123,7 +123,7 @@ exports.priorityCronJob = async () => {
 
     } catch (err) {
         console.error('Error in priorityCronJob:', err);
-        return { message: "Error updating priority", error: err.message };
+        return { message: err.message || "Error updating priority" };
     }
 };
 
@@ -166,7 +166,7 @@ exports.deleteExpiredProposals = async () => {
         }));
     } catch (error) {
         console.error('Error in deleteExpiredProposals service:', error);
-        return { message: "Error deleting expired proposals", error: error.message };
+        return { message: error.message || "Error deleting expired proposals" };
     }
 };
 
@@ -207,7 +207,7 @@ exports.deleteExpiredGrantProposals = async () => {
         return { message: "Expired grant proposals deleted successfully" };
     } catch (error) {
         console.error('Error in deleteExpiredGrantProposals service:', error);
-        return { message: "Error deleting expired grant proposals", error: error.message };
+        return { message: error.message || "Error deleting expired grant proposals" };
     }
 };
 
@@ -280,6 +280,6 @@ exports.fetchRFPs = async () => {
         return { message: "RFPs fetched successfully" };
     } catch (err) {
         console.error('Error in fetchRFPs service:', err);
-        return { message: "Error fetching RFPs", error: err.message };
+        return { message: err.message || "Error fetching RFPs" };
     }
 };
