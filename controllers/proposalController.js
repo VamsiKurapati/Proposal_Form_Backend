@@ -367,9 +367,6 @@ exports.advancedComplianceCheckPdf = [
         }
       });
 
-      console.log('resBasicCompliance:', resBasicCompliance.data);
-      console.log("report: ", resBasicCompliance.data.report);
-
       const dataBasicCompliance = resBasicCompliance.data.report;
 
       const firstKey = Object.keys(dataBasicCompliance)[0];
@@ -411,8 +408,6 @@ exports.advancedComplianceCheckPdf = [
         }
       });
 
-      console.log('resProposal:', resProposal.data);
-      console.log("report: ", resProposal.data.report);
       const dataAdvancedCompliance = resProposal.data.report;
 
       res.status(200).json({ compliance_dataBasicCompliance, dataAdvancedCompliance });
