@@ -368,14 +368,13 @@ exports.advancedComplianceCheckPdf = [
       });
 
       console.log('resBasicCompliance:', resBasicCompliance.data);
+      console.log("report: ", resBasicCompliance.data.report);
 
       const dataBasicCompliance = resBasicCompliance.data.report;
 
       const firstKey = Object.keys(dataBasicCompliance)[0];
       const firstValue = dataBasicCompliance[firstKey];
       const compliance_dataBasicCompliance = firstValue["compliance_flags"];
-
-      // const rfp = await MatchedRFP.findOne({ _id: rfpId, email: userEmail }) || await RFP.findOne({ _id: rfpId, email: userEmail });
 
       let rfp = null;
       const new_rfp = await RFP.findOne({ _id: rfpId });
@@ -413,6 +412,7 @@ exports.advancedComplianceCheckPdf = [
       });
 
       console.log('resProposal:', resProposal.data);
+      console.log("report: ", resProposal.data.report);
       const dataAdvancedCompliance = resProposal.data.report;
 
       res.status(200).json({ compliance_dataBasicCompliance, dataAdvancedCompliance });
