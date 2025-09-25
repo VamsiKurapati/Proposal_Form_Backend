@@ -155,10 +155,18 @@ exports.postAllRFPs = async (req, res) => {
 
 exports.getRecommendedAndSavedRFPs = async (req, res) => {
   try {
+    // Validate user exists
+    if (!req.user) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
     let userEmail = req.user.email;
 
     if (req.user.role === "employee") {
       const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+      if (!employeeProfile) {
+        return res.status(404).json({ error: "Employee profile not found" });
+      }
       userEmail = employeeProfile.companyMail;
     }
 
@@ -236,15 +244,28 @@ exports.getSavedAndDraftRFPs = async (req, res) => {
 
 exports.saveRFP = async (req, res) => {
   try {
+    // Validate user exists
+    if (!req.user) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
     let userEmail = req.user.email;
     if (req.user.role === "employee") {
       const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+      if (!employeeProfile) {
+        return res.status(404).json({ error: "Employee profile not found" });
+      }
       userEmail = employeeProfile.companyMail;
     }
     const { rfpId, rfp } = req.body;
 
     if (!rfpId || !rfp) {
       return res.status(400).json({ error: 'rfpId and rfp are required' });
+    }
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(rfpId)) {
+      return res.status(400).json({ error: "Invalid RFP ID format" });
     }
 
     const existing = await SavedRFP.findOne({ userEmail, rfpId });
@@ -277,15 +298,28 @@ exports.saveRFP = async (req, res) => {
 
 exports.unsaveRFP = async (req, res) => {
   try {
+    // Validate user exists
+    if (!req.user) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
     let userEmail = req.user.email;
     if (req.user.role === "employee") {
       const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+      if (!employeeProfile) {
+        return res.status(404).json({ error: "Employee profile not found" });
+      }
       userEmail = employeeProfile.companyMail;
     }
     const { rfpId } = req.body;
 
     if (!rfpId) {
       return res.status(400).json({ error: 'rfpId is required' });
+    }
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(rfpId)) {
+      return res.status(400).json({ error: "Invalid RFP ID format" });
     }
 
     await SavedRFP.deleteOne({ userEmail, rfpId });
@@ -1205,9 +1239,17 @@ exports.handleFileUploadAndSendForGrantExtraction = [
 
 exports.saveGrant = async (req, res) => {
   try {
+    // Validate user exists
+    if (!req.user) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
     let userEmail = req.user.email;
     if (req.user.role === "employee") {
       const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+      if (!employeeProfile) {
+        return res.status(404).json({ message: "Employee profile not found" });
+      }
       userEmail = employeeProfile.companyMail;
     }
 
@@ -1215,6 +1257,11 @@ exports.saveGrant = async (req, res) => {
 
     if (!grantId) {
       return res.status(400).json({ message: "Grant ID is required" });
+    }
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(grantId)) {
+      return res.status(400).json({ message: "Invalid grant ID format" });
     }
 
     //Check existing saved grant
@@ -1241,15 +1288,28 @@ exports.saveGrant = async (req, res) => {
 
 exports.unsaveGrant = async (req, res) => {
   try {
+    // Validate user exists
+    if (!req.user) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
     let userEmail = req.user.email;
     if (req.user.role === "employee") {
       const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+      if (!employeeProfile) {
+        return res.status(404).json({ message: "Employee profile not found" });
+      }
       userEmail = employeeProfile.companyMail;
     }
 
     const { grantId } = req.body;
     if (!grantId) {
       return res.status(400).json({ message: "Grant ID is required" });
+    }
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(grantId)) {
+      return res.status(400).json({ message: "Invalid grant ID format" });
     }
 
     const grant = await SavedGrant.findOne({ userEmail: userEmail, grantId: grantId });

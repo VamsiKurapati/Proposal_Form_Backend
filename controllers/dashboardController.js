@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const User = require("../models/User");
 const CompanyProfile = require("../models/CompanyProfile");
 const EmployeeProfile = require("../models/EmployeeProfile");
@@ -12,9 +13,16 @@ const ProposalTracker = require("../models/ProposalTracker");
 exports.getDashboardData = async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
         const role = user.role;
         if (role === "company") {
             const companyProfile = await CompanyProfile.findOne({ userId: user._id });
+            if (!companyProfile) {
+                return res.status(404).json({ message: "Company profile not found" });
+            }
 
             const proposals = await Proposal.find({ companyMail: companyProfile.email }).populate('currentEditor', '_id fullName email').sort({ createdAt: -1 });
 
@@ -255,9 +263,12 @@ exports.getDashboardData = async (req, res) => {
             };
 
             res.status(200).json(data);
+        } else {
+            return res.status(400).json({ message: "Invalid user role" });
         }
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Dashboard data error:', error);
+        res.status(500).json({ message: error.message || "Server error" });
     }
 };
 
@@ -265,14 +276,15 @@ exports.addCalendarEvent = async (req, res) => {
     try {
         const { title, start, end } = req.body;
 
+        // Input validation
+        if (!title || !start || !end) {
+            return res.status(400).json({ message: "Title, start date, and end date are required" });
+        }
+
         const userId = req.user._id;
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
-        }
-
-        if (!title || !start || !end) {
-            return res.status(400).json({ message: "Title, start date, and end date are required" });
         }
 
         // Date validation
@@ -310,6 +322,9 @@ exports.addCalendarEvent = async (req, res) => {
                 return res.status(404).json({ message: "Employee profile not found" });
             }
             const companyProfile = await CompanyProfile.findOne({ email: employeeProfile.companyMail });
+            if (!companyProfile) {
+                return res.status(404).json({ message: "Company profile not found" });
+            }
             const calendarEvent = new CalendarEvent({
                 companyId: companyProfile._id,
                 employeeId: employeeProfile._id,
@@ -324,7 +339,8 @@ exports.addCalendarEvent = async (req, res) => {
             return res.status(400).json({ message: "Invalid user role" });
         }
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Calendar event error:', error);
+        res.status(500).json({ message: error.message || "Server error" });
     }
 };
 
@@ -332,8 +348,14 @@ exports.setCurrentEditor = async (req, res) => {
     try {
         const { proposalId, editorId } = req.body;
 
+        // Input validation
         if (!proposalId || !editorId) {
             return res.status(400).json({ message: "Proposal ID and Editor ID are required" });
+        }
+
+        // Validate ObjectId format
+        if (!mongoose.Types.ObjectId.isValid(proposalId) || !mongoose.Types.ObjectId.isValid(editorId)) {
+            return res.status(400).json({ message: "Invalid ID format" });
         }
 
         const editor = await EmployeeProfile.findById(editorId);
@@ -370,7 +392,8 @@ exports.setCurrentEditor = async (req, res) => {
 
         res.status(200).json({ message: "Editor set successfully" });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Calendar event error:', error);
+        res.status(500).json({ message: error.message || "Server error" });
     }
 };
 
@@ -379,6 +402,11 @@ exports.setCurrentEditorGrant = async (req, res) => {
         const { grantProposalId, editorId } = req.body;
         if (!grantProposalId || !editorId) {
             return res.status(400).json({ message: "Grant proposal ID and editor ID are required" });
+        }
+
+        // Validate ObjectId format
+        if (!mongoose.Types.ObjectId.isValid(grantProposalId) || !mongoose.Types.ObjectId.isValid(editorId)) {
+            return res.status(400).json({ message: "Invalid ID format" });
         }
 
         const editor = await EmployeeProfile.findById(editorId);
@@ -412,33 +440,50 @@ exports.setCurrentEditorGrant = async (req, res) => {
 
         res.status(200).json({ message: "Editor set successfully" });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Calendar event error:', error);
+        res.status(500).json({ message: error.message || "Server error" });
     }
 };
 
 exports.restoreProposal = async (req, res) => {
     try {
         const { proposalId } = req.body;
+        if (!mongoose.Types.ObjectId.isValid(proposalId)) {
+            return res.status(400).json({ message: "Invalid ID format" });
+        }
         const proposal = await Proposal.findByIdAndUpdate(proposalId, { isDeleted: false, deletedBy: null, deletedAt: null, restoreBy: null, restoredBy: req.user._id, restoredAt: new Date() }, { new: true });
         res.status(200).json(proposal);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Calendar event error:', error);
+        res.status(500).json({ message: error.message || "Server error" });
     }
 };
 
 exports.restoreGrantProposal = async (req, res) => {
     try {
         const { grantProposalId } = req.body;
+        if (!mongoose.Types.ObjectId.isValid(grantProposalId)) {
+            return res.status(400).json({ message: "Invalid ID format" });
+        }
         const proposal = await GrantProposal.findByIdAndUpdate(grantProposalId, { isDeleted: false, deletedBy: null, deletedAt: null, restoreBy: null, restoredBy: req.user._id, restoredAt: new Date() }, { new: true });
         res.status(200).json(proposal);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Calendar event error:', error);
+        res.status(500).json({ message: error.message || "Server error" });
     }
 };
 
 exports.deleteProposals = async (req, res) => {
     try {
         const { proposalIds } = req.body;
+        if (!Array.isArray(proposalIds)) {
+            return res.status(400).json({ message: "Proposal IDs must be an array" });
+        }
+        for (const proposalId of proposalIds) {
+            if (!mongoose.Types.ObjectId.isValid(proposalId)) {
+                return res.status(400).json({ message: "Invalid ID format" });
+            }
+        }
         const proposals = await Proposal.updateMany({ _id: { $in: proposalIds } }, {
             isDeleted: true,
             deletedBy: req.user._id,
@@ -447,13 +492,22 @@ exports.deleteProposals = async (req, res) => {
         }); // 15 days
         res.status(200).json(proposals);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Calendar event error:', error);
+        res.status(500).json({ message: error.message || "Server error" });
     }
 };
 
 exports.deleteGrantProposals = async (req, res) => {
     try {
         const { grantProposalIds } = req.body;
+        if (!Array.isArray(grantProposalIds)) {
+            return res.status(400).json({ message: "Grant proposal IDs must be an array" });
+        }
+        for (const grantProposalId of grantProposalIds) {
+            if (!mongoose.Types.ObjectId.isValid(grantProposalId)) {
+                return res.status(400).json({ message: "Invalid ID format" });
+            }
+        }
         const proposals = await GrantProposal.updateMany({ _id: { $in: grantProposalIds } }, {
             isDeleted: true,
             deletedBy: req.user._id,
@@ -462,7 +516,8 @@ exports.deleteGrantProposals = async (req, res) => {
         }); // 15 days
         res.status(200).json(proposals);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Calendar event error:', error);
+        res.status(500).json({ message: error.message || "Server error" });
     }
 };
 
@@ -472,12 +527,16 @@ exports.deletePermanently = async (req, res) => {
         if (!proposalId) {
             return res.status(400).json({ message: "Proposal ID is required" });
         }
+        if (!mongoose.Types.ObjectId.isValid(proposalId)) {
+            return res.status(400).json({ message: "Invalid ID format" });
+        }
         await Proposal.findByIdAndDelete(proposalId);
         await DraftRFP.deleteOne({ proposalId: proposalId });
         await ProposalTracker.deleteOne({ proposalId: proposalId });
         res.status(200).json({ message: "Proposal deleted permanently" });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Calendar event error:', error);
+        res.status(500).json({ message: error.message || "Server error" });
     }
 };
 
@@ -487,18 +546,25 @@ exports.deletePermanentlyGrant = async (req, res) => {
         if (!grantProposalId) {
             return res.status(400).json({ message: "Grant proposal ID is required" });
         }
+        if (!mongoose.Types.ObjectId.isValid(grantProposalId)) {
+            return res.status(400).json({ message: "Invalid ID format" });
+        }
         await GrantProposal.findByIdAndDelete(grantProposalId);
         await DraftGrant.deleteOne({ grantProposalId: grantProposalId });
         await ProposalTracker.deleteOne({ grantProposalId: grantProposalId });
         res.status(200).json({ message: "Grant proposal deleted permanently" });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Calendar event error:', error);
+        res.status(500).json({ message: error.message || "Server error" });
     }
 };
 
 exports.updateProposal = async (req, res) => {
     try {
         const { proposalId, updates } = req.body;
+        if (!mongoose.Types.ObjectId.isValid(proposalId)) {
+            return res.status(400).json({ message: "Invalid ID format" });
+        }
         const proposal = await Proposal.findById(proposalId).populate("currentEditor", "_id");
         if (!proposal) {
             return res.status(404).json({ message: "Proposal not found" });
@@ -553,13 +619,17 @@ exports.updateProposal = async (req, res) => {
         await proposal.save();
         res.status(200).json(proposal);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Calendar event error:', error);
+        res.status(500).json({ message: error.message || "Server error" });
     }
 };
 
 exports.updateGrantProposal = async (req, res) => {
     try {
         const { grantProposalId, updates } = req.body;
+        if (!mongoose.Types.ObjectId.isValid(grantProposalId)) {
+            return res.status(400).json({ message: "Invalid ID format" });
+        }
         const grantProposal = await GrantProposal.findById(grantProposalId).populate("currentEditor", "_id");
         if (!grantProposal) {
             return res.status(404).json({ message: "Grant proposal not found" });
@@ -601,6 +671,7 @@ exports.updateGrantProposal = async (req, res) => {
         await grantProposal.save();
         res.status(200).json(grantProposal);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Calendar event error:', error);
+        res.status(500).json({ message: error.message || "Server error" });
     }
 };

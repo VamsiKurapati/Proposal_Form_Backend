@@ -1,5 +1,5 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const mongoose = require('mongoose');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const Subscription = require('../models/Subscription');
 const SubscriptionPlan = require('../models/SubscriptionPlan');
 const Notification = require('../models/Notification');
@@ -69,38 +69,55 @@ const createPaymentIntent = async (req, res) => {
 
         let stripeCustomerId = user.stripeCustomerId;
         if (!stripeCustomerId) {
-            // Create Stripe customer
-            const customer = await stripe.customers.create({
-                email: user.email,
-                metadata: {
-                    userId: userId
-                }
-            });
+            try {
+                // Create Stripe customer
+                const customer = await stripe.customers.create({
+                    email: user.email,
+                    metadata: {
+                        userId: userId.toString()
+                    }
+                });
 
-            stripeCustomerId = customer.id;
-            user.stripeCustomerId = stripeCustomerId;
-            await user.save();
+                stripeCustomerId = customer.id;
+                user.stripeCustomerId = stripeCustomerId;
+                await user.save();
+            } catch (stripeError) {
+                console.error('Stripe customer creation failed:', stripeError);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Failed to create customer account'
+                });
+            }
         }
 
         // Create payment intent with verified amount from DB
         const amountInCents = Math.round(expectedAmount * 100);
 
-        const paymentIntent = await stripe.paymentIntents.create({
-            amount: amountInCents,
-            currency: 'usd',
-            customer: stripeCustomerId,
-            metadata: {
-                userId: userId,
-                planId: planId,
-                planName: plan.name,
-                billingCycle: billingCycle,
-                planPriceCents: amountInCents.toString()
-            },
-            automatic_payment_methods: {
-                enabled: true,
-            },
-            description: `${plan.name} subscription (${billingCycle})`
-        });
+        let paymentIntent;
+        try {
+            paymentIntent = await stripe.paymentIntents.create({
+                amount: amountInCents,
+                currency: 'usd',
+                customer: stripeCustomerId,
+                metadata: {
+                    userId: userId.toString(),
+                    planId: planId.toString(),
+                    planName: plan.name,
+                    billingCycle: billingCycle,
+                    planPriceCents: amountInCents.toString()
+                },
+                automatic_payment_methods: {
+                    enabled: true,
+                },
+                description: `${plan.name} subscription (${billingCycle})`
+            });
+        } catch (stripeError) {
+            console.error('Stripe payment intent creation failed:', stripeError);
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to create payment intent'
+            });
+        }
 
         res.status(200).json({
             success: true,
@@ -133,9 +150,18 @@ const activateSubscription = async (req, res) => {
         }
 
         // Verify payment intent
-        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
-            expand: ['latest_charge']
-        });
+        let paymentIntent;
+        try {
+            paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
+                expand: ['latest_charge']
+            });
+        } catch (stripeError) {
+            console.error('Stripe payment intent retrieval failed:', stripeError);
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to verify payment'
+            });
+        }
 
         if (paymentIntent.status !== 'succeeded') {
 
@@ -452,7 +478,16 @@ const processManualRefund = async (req, res) => {
         }
 
         // Verify payment intent exists and get details
-        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+        let paymentIntent;
+        try {
+            paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+        } catch (stripeError) {
+            console.error('Stripe payment intent retrieval failed:', stripeError);
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to verify payment intent'
+            });
+        }
 
         if (!paymentIntent) {
             return res.status(404).json({
@@ -487,7 +522,7 @@ const processManualRefund = async (req, res) => {
             reason: 'requested_by_customer',
             metadata: {
                 reason: reason,
-                refundedBy: userId,
+                refundedBy: userId.toString(),
                 refundedAt: new Date().toISOString()
             }
         };
@@ -497,7 +532,16 @@ const processManualRefund = async (req, res) => {
             refundData.amount = Math.round(amount * 100); // Convert to cents
         }
 
-        const refund = await stripe.refunds.create(refundData);
+        let refund;
+        try {
+            refund = await stripe.refunds.create(refundData);
+        } catch (stripeError) {
+            console.error('Stripe refund creation failed:', stripeError);
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to create refund'
+            });
+        }
 
         // Update payment record
         await Payment.findOneAndUpdate(
@@ -560,9 +604,18 @@ const getRefundStatus = async (req, res) => {
         }
 
         // Get refunds for this payment intent
-        const refunds = await stripe.refunds.list({
-            payment_intent: paymentIntentId
-        });
+        let refunds;
+        try {
+            refunds = await stripe.refunds.list({
+                payment_intent: paymentIntentId
+            });
+        } catch (stripeError) {
+            console.error('Stripe refunds list failed:', stripeError);
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to retrieve refund information'
+            });
+        }
 
         // Get payment record
         const payment = await Payment.findOne({ transaction_id: paymentIntentId });

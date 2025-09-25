@@ -60,7 +60,20 @@ exports.basicComplianceCheck = async (req, res) => {
   try {
     const { jsonData, proposalId, isCompressed } = req.body;
 
+    // Input validation
+    if (!jsonData || !proposalId) {
+      return res.status(400).json({ message: "jsonData and proposalId are required" });
+    }
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(proposalId)) {
+      return res.status(400).json({ message: "Invalid proposal ID format" });
+    }
+
     const new_proposal = await Proposal.findById(proposalId);
+    if (!new_proposal) {
+      return res.status(404).json({ message: "Proposal not found" });
+    }
 
     const decompressedProposal = isCompressed ? decompress(jsonData) : jsonData;
 
@@ -94,10 +107,18 @@ exports.basicComplianceCheckPdf = [
     try {
       const { file } = req;
 
+      // Validate user exists
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+
       let userEmail = req.user.email;
       let userId = req.user._id;
       if (req.user.role === "employee") {
         const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+        if (!employeeProfile) {
+          return res.status(404).json({ message: "Employee profile not found" });
+        }
         userEmail = employeeProfile.companyMail;
         const companyProfile = await CompanyProfile.findOne({ email: userEmail });
         if (!companyProfile) {
@@ -114,6 +135,18 @@ exports.basicComplianceCheckPdf = [
 
       if (!file) {
         return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      // Validate file type
+      const allowedTypes = ['application/pdf'];
+      if (!allowedTypes.includes(file.mimetype)) {
+        return res.status(400).json({ message: "Invalid file type. Only PDF files are allowed." });
+      }
+
+      // Validate file size (10MB limit)
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (file.size > maxSize) {
+        return res.status(400).json({ message: "File size exceeds 10MB limit" });
       }
 
       const fileBuffer = await getFileBufferFromGridFS(file.id);
@@ -163,13 +196,29 @@ exports.advancedComplianceCheck = async (req, res) => {
   try {
     const { jsonData, proposalId, isCompressed } = req.body;
 
+    // Input validation
+    if (!jsonData || !proposalId) {
+      return res.status(400).json({ message: "jsonData and proposalId are required" });
+    }
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(proposalId)) {
+      return res.status(400).json({ message: "Invalid proposal ID format" });
+    }
+
     const decompressedProposal = isCompressed ? decompress(jsonData) : jsonData;
 
     const new_proposal = await Proposal.findById(proposalId);
+    if (!new_proposal) {
+      return res.status(404).json({ message: "Proposal not found" });
+    }
 
     const structuredJson = getStructuredJson(decompressedProposal, new_proposal.initialProposal);
 
     const rfp = await MatchedRFP.findById(new_proposal.rfpId) || await RFP.findById(new_proposal.rfpId);
+    if (!rfp) {
+      return res.status(404).json({ message: "RFP not found" });
+    }
 
     const initialProposal_1 = {
       "rfp": {
@@ -229,6 +278,21 @@ exports.advancedComplianceCheckPdf = [
       const { file } = req;
       const { rfpId } = req.body;
 
+      // Input validation
+      if (!rfpId) {
+        return res.status(400).json({ message: "rfpId is required" });
+      }
+
+      // Validate ObjectId format
+      if (!mongoose.Types.ObjectId.isValid(rfpId)) {
+        return res.status(400).json({ message: "Invalid RFP ID format" });
+      }
+
+      // Validate user exists
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+
       let userEmail = req.user.email;
       let userId = req.user._id;
 
@@ -251,15 +315,25 @@ exports.advancedComplianceCheckPdf = [
         return res.status(404).json({ message: "Subscription not found or expired" });
       }
 
-
       //check if subscription is pro or enterprise or custom
       if (subscription.plan_name !== "Pro" && subscription.plan_name !== "Enterprise" && subscription.plan_name !== "Custom Enterprise Plan") {
         return res.status(404).json({ message: "You are not authorized to use this feature" });
       }
 
-
       if (!file) {
         return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      // Validate file type
+      const allowedTypes = ['application/pdf'];
+      if (!allowedTypes.includes(file.mimetype)) {
+        return res.status(400).json({ message: "Invalid file type. Only PDF files are allowed." });
+      }
+
+      // Validate file size (10MB limit)
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (file.size > maxSize) {
+        return res.status(400).json({ message: "File size exceeds 10MB limit" });
       }
 
 
@@ -341,6 +415,11 @@ exports.generatePDF = async (req, res) => {
   try {
     const { project, isCompressed } = req.body;
 
+    // Input validation
+    if (!project) {
+      return res.status(400).json({ message: "project is required" });
+    }
+
     const pdf = await axios.post(`${process.env.PIPELINE_URL}/download-pdf`, { "project": project, "isCompressed": isCompressed }, { responseType: "arraybuffer" });
 
     res.setHeader('Content-Type', 'application/pdf');
@@ -356,11 +435,30 @@ exports.generatePDF = async (req, res) => {
 exports.autoSaveProposal = async (req, res) => {
   try {
     const { proposalId, jsonData, isCompressed } = req.body;
+
+    // Input validation
+    if (!proposalId || !jsonData) {
+      return res.status(400).json({ message: "proposalId and jsonData are required" });
+    }
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(proposalId)) {
+      return res.status(400).json({ message: "Invalid proposal ID format" });
+    }
+
+    // Validate user exists
+    if (!req.user) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
     const decompressedProject = isCompressed ? decompress(jsonData) : jsonData;
 
     let userEmail = req.user.email;
     if (req.user.role === "employee") {
       const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+      if (!employeeProfile) {
+        return res.status(404).json({ message: "Employee profile not found" });
+      }
       userEmail = employeeProfile.companyMail;
     }
 

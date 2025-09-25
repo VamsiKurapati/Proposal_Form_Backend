@@ -126,6 +126,11 @@ exports.serveTemplateImage = async (req, res) => {
 
         const filename = req.params.filename;
 
+        // Input validation
+        if (!filename) {
+            return res.status(400).json({ message: "Filename is required" });
+        }
+
         // Find file by filename (should be unique now)
         const file = await bucket.find({ filename: filename }).toArray();
 
@@ -252,6 +257,12 @@ exports.serveCloudImage = async (req, res) => {
 exports.deleteImage = async (req, res) => {
     try {
         const filename = req.params.filename;
+
+        // Input validation
+        if (!filename) {
+            return res.status(400).json({ message: "Filename is required" });
+        }
+
         const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
             // bucketName: "cloud_images",
             bucketName: "uploads",
@@ -263,8 +274,10 @@ exports.deleteImage = async (req, res) => {
         file = await bucket.find({ filename: filename }).toArray();
 
         if (!file || file.length === 0) {
-            //Try finding by fileId
-            file = await bucket.find({ _id: new mongoose.Types.ObjectId(filename) }).toArray();
+            // Try finding by fileId - validate ObjectId format first
+            if (mongoose.Types.ObjectId.isValid(filename)) {
+                file = await bucket.find({ _id: new mongoose.Types.ObjectId(filename) }).toArray();
+            }
             if (!file || file.length === 0) {
                 return res.status(404).json({ message: "File not found" });
             }
@@ -287,6 +300,11 @@ exports.deleteImage = async (req, res) => {
 exports.serveImageById = async (req, res) => {
     try {
         const fileId = req.params.fileId;
+
+        // Input validation
+        if (!fileId) {
+            return res.status(400).json({ message: "File ID is required" });
+        }
 
         if (!mongoose.Types.ObjectId.isValid(fileId)) {
             return res.status(400).json({ message: "Invalid file ID format" });

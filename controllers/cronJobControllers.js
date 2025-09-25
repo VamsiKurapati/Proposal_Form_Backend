@@ -18,9 +18,11 @@ const Payment = require('../models/Payments');
 //Trigger Grant Cron Job to fetch Grants from the Grant API and save them to the database
 exports.fetchGrants = async () => {
     try {
+        console.log('Starting grant fetch cron job...');
         const grants = await axios.get(`${process.env.NEW_PIPELINE_URL}/grant/getgrants`);
 
         const grants_data = grants.data;
+        console.log(`Fetched ${grants_data.length} grants from API`);
 
         await Promise.all(grants_data.map(async (grant) => {
             //check if the grant is already in the database
@@ -84,9 +86,11 @@ exports.fetchGrants = async () => {
                 });
             }
         }));
+        console.log('Grants fetched successfully and saved to the database');
         return { message: "Grants fetched successfully" };
     } catch (err) {
-        console.error('Error in /fetchGrants:', err);
+        console.error('Error in fetchGrants cron job:', err);
+        console.error('Error stack:', err.stack);
         return { message: err.message || 'Failed to trigger grants' };
     }
 };
@@ -96,7 +100,7 @@ exports.priorityCronJob = async () => {
     try {
         //Get all support tickets and update the priority of the ticket to "Medium" if ticket.createdAt is more than 1 day and "High" if ticket.createdAt is more than 48 hours
         const supportTickets = await Support.find().sort({ createdAt: -1 });
-
+        console.log(`Found ${supportTickets.length} support tickets to update priority`);
         await Promise.all(
             supportTickets.map(async ticket => {
                 const createdAt = new Date(ticket.createdAt);
@@ -120,7 +124,7 @@ exports.priorityCronJob = async () => {
                 }
             })
         );
-
+        console.log('Priority updated successfully');
         return { message: "Priority updated successfully" };
 
     } catch (err) {
@@ -144,7 +148,7 @@ exports.deleteExpiredProposals = async () => {
                 { restoreBy: { $ne: null } }
             ]
         });
-
+        console.log(`Found ${expiredProposals.length} expired proposals to delete`);
         if (expiredProposals.length === 0) {
             return { message: "No expired proposals found" };
         }
@@ -166,6 +170,7 @@ exports.deleteExpiredProposals = async () => {
                 console.error(`Failed to delete proposal ${proposal._id}:`, err.message);
             }
         }));
+        console.log('Expired proposals deleted successfully');
     } catch (error) {
         console.error('Error in deleteExpiredProposals service:', error);
         return { message: error.message || "Error deleting expired proposals" };
@@ -186,7 +191,7 @@ exports.deleteExpiredGrantProposals = async () => {
                 { restoreBy: { $ne: null } }
             ]
         });
-
+        console.log(`Found ${expiredGrantProposals.length} expired grant proposals to delete`);
         if (expiredGrantProposals.length === 0) {
             return { message: "No expired grant proposals found" };
         }
@@ -205,7 +210,7 @@ exports.deleteExpiredGrantProposals = async () => {
                 console.error(`Failed to delete grant proposal ${grantProposal._id}:`, err.message);
             }
         }));
-
+        console.log('Expired grant proposals deleted successfully');
         return { message: "Expired grant proposals deleted successfully" };
     } catch (error) {
         console.error('Error in deleteExpiredGrantProposals service:', error);
@@ -217,10 +222,11 @@ exports.deleteExpiredGrantProposals = async () => {
 exports.fetchRFPs = async () => {
     try {
         //Fetch RFPs from the RFP API and save them to the database
+        console.log('Starting RFP fetch cron job...');
         const response = await axios.get(`${process.env.NEW_PIPELINE_URL}/rfp/getRFPs`, {
             responseType: 'arraybuffer' // This ensures we get binary data for decompression
         });
-
+        console.log(`Fetched ${rfp_data.length} RFPs from API`);
         //We will receive compressed data, so we need to decompress it
         let decompressedData;
         try {
@@ -279,6 +285,7 @@ exports.fetchRFPs = async () => {
                 });
             }
         }));
+        console.log('RFPs fetched successfully and saved to the database');
         return { message: "RFPs fetched successfully" };
     } catch (err) {
         console.error('Error in fetchRFPs service:', err);
@@ -290,6 +297,7 @@ exports.fetchRFPs = async () => {
 exports.fetchRefundPayments = async () => {
     try {
         const refundPayments = await Payment.find({ status: 'Pending Refund', refund_id: { $ne: null } });
+        console.log(`Found ${refundPayments.length} refund payments to fetch`);
         await Promise.all(refundPayments.map(async (refundPayment) => {
             const refund = await stripe.refunds.retrieve(refundPayment.refund_id);
             if (refund.status === 'succeeded') {
@@ -300,6 +308,7 @@ exports.fetchRefundPayments = async () => {
                 await Payment.findByIdAndUpdate(refundPayment._id, { status: 'Pending Refund' });
             }
         }));
+        console.log('Refund payments fetched successfully');
         return { message: "Refund payments fetched successfully" };
     } catch (error) {
         console.error('Error in fetchRefundPayments service:', error);

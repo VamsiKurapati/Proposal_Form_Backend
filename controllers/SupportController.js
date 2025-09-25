@@ -7,10 +7,14 @@ exports.createTicket = async (req, res) => {
   try {
     const { userId, category, subCategory, description, plan_name } = req.body;
 
-
-
+    // Input validation
     if (!userId || !description) {
       return res.status(400).json({ message: "userId and description are required" });
+    }
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid user ID format" });
     }
 
     const attachments = [];
@@ -69,12 +73,18 @@ exports.getUserTickets = async (req, res) => {
       return res.status(400).json({ message: "userId is required" });
     }
 
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid user ID format" });
+    }
+
     // Direct match since userId is stored as string
     const tickets = await Support.find({ userId })
       .sort({ createdAt: -1 });
 
     res.json({ tickets });
   } catch (err) {
+    console.error('Error fetching tickets:', err);
     res.status(500).json({ message: "Error fetching tickets", error: err.message });
   }
 };
@@ -83,6 +93,16 @@ exports.getUserTickets = async (req, res) => {
 exports.reopenSupportTicket = async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Input validation
+    if (!id) {
+      return res.status(400).json({ message: "Support ticket ID is required" });
+    }
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid support ticket ID format" });
+    }
 
     // Find the ticket by ID
     const ticket = await Support.findById(id);

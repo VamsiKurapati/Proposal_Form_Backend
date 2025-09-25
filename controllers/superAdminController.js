@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Proposal = require("../models/Proposal");
 const CompanyProfile = require("../models/CompanyProfile");
 const Notification = require("../models/Notification");
@@ -72,14 +73,25 @@ exports.updateCompanyStatus = async (req, res) => {
       return res.status(400).json({ message: "company ID is required" });
     }
 
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid company ID format" });
+    }
+
     const blocked = req.body.blocked === "Blocked" ? true : false;
     const updatedCompany = await CompanyProfile.findByIdAndUpdate(
       id,
       { $set: { blocked } },
       { new: true, runValidators: true }
     );
+
+    if (!updatedCompany) {
+      return res.status(404).json({ message: "Company not found" });
+    }
+
     res.json(updatedCompany);
   } catch (err) {
+    console.error('Error updating company status:', err);
     res.status(500).json({ message: "Error updating company status", error: err.message });
   }
 };
@@ -239,11 +251,20 @@ exports.getSupportStatsAndData = async (req, res) => {
 // Controller to update (edit) a support ticket according to Support.js schema
 exports.updateSupportTicket = async (req, res) => {
   try {
-
     const { id } = req.params;
+
+    // Input validation
+    if (!id) {
+      return res.status(400).json({ message: "Support ticket ID is required" });
+    }
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid support ticket ID format" });
+    }
+
     // Accept all updatable fields as per Support.js schema
     const { status } = req.body;
-
     const { Resolved_Description } = req.body || "";
 
     if (!status) {
@@ -466,6 +487,17 @@ exports.getSubscriptionPlansData = async (req, res) => {
 exports.updateSubscriptionPlanPrice = async (req, res) => {
   try {
     const id = req.params.id;
+
+    // Input validation
+    if (!id) {
+      return res.status(400).json({ message: "Subscription plan ID is required" });
+    }
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid subscription plan ID format" });
+    }
+
     const { monthlyPrice, yearlyPrice, maxRFPProposalGenerations, maxGrantProposalGenerations } = req.body;
 
     const existingSubscriptionPlan = await SubscriptionPlan.findById(id);
@@ -960,9 +992,30 @@ exports.editCustomPlan = async (req, res) => {
 };
 
 exports.deleteCustomPlan = async (req, res) => {
-  const { id } = req.params;
-  await CustomPlan.findByIdAndDelete(id);
-  res.status(200).json({ message: "Custom plan deleted successfully" });
+  try {
+    const { id } = req.params;
+
+    // Input validation
+    if (!id) {
+      return res.status(400).json({ message: "Custom plan ID is required" });
+    }
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid custom plan ID format" });
+    }
+
+    const deletedPlan = await CustomPlan.findByIdAndDelete(id);
+
+    if (!deletedPlan) {
+      return res.status(404).json({ message: "Custom plan not found" });
+    }
+
+    res.status(200).json({ message: "Custom plan deleted successfully" });
+  } catch (error) {
+    console.error('Error deleting custom plan:', error);
+    res.status(500).json({ message: "Error deleting custom plan", error: error.message });
+  }
 };
 
 

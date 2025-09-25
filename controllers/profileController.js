@@ -17,6 +17,7 @@ const Payment = require("../models/Payments");
 const { summarizePdfBuffer } = require("../utils/documentSummarizer");
 const CalendarEvent = require("../models/CalendarEvents");
 const { sendEmail } = require("../utils/mailSender");
+const { validateEmail, sanitizeInput, validateRequiredFields } = require("../utils/validation");
 
 const storage = new GridFsStorage({
     url: process.env.MONGO_URI,
@@ -60,7 +61,8 @@ async function sendEmail_1(email, password, companyName, name) {
                 &nbsp;&nbsp;&nbsp;&nbsp;Email: ${email}<br />
                 &nbsp;&nbsp;&nbsp;&nbsp;Temporary Password: ${password}<br /><br />
                 
-                <a href="${process.env.FRONTEND_URL}/login">Login Now</a><br /><br />
+                <a href="${process.env.FRONTEND_URL}/login">Login Now</a><br />
+                <a href="${process.env.FRONTEND_URL}/reset-password">Reset Your Password</a><br /><br />
 
                 Best regards,<br />
                 The RFP & Grants Team
@@ -159,6 +161,11 @@ exports.getProfile = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
+
+        if (user.role !== "company") {
+            return res.status(403).json({ message: "Access denied. Company profile required." });
+        }
+
         const companyProfile = await CompanyProfile.findOne({ userId: req.user._id });
         if (!companyProfile) {
             return res.status(404).json({ message: "Company profile not found" });
@@ -230,7 +237,8 @@ exports.getProfile = async (req, res) => {
         };
         res.status(200).json(data_1);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Get profile error:', error);
+        res.status(500).json({ message: error.message || "Server error" });
     }
 };
 
@@ -269,7 +277,8 @@ exports.getEmployeeProfile = async (req, res) => {
         };
         res.status(200).json(data);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Get employee profile error:', error);
+        res.status(500).json({ message: error.message || "Server error" });
     }
 };
 
@@ -354,6 +363,13 @@ exports.uploadLogo = [
             if (!req.file) {
                 return res.status(400).json({ message: "No file uploaded" });
             }
+
+            // Validate file size (5MB limit)
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (req.file.size > maxSize) {
+                return res.status(400).json({ message: "File size exceeds 5MB limit" });
+            }
+
             const logoUrl = `${req.file.id}`;
             if (user.role === "company") {
                 await CompanyProfile.findOneAndUpdate(
@@ -361,16 +377,19 @@ exports.uploadLogo = [
                     { logoUrl },
                     { new: true }
                 );
-            } else {
+            } else if (user.role === "employee") {
                 await EmployeeProfile.findOneAndUpdate(
                     { userId: req.user._id },
                     { logoUrl },
                     { new: true }
                 );
+            } else {
+                return res.status(403).json({ message: "Invalid user role for logo upload" });
             }
             res.status(200).json({ logoUrl });
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            console.error('Logo upload error:', error);
+            res.status(500).json({ message: error.message || "Server error" });
         }
     }
 ];
@@ -379,7 +398,15 @@ exports.updateCompanyProfile = [
     multiUpload,
     async (req, res) => {
         try {
-            const { companyName, industry, location, linkedIn, website, email, phone, services, establishedYear, numberOfEmployees, bio, awards, clients, preferredIndustries, adminName } = req.body;
+            const { companyName, industry, location, linkedIn, website, phone, services, establishedYear, numberOfEmployees, bio, awards, clients, preferredIndustries, adminName } = req.body;
+
+            // Input validation
+            const requiredFields = ['companyName', 'industry', 'location', 'linkedIn', 'website', 'phone', 'services', 'establishedYear', 'numberOfEmployees', 'bio', 'awards', 'clients', 'preferredIndustries', 'adminName'];
+            const validation = validateRequiredFields(req.body, requiredFields);
+            if (!validation.isValid) {
+                return res.status(400).json({ message: "Missing required fields", missingFields: validation.missingFields });
+            }
+
             const user = await User.findById(req.user._id);
             if (!user) {
                 return res.status(404).json({ message: "User not found" });
@@ -387,8 +414,10 @@ exports.updateCompanyProfile = [
             if (user.role !== "company") {
                 return res.status(403).json({ message: "You are not authorized to update this profile" });
             }
-            // user.email = email;
-            user.mobile = phone;
+
+            // Sanitize inputs
+            const sanitizedPhone = phone ? sanitizeInput(phone) : user.mobile;
+            user.mobile = sanitizedPhone;
             await user.save();
 
             let parsedServices = [];
@@ -447,7 +476,8 @@ exports.updateCompanyProfile = [
             );
             res.status(200).json({ message: "Company profile updated successfully" });
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            console.error('Update company profile error:', error);
+            res.status(500).json({ message: error.message || "Server error" });
         }
     }
 ];
@@ -456,7 +486,15 @@ exports.updateEmployeeProfile = [
     upload.none(),
     async (req, res) => {
         try {
-            const { name, email, location, phone, highestQualification, skills } = req.body;
+            const { name, location, phone, highestQualification, skills } = req.body;
+
+            // Input validation
+            const requiredFields = ['name', 'location', 'phone', 'highestQualification', 'skills'];
+            const validation = validateRequiredFields(req.body, requiredFields);
+            if (!validation.isValid) {
+                return res.status(400).json({ message: "Missing required fields", missingFields: validation.missingFields });
+            }
+
             const user = await User.findById(req.user._id);
             if (!user) {
                 return res.status(404).json({ message: "User not found" });
@@ -465,14 +503,18 @@ exports.updateEmployeeProfile = [
                 return res.status(403).json({ message: "You are not authorized to update this profile" });
             }
 
-            // user.email = email;
-            user.mobile = phone;
-            user.fullName = name;
+            // Sanitize inputs
+            const sanitizedPhone = sanitizeInput(phone);
+            const sanitizedName = sanitizeInput(name);
+            const sanitizedLocation = sanitizeInput(location);
+
+            user.mobile = sanitizedPhone;
+            user.fullName = sanitizedName;
             await user.save();
 
             const employeeProfile = await EmployeeProfile.findOneAndUpdate(
                 { userId: req.user._id },
-                { name, location, phone, highestQualification, skills },
+                { name: sanitizedName, location: sanitizedLocation, phone: sanitizedPhone, highestQualification, skills },
                 { new: true }
             );
 
@@ -490,7 +532,8 @@ exports.updateEmployeeProfile = [
             }
             res.status(200).json({ message: "Employee profile updated successfully" });
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            console.error('Update employee profile error:', error);
+            res.status(500).json({ message: error.message || "Server error" });
         }
     }
 ];
@@ -523,13 +566,26 @@ exports.addEmployee = async (req, res) => {
     try {
         const { name, email, phone, shortDesc, highestQualification, skills, jobTitle, accessLevel } = req.body;
 
-        if (!name || !email || !phone || !shortDesc || !highestQualification || !skills || !jobTitle || !accessLevel) {
-            return res.status(400).json({ message: "All fields are required" });
+        // Input validation
+        const requiredFields = ['name', 'email', 'phone', 'shortDesc', 'highestQualification', 'skills', 'jobTitle', 'accessLevel'];
+        const validation = validateRequiredFields(req.body, requiredFields);
+        if (!validation.isValid) {
+            return res.status(400).json({
+                message: "Missing required fields",
+                missingFields: validation.missingFields
+            });
         }
 
+        // Sanitize inputs
+        const sanitizedName = sanitizeInput(name);
+        const sanitizedEmail = sanitizeInput(email);
+        const sanitizedPhone = sanitizeInput(phone);
+        const sanitizedShortDesc = sanitizeInput(shortDesc);
+        const sanitizedHighestQualification = sanitizeInput(highestQualification);
+        const sanitizedJobTitle = sanitizeInput(jobTitle);
+
         // Email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
+        if (!validateEmail(sanitizedEmail)) {
             return res.status(400).json({ message: "Invalid email format" });
         }
 
@@ -549,17 +605,17 @@ exports.addEmployee = async (req, res) => {
 
         if (accessLevel == "Member") {
             const companyProfile = await CompanyProfile.findOne({ userId: req.user._id });
-            if (companyProfile.employees.some(emp => emp.email === email)) {
+            if (companyProfile.employees.some(emp => emp.email === sanitizedEmail)) {
                 return res.status(400).json({ message: "Employee already exists in company profile" });
             }
             const employeeProfile = {
-                name,
-                email,
-                phone,
-                about: shortDesc,
-                highestQualification,
+                name: sanitizedName,
+                email: sanitizedEmail,
+                phone: sanitizedPhone,
+                about: sanitizedShortDesc,
+                highestQualification: sanitizedHighestQualification,
                 skills,
-                jobTitle,
+                jobTitle: sanitizedJobTitle,
                 accessLevel,
                 employeeId: new mongoose.Types.ObjectId(),
             };
@@ -570,7 +626,7 @@ exports.addEmployee = async (req, res) => {
             if (!companyProfile) {
                 return res.status(404).json({ message: "Company profile not found" });
             }
-            if (companyProfile.employees.some(emp => emp.email === email)) {
+            if (companyProfile.employees.some(emp => emp.email === sanitizedEmail)) {
                 return res.status(400).json({ message: "Employee already exists in company profile" });
             }
             const noOfEditors = companyProfile.employees.filter(emp => emp.accessLevel === "Editor").length;
@@ -584,25 +640,42 @@ exports.addEmployee = async (req, res) => {
             if (accessLevel === "Viewer" && subscription.max_viewers <= noOfViewers) {
                 return res.status(400).json({ message: "You have reached the maximum number of viewers" });
             }
-            const user_1 = await User.findOne({ email });
+            const user_1 = await User.findOne({ email: sanitizedEmail });
             if (!user_1) {
                 const password = generateStrongPassword();
                 const hashedPassword = await bcrypt.hash(password, 10);
-                const user_2 = await User.create({ fullName: name, email, mobile: phone, password: hashedPassword, role: "employee" });
-                const employeeProfile = new EmployeeProfile({ userId: user_2._id, name, email, phone, about: shortDesc, highestQualification, skills, jobTitle, accessLevel, companyMail: user.email });
+                const user_2 = await User.create({
+                    fullName: sanitizedName,
+                    email: sanitizedEmail,
+                    mobile: sanitizedPhone,
+                    password: hashedPassword,
+                    role: "employee"
+                });
+                const employeeProfile = new EmployeeProfile({
+                    userId: user_2._id,
+                    name: sanitizedName,
+                    email: sanitizedEmail,
+                    phone: sanitizedPhone,
+                    about: sanitizedShortDesc,
+                    highestQualification: sanitizedHighestQualification,
+                    skills,
+                    jobTitle: sanitizedJobTitle,
+                    accessLevel,
+                    companyMail: user.email
+                });
                 await employeeProfile.save();
                 await addEmployeeToCompanyProfile(req, employeeProfile);
-                await sendEmail_1(email, password, companyProfile.companyName, name);
+                await sendEmail_1(sanitizedEmail, password, companyProfile.companyName, sanitizedName);
             } else {
                 const employeeProfile = await EmployeeProfile.findOne({ userId: user_1._id });
                 if (employeeProfile) {
-                    employeeProfile.name = name;
-                    employeeProfile.email = email;
-                    employeeProfile.phone = phone;
-                    employeeProfile.about = shortDesc;
-                    employeeProfile.jobTitle = jobTitle;
+                    employeeProfile.name = sanitizedName;
+                    employeeProfile.email = sanitizedEmail;
+                    employeeProfile.phone = sanitizedPhone;
+                    employeeProfile.about = sanitizedShortDesc;
+                    employeeProfile.jobTitle = sanitizedJobTitle;
                     employeeProfile.skills = skills;
-                    employeeProfile.highestQualification = highestQualification;
+                    employeeProfile.highestQualification = sanitizedHighestQualification;
                     employeeProfile.accessLevel = accessLevel;
                     employeeProfile.companyMail = user.email;
                     await employeeProfile.save();
@@ -610,23 +683,34 @@ exports.addEmployee = async (req, res) => {
                     const password = generateStrongPassword();
                     const hashedPassword = await bcrypt.hash(password, 10);
                     await User.findOneAndUpdate(
-                        { email: email },
+                        { email: sanitizedEmail },
                         { password: hashedPassword },
                         { new: true }
                     );
-                    await sendEmail_1(email, password, companyProfile.companyName, name);
+                    await sendEmail_1(sanitizedEmail, password, companyProfile.companyName, sanitizedName);
                 } else {
-                    const employeeProfile = new EmployeeProfile({ userId: user_1._id, name, email, phone, about: shortDesc, highestQualification, skills, jobTitle, accessLevel, companyMail: user.email });
+                    const employeeProfile = new EmployeeProfile({
+                        userId: user_1._id,
+                        name: sanitizedName,
+                        email: sanitizedEmail,
+                        phone: sanitizedPhone,
+                        about: sanitizedShortDesc,
+                        highestQualification: sanitizedHighestQualification,
+                        skills,
+                        jobTitle: sanitizedJobTitle,
+                        accessLevel,
+                        companyMail: user.email
+                    });
                     await employeeProfile.save();
                     await addEmployeeToCompanyProfile(req, employeeProfile);
                     const password = generateStrongPassword();
                     const hashedPassword = await bcrypt.hash(password, 10);
                     await User.findOneAndUpdate(
-                        { email: email },
+                        { email: sanitizedEmail },
                         { password: hashedPassword },
                         { new: true }
                     );
-                    await sendEmail_1(email, password, companyProfile.companyName, name);
+                    await sendEmail_1(sanitizedEmail, password, companyProfile.companyName, sanitizedName);
                 }
             }
         }

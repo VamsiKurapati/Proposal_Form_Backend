@@ -12,6 +12,7 @@ const Notification = require("../models/Notification");
 const OTP = require("../models/OTP");
 const nodemailer = require("nodemailer");
 const { sendEmail } = require("../utils/mailSender");
+const { validateEmail, validatePassword, sanitizeInput, validateRequiredFields } = require("../utils/validation");
 
 const storage = new GridFsStorage({
   url: process.env.MONGO_URI,
@@ -60,13 +61,48 @@ exports.signupWithProfile = [
   async (req, res) => {
     try {
       const { email, fullName, password, phone, role } = req.body;
-      const existing = await User.findOne({ email });
-      if (existing) return res.status(400).json({ message: "Email already registered" });
 
-      if (!passwordValidator(password)) return res.status(400).json({ message: "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character" });
+      // Input validation
+      const requiredFields = ['email', 'fullName', 'password', 'phone', 'role'];
+      const validation = validateRequiredFields(req.body, requiredFields);
+      if (!validation.isValid) {
+        return res.status(400).json({
+          message: "Missing required fields",
+          missingFields: validation.missingFields
+        });
+      }
 
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const user = new User({ email, fullName, password: hashedPassword, mobile: phone, role });
+      // Sanitize inputs
+      const sanitizedEmail = sanitizeInput(email);
+      const sanitizedFullName = sanitizeInput(fullName);
+      const sanitizedPhone = sanitizeInput(phone);
+
+      // Validate email format
+      if (!validateEmail(sanitizedEmail)) {
+        return res.status(400).json({ message: "Invalid email format" });
+      }
+
+      // Validate password
+      if (!validatePassword(password)) {
+        return res.status(400).json({ message: "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character" });
+      }
+
+      const existing = await User.findOne({ email: sanitizedEmail });
+      if (existing) {
+        return res.status(400).json({ message: "Email already registered" });
+      }
+
+      // Hash password with proper salt rounds
+      const saltRounds = 12;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+      const user = new User({
+        email: sanitizedEmail,
+        fullName: sanitizedFullName,
+        password: hashedPassword,
+        mobile: sanitizedPhone,
+        role
+      });
       await user.save();
 
       const profileData = {
@@ -74,16 +110,18 @@ exports.signupWithProfile = [
       };
 
       if (role === "company") {
-        profileData.email = email;
-        profileData.companyName = req.body.companyName;
-        profileData.industry = req.body.industry;
-        profileData.location = req.body.location;
-        profileData.numberOfEmployees = req.body.numberOfEmployees;
-        profileData.website = req.body.website;
-        profileData.bio = req.body.bio;
-        profileData.establishedYear = req.body.establishedYear;
-        profileData.linkedIn = req.body.linkedIn;
-        profileData.adminName = req.body.adminName;
+        // Validate and sanitize company profile data
+        const companyFields = ['companyName', 'industry', 'location', 'numberOfEmployees', 'website', 'bio', 'establishedYear', 'linkedIn', 'adminName'];
+        const companyData = {};
+
+        for (const field of companyFields) {
+          if (req.body[field]) {
+            companyData[field] = sanitizeInput(req.body[field]);
+          }
+        }
+
+        profileData.email = sanitizedEmail;
+        Object.assign(profileData, companyData);
 
         const companyProfile = new CompanyProfile(profileData);
         await companyProfile.save();
@@ -97,24 +135,30 @@ exports.signupWithProfile = [
       });
       await notification.save();
 
-      const subject = `Welcome to RFP & Grants, ${fullName}!`;
+      const subject = `Welcome to RFP & Grants, ${sanitizedFullName}!`;
 
       const body = `
-        Hi ${fullName}, <br /><br />
+        Hi ${sanitizedFullName}, <br /><br />
         Your account has been successfully created. <br /><br />
         <strong>Your Login Details:</strong><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;Email: ${email}<br />
-        &nbsp;&nbsp;&nbsp;&nbsp;Password: ${password}<br /><br />
-        <a href="${process.env.FRONTEND_URL}/login">Login to Your Account</a><br /><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;Email: ${sanitizedEmail}<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;Password: [Your temporary password has been set]<br /><br />
+        <a href="${process.env.FRONTEND_URL}/login">Login to Your Account</a><br />
+        <a href="${process.env.FRONTEND_URL}/reset-password">Reset Your Password</a><br /><br />
         Best regards,<br />
         The RFP & Grants Team
       `;
 
-      await sendEmail(email, subject, body);
+      try {
+        await sendEmail(sanitizedEmail, subject, body);
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError);
+        // Don't fail the signup if email fails
+      }
 
       res.status(201).json({ message: "Signup and profile created successfully" });
     } catch (err) {
-      console.error(err);
+      console.error('Signup error:', err);
       res.status(500).json({ message: err.message || "Server error" });
     }
   },
@@ -124,8 +168,23 @@ exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await User.findOne({ email }).lean();
-    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+    // Input validation
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
+
+    // Sanitize email
+    const sanitizedEmail = sanitizeInput(email);
+
+    // Validate email format
+    if (!validateEmail(sanitizedEmail)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+
+    const user = await User.findOne({ email: sanitizedEmail }).lean();
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
@@ -135,7 +194,7 @@ exports.login = async (req, res) => {
     const token = jwt.sign(
       { user: userWithoutPassword },
       process.env.JWT_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "7d", issuer: "rfp-grants-api", audience: "rfp-grants-client" }
     );
 
     if (user.role === "SuperAdmin" || user.role === "company") {
@@ -161,7 +220,12 @@ exports.login = async (req, res) => {
         The RFP & Grants Team
       `;
 
-      await sendEmail(user.email, subject, body);
+      try {
+        await sendEmail(user.email, subject, body);
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError);
+        // Don't fail login if email fails
+      }
 
       return res.status(200).json({ token, user: userWithoutPassword, subscription: subscriptionData });
     } else if (user.role === "employee") {
@@ -203,7 +267,12 @@ exports.login = async (req, res) => {
         The RFP & Grants Team
       `;
 
-      await sendEmail(user.email, subject, body);
+      try {
+        await sendEmail(user.email, subject, body);
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError);
+        // Don't fail login if email fails
+      }
 
       return res.status(200).json({ token, user: data, subscription: subscriptionData });
     } else {
@@ -247,17 +316,27 @@ exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
 
-    const user = await User.findOne({ email });
+    // Input validation
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    // Sanitize and validate email
+    const sanitizedEmail = sanitizeInput(email);
+    if (!validateEmail(sanitizedEmail)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+
+    const user = await User.findOne({ email: sanitizedEmail });
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // const otp = Math.floor(100000 + Math.random() * 900000);
-    // Note: For production, use crypto.randomInt() for better security
+    // Generate secure OTP using crypto.randomInt()
     const otp = crypto.randomInt(100000, 999999);
 
-    const otpData = new OTP({ email, otp });
+    const otpData = new OTP({ email: sanitizedEmail, otp });
 
     await otpData.save();
 
@@ -274,13 +353,14 @@ exports.forgotPassword = async (req, res) => {
 
     const mailOptions = {
       from: process.env.MAIL_USER,
-      to: email,
+      to: sanitizedEmail,
       subject: "Password Reset OTP",
       text: `Your OTP for password reset is: ${otp}`,
     };
 
     transporter.sendMail(mailOptions, (err, info) => {
       if (err) {
+        console.error('Email sending failed:', err);
         return res.status(500).json({ message: "Email sending failed" });
       }
     });
@@ -295,7 +375,28 @@ exports.resetPassword = async (req, res) => {
   try {
     const { email, otp, newPassword } = req.body;
 
-    const otpData = await OTP.findOne({ email, otp });
+    // Input validation
+    const requiredFields = ['email', 'otp', 'newPassword'];
+    const validation = validateRequiredFields(req.body, requiredFields);
+    if (!validation.isValid) {
+      return res.status(400).json({
+        message: "Missing required fields",
+        missingFields: validation.missingFields
+      });
+    }
+
+    // Sanitize and validate email
+    const sanitizedEmail = sanitizeInput(email);
+    if (!validateEmail(sanitizedEmail)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+
+    // Validate new password
+    if (!validatePassword(newPassword)) {
+      return res.status(400).json({ message: "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character" });
+    }
+
+    const otpData = await OTP.findOne({ email: sanitizedEmail, otp });
 
     if (!otpData) {
       return res.status(404).json({ message: "Invalid OTP" });
@@ -305,23 +406,19 @@ exports.resetPassword = async (req, res) => {
       return res.status(404).json({ message: "OTP expired" });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: sanitizedEmail });
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (!passwordValidator(newPassword)) {
-      return res.status(400).json({ message: "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character" });
-    }
-
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
 
     user.password = hashedPassword;
 
     await user.save();
 
-    await OTP.deleteOne({ email, otp });
+    await OTP.deleteOne({ email: sanitizedEmail, otp });
 
     const subject = "Password Reset Successfully";
     const body = `
@@ -329,7 +426,8 @@ exports.resetPassword = async (req, res) => {
       Your password has been reset successfully. <br /><br />
       <strong>Your Login Details:</strong><br />
       &nbsp;&nbsp;&nbsp;&nbsp;Email: ${user.email}<br />
-      &nbsp;&nbsp;&nbsp;&nbsp;Password: ${newPassword}<br /><br />
+      &nbsp;&nbsp;&nbsp;&nbsp;Password: [Your password has been updated]<br /><br />
+      <a href="${process.env.FRONTEND_URL}/login">Login to Your Account</a><br /><br />
       Best regards,<br />
       The RFP & Grants Team
     `;
