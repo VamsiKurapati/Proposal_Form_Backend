@@ -353,16 +353,16 @@ exports.setCurrentEditor = async (req, res) => {
             return res.status(404).json({ message: "Proposal not found" });
         }
 
-        const req_user = await User.findOne({ email: proposal.companyMail });
+        // const req_user = await User.findOne({ email: proposal.companyMail });
 
         // If company and email is not the same as the proposal, return error
-        if (req.user.role === "company" && req_user.email !== proposal.companyMail) {
+        if (req.user.role === "company" && req.user.email !== proposal.companyMail) {
             return res.status(403).json({ message: "You are not authorized to set the current editor" });
         }
 
         //Only company and the the current editor can set the current editor
         if (req.user.role !== "company" && proposal.currentEditor._id !== req.user._id) {
-            return res.status(403).json({ message: "You are not authorized to set the current editor-1" });
+            return res.status(403).json({ message: "You are not authorized to set the current editor" });
         }
 
         proposal.currentEditor = userId;
@@ -392,18 +392,18 @@ exports.setCurrentEditorGrant = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        //If company and email is not the same as the proposal, return error
-        if (user.role === "company" && user.email !== proposal.companyMail) {
-            return res.status(403).json({ message: "You are not authorized to set the current editor" });
-        }
-
         const grantProposal = await GrantProposal.findById(grantProposalId).populate("currentEditor", "_id");
         if (!grantProposal) {
             return res.status(404).json({ message: "Grant proposal not found" });
         }
 
         //If company and email is not the same as the proposal, return error
-        if (user.role === "company" && user.email !== grantProposal.companyMail) {
+        if (req.user.role === "company" && req.user.email !== grantProposal.companyMail) {
+            return res.status(403).json({ message: "You are not authorized to set the current editor" });
+        }
+
+        //If company and email is not the same as the proposal, return error
+        if (req.user.role !== "company" && req.user._id !== grantProposal.currentEditor._id) {
             return res.status(403).json({ message: "You are not authorized to set the current editor" });
         }
 

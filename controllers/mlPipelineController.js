@@ -556,7 +556,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       return res.status(400).json({ error: 'You have reached the maximum number of RFP proposals' });
     }
 
-    const data = {
+    let data = {
       "user": userData,
       "rfp": rfp,
     };
@@ -1133,34 +1133,36 @@ exports.handleFileUploadAndSendForGrantExtraction = [
       }
 
       // Create fallback Grant if API data extraction failed
-      grant = {
-        OPPORTUNITY_NUMBER: grant.OPPORTUNITY_NUMBER || "Not Provided",
-        OPPORTUNITY_ID: grant.OPPORTUNITY_ID || "Not Provided",
-        OPPORTUNITY_NUMBER_LINK: grant.OPPORTUNITY_NUMBER_LINK || `${process.env.BACKEND_URL}/profile/getDocument/${req.file.id}`,
-        OPPORTUNITY_TITLE: grant.OPPORTUNITY_TITLE || "Not Provided",
-        AGENCY_CODE: grant.AGENCY_CODE || "Not Provided",
-        AGENCY_NAME: grant.AGENCY_NAME || "Not Provided",
-        CATEGORY_OF_FUNDING_ACTIVITY: grant.CATEGORY_OF_FUNDING_ACTIVITY || "Not Provided",
-        FUNDING_CATEGORY_EXPLANATION: grant.FUNDING_CATEGORY_EXPLANATION || "Not Provided",
-        FUNDING_INSTRUMENT_TYPE: grant.FUNDING_INSTRUMENT_TYPE || "Not Provided",
-        ASSISTANCE_LISTINGS: grant.ASSISTANCE_LISTINGS || "Not Provided",
-        ESTIMATED_TOTAL_FUNDING: grant.ESTIMATED_TOTAL_FUNDING || "Not Provided",
-        EXPECTED_NUMBER_OF_AWARDS: grant.EXPECTED_NUMBER_OF_AWARDS || "Not Provided",
-        AWARD_CEILING: grant.AWARD_CEILING || "Not Provided",
-        AWARD_FLOOR: grant.AWARD_FLOOR || "Not Provided",
-        COST_SHARING_MATCH_REQUIRMENT: grant.COST_SHARING_MATCH_REQUIRMENT || "Not Provided",
-        LINK_TO_ADDITIONAL_INFORMATION: grant.LINK_TO_ADDITIONAL_INFORMATION || `${process.env.BACKEND_URL}/profile/getDocument/${req.file.id}`,
-        GRANTOR_CONTACT: grant.GRANTOR_CONTACT || "Not Provided",
-        GRANTOR_CONTACT_PHONE: grant.GRANTOR_CONTACT_PHONE || "Not Provided",
-        GRANTOR_CONTACT_EMAIL: grant.GRANTOR_CONTACT_EMAIL || "Not Provided",
-        ESTIMATED_POST_DATE: grant.ESTIMATED_POST_DATE || "Not Provided",
-        ESTIMATED_APPLICATION_DUE_DATE: grant.ESTIMATED_APPLICATION_DUE_DATE || "Not Provided",
-        POSTED_DATE: grant.POSTED_DATE || "Not Provided",
-        CLOSE_DATE: grant.CLOSE_DATE || "Not Provided",
-        OPPORTUNITY_STATUS: grant.OPPORTUNITY_STATUS || "Posted",
-        FUNDING_DESCRIPTION: grant.FUNDING_DESCRIPTION || "Not Provided",
-        ELIGIBLE_APPLICANTS: grant.ELIGIBLE_APPLICANTS || "Not Provided",
+      const fallbackGrant = {
+        OPPORTUNITY_NUMBER: grant?.OPPORTUNITY_NUMBER || "Not Provided",
+        OPPORTUNITY_ID: grant?.OPPORTUNITY_ID || "Not Provided",
+        OPPORTUNITY_NUMBER_LINK: grant?.OPPORTUNITY_NUMBER_LINK || `${process.env.BACKEND_URL}/profile/getDocument/${req.file.id}`,
+        OPPORTUNITY_TITLE: grant?.OPPORTUNITY_TITLE || "Not Provided",
+        AGENCY_CODE: grant?.AGENCY_CODE || "Not Provided",
+        AGENCY_NAME: grant?.AGENCY_NAME || "Not Provided",
+        CATEGORY_OF_FUNDING_ACTIVITY: grant?.CATEGORY_OF_FUNDING_ACTIVITY || "Not Provided",
+        FUNDING_CATEGORY_EXPLANATION: grant?.FUNDING_CATEGORY_EXPLANATION || "Not Provided",
+        FUNDING_INSTRUMENT_TYPE: grant?.FUNDING_INSTRUMENT_TYPE || "Not Provided",
+        ASSISTANCE_LISTINGS: grant?.ASSISTANCE_LISTINGS || "Not Provided",
+        ESTIMATED_TOTAL_FUNDING: grant?.ESTIMATED_TOTAL_FUNDING || "Not Provided",
+        EXPECTED_NUMBER_OF_AWARDS: grant?.EXPECTED_NUMBER_OF_AWARDS || "Not Provided",
+        AWARD_CEILING: grant?.AWARD_CEILING || "Not Provided",
+        AWARD_FLOOR: grant?.AWARD_FLOOR || "Not Provided",
+        COST_SHARING_MATCH_REQUIRMENT: grant?.COST_SHARING_MATCH_REQUIRMENT || "Not Provided",
+        LINK_TO_ADDITIONAL_INFORMATION: grant?.LINK_TO_ADDITIONAL_INFORMATION || `${process.env.BACKEND_URL}/profile/getDocument/${req.file.id}`,
+        GRANTOR_CONTACT: grant?.GRANTOR_CONTACT || "Not Provided",
+        GRANTOR_CONTACT_PHONE: grant?.GRANTOR_CONTACT_PHONE || "Not Provided",
+        GRANTOR_CONTACT_EMAIL: grant?.GRANTOR_CONTACT_EMAIL || "Not Provided",
+        ESTIMATED_POST_DATE: grant?.ESTIMATED_POST_DATE || "Not Provided",
+        ESTIMATED_APPLICATION_DUE_DATE: grant?.ESTIMATED_APPLICATION_DUE_DATE || "Not Provided",
+        POSTED_DATE: grant?.POSTED_DATE || "Not Provided",
+        CLOSE_DATE: grant?.CLOSE_DATE || "Not Provided",
+        OPPORTUNITY_STATUS: grant?.OPPORTUNITY_STATUS || "Posted",
+        FUNDING_DESCRIPTION: grant?.FUNDING_DESCRIPTION || "Not Provided",
+        ELIGIBLE_APPLICANTS: grant?.ELIGIBLE_APPLICANTS || "Not Provided",
       };
+
+      grant = fallbackGrant;
 
       const newGrant = await Grant.create(grant);
 
