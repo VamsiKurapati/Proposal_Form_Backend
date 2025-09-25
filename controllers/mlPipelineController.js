@@ -751,31 +751,29 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
 
     const res_1 = await axios.post(`${process.env.PIPELINE_URL}/run-rfp-discovery`, dataInArray);
 
-    const nestedRFPs = res_1.data.matches;
+    const matches = res_1.data.matches;
 
     const transformedData = [];
 
-    for (const [userId, rfpArray] of Object.entries(nestedRFPs)) {
-      if (!Array.isArray(rfpArray)) continue;
-
-      for (const rfp of rfpArray) {
+    if (Array.isArray(matches)) {
+      for (const rfp of matches) {
         transformedData.push({
-          title: rfp['RFP Title'] || "",
-          description: rfp['RFP Description'] || "",
-          logo: 'None',
-          match: rfp['Match Score'] || 0,
-          budget: rfp['Budget'] || 'Not found',
-          deadline: rfp['Deadline'] || "",
-          organization: rfp['Organization'] || rfp['Issuing Organization'] || "",
-          fundingType: 'Government',
-          organizationType: rfp['Industry'] || "",
-          baseType: rfp['Base Type'] || "",
-          setAside: rfp['Set Aside'] || "",
-          solicitationNumber: rfp['Solicitation Number'] || "",
-          link: rfp['URL'] || `${process.env.BACKEND_URL}/profile/getDocument/${req.file.id}`,
+          title: rfp.title || "",
+          description: rfp.description || "",
+          logo: rfp.logo || 'None',
+          match: rfp.matching_percentage || 0,
+          budget: rfp.budget || 'Not found',
+          deadline: rfp.deadline || "",
+          organization: rfp.organization || "",
+          fundingType: rfp.fundingType || "Not found",
+          organizationType: rfp.organizationType || "",
+          baseType: rfp.BaseType || "",
+          setAside: rfp.SetASide || "",
+          solicitationNumber: rfp.solicitation_number || "",
+          link: rfp.link || "",
           type: 'Matched',
-          contact: rfp['Contact Information'] || "",
-          timeline: rfp['Timeline'] || "",
+          contact: rfp.contact || "",
+          timeline: rfp.timeline || "",
           email: companyProfile_1.email || ""
         });
       }
@@ -784,7 +782,7 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
     // Validate all required fields
     const requiredFields = [
       'title', 'description', 'logo', 'match', 'budget', 'deadline',
-      'organization', 'fundingType', 'organizationType', 'link', 'type', 'contact', 'timeline', 'email', 'baseType', 'setAside', 'solicitationNumber'
+      'organization', 'fundingType', 'organizationType', 'link', 'type', 'contact', 'timeline', 'baseType', 'setAside', 'solicitationNumber'
     ];
 
     const invalidEntry = transformedData.find(rfp =>
@@ -792,7 +790,7 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
     );
 
     if (invalidEntry) {
-      // Log invalid entry for debugging but continue processing
+      console.log('Invalid entry:', invalidEntry);
     }
 
     const result = await MatchedRFP.insertMany(transformedData);
