@@ -365,15 +365,15 @@ exports.uploadLogo = [
             }
 
             // Validate file type
-            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
             if (!allowedTypes.includes(req.file.mimetype)) {
-                return res.status(400).json({ message: "Invalid file type. Only JPEG, PNG, and GIF images are allowed." });
+                return res.status(400).json({ message: "Invalid file type. Only JPEG, JPG, and PNG images are allowed." });
             }
 
-            // Validate file size (5MB limit)
-            const maxSize = 5 * 1024 * 1024; // 5MB
+            // Validate file size (1MB limit)
+            const maxSize = 1 * 1024 * 1024; // 1MB
             if (req.file.size > maxSize) {
-                return res.status(400).json({ message: "File size exceeds 5MB limit" });
+                return res.status(400).json({ message: "File size exceeds 1MB limit" });
             }
 
             const logoUrl = `${req.file.id}`;
