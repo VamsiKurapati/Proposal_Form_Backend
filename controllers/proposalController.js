@@ -367,6 +367,7 @@ exports.advancedComplianceCheckPdf = [
         }
       });
 
+      console.log('resBasicCompliance:', resBasicCompliance.data);
 
       const dataBasicCompliance = resBasicCompliance.data.report;
 
@@ -399,7 +400,7 @@ exports.advancedComplianceCheckPdf = [
         }
       });
 
-
+      console.log('resProposal:', resProposal.data);
       const dataAdvancedCompliance = resProposal.data.report;
 
       res.status(200).json({ compliance_dataBasicCompliance, dataAdvancedCompliance });
