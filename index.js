@@ -100,7 +100,7 @@ const sendEmail = async (req, res) => {
   }
 };
 
-app.post('/api/admin/webhook', express.raw({ type: 'application/json' }), superAdminController.handleWebhook);
+app.post('/admin/webhook', express.raw({ type: 'application/json' }), superAdminController.handleWebhook);
 
 
 app.use(express.json());
@@ -112,29 +112,29 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-app.get('/api/getSubscriptionPlansData', getSubscriptionPlansData);
-app.post('/api/contact', sendEmail);
+app.get('/getSubscriptionPlansData', getSubscriptionPlansData);
+app.post('/contact', sendEmail);
 
 // Register routes before starting server
-app.use('/api/proposals', proposalRoute);
+app.use('/proposals', proposalRoute);
 
-app.use('/api/auth', authRoute);
+app.use('/auth', authRoute);
 
-app.use('/api/rfp', rfpDiscovery);
+app.use('/rfp', rfpDiscovery);
 
-app.use('/api/profile', profileRoute);
+app.use('/profile', profileRoute);
 
-app.use('/api/dashboard', dashboardRoute);
+app.use('/dashboard', dashboardRoute);
 
-app.use('/api/admin', superAdminRoute);
+app.use('/admin', superAdminRoute);
 
-app.use('/api/support', supportRoute);
+app.use('/support', supportRoute);
 
-app.use('/api/image', imageRoute);
+app.use('/image', imageRoute);
 
-app.use('/api/stripe', stripeRoute);
+app.use('/stripe', stripeRoute);
 
-app.use('/api/testCron', testCronRoute);
+app.use('/testCron', testCronRoute);
 
 app.get('/', (req, res) => {
   res.send('Welcome to the Proposal API');
