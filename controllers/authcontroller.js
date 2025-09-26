@@ -218,10 +218,14 @@ exports.login = async (req, res) => {
 
       const subject = "New Sign-In Alert";
 
+      const loginUrl = `${process.env.FRONTEND_URL}/login`;
+      const resetPasswordUrl = `${process.env.FRONTEND_URL}/reset-password`;
+
       const body = `
         Hi ${user.fullName}, <br /><br />
         We noticed a sign-in to your account from a new device or location. If this was you, no action is required. Otherwise, please secure your account immediately. <br /><br />
-        <a href="${process.env.FRONTEND_URL}/reset-password">Secure My Account/Change password</a><br /><br />
+        <a href="${resetPasswordUrl}">Secure My Account/Change password</a><br /><br />
+        <a href="${loginUrl}">Login to Your Account</a><br />
         Best regards,<br />
         The RFP & Grants Team
       `;
@@ -339,43 +343,37 @@ exports.forgotPassword = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Generate secure OTP using crypto.randomInt()
-    const otp = crypto.randomInt(100000, 999999);
+    // Generate secure OTP using crypto.randomInt() and convert to string
+    const otp = crypto.randomInt(100000, 999999).toString();
 
     const otpData = new OTP({ email: sanitizedEmail, otp });
 
     await otpData.save();
 
-    // send email with otp
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
-      auth: {
-        user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASS,
-      },
-    });
+    // Send email with OTP using the existing utility
+    const subject = "Password Reset OTP";
+    const body = `
+      Hi ${user.fullName}, <br /><br />
+      Your OTP for password reset is: <strong>${otp}</strong><br /><br />
+      This OTP will expire in 10 minutes.<br /><br />
+      If you didn't request this password reset, please ignore this email.<br /><br />
+      Best regards,<br />
+      The RFP & Grants Team
+    `;
 
-    console.log("Sending Mail to: ", sanitizedEmail);
-
-    const mailOptions = {
-      from: process.env.MAIL_USER,
-      to: sanitizedEmail,
-      subject: "Password Reset OTP",
-      text: `Your OTP for password reset is: ${otp}`,
-    };
-
-    transporter.sendMail(mailOptions, (err, info) => {
-      if (err) {
-        console.error('Email sending failed:', err);
-        return res.status(500).json({ message: "Email sending failed" });
-      }
-      console.log(info);
-    });
+    try {
+      await sendEmail(sanitizedEmail, subject, body);
+      console.log("Password reset email sent to: ", sanitizedEmail);
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+      // Clean up OTP record if email fails
+      await OTP.deleteOne({ email: sanitizedEmail, otp });
+      return res.status(500).json({ message: "Email sending failed" });
+    }
 
     res.status(200).json({ message: "Password reset email sent" });
   } catch (err) {
+    console.error('Forgot password error:', err);
     res.status(500).json({ message: err.message || "Server error" });
   }
 };
@@ -429,6 +427,9 @@ exports.resetPassword = async (req, res) => {
 
     await OTP.deleteOne({ email: sanitizedEmail, otp });
 
+    const loginUrl = `${process.env.FRONTEND_URL}/login`;
+    const resetPasswordUrl = `${process.env.FRONTEND_URL}/reset-password`;
+
     const subject = "Password Reset Successfully";
     const body = `
       Hi ${user.fullName}, <br /><br />
@@ -436,7 +437,10 @@ exports.resetPassword = async (req, res) => {
       <strong>Your Login Details:</strong><br />
       &nbsp;&nbsp;&nbsp;&nbsp;Email: ${user.email}<br />
       &nbsp;&nbsp;&nbsp;&nbsp;Password: [Your password has been updated]<br /><br />
-      <a href="${process.env.FRONTEND_URL}/login">Login to Your Account</a><br /><br />
+      <a href="${loginUrl}">Login to Your Account</a><br /><br />
+
+      <strong>Note:</strong> Please do not share your password with anyone. If you did not request this password reset, please <a href="${resetPasswordUrl}">reset your password immediately</a>.
+      <br /><br />
       Best regards,<br />
       The RFP & Grants Team
     `;

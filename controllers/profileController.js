@@ -526,7 +526,7 @@ exports.updateEmployeeProfile = [
 
             const companyProfile = await CompanyProfile.findOne({ email: employeeProfile.companyMail });
             if (companyProfile && companyProfile.employees) {
-                const employeeIndex = companyProfile.employees.findIndex(emp => emp.email === email);
+                const employeeIndex = companyProfile.employees.findIndex(emp => emp.email === employeeProfile.email);
                 if (employeeIndex !== -1) {
                     companyProfile.employees[employeeIndex].name = name;
                     // companyProfile.employees[employeeIndex].email = email;
@@ -607,6 +607,12 @@ exports.addEmployee = async (req, res) => {
         }
         if (user.role !== "company") {
             return res.status(403).json({ message: "You are not authorized to add an employee" });
+        }
+
+        //Check if email is already registered as Company
+        const existingUser = await User.findOne({ email: sanitizedEmail, role: "company" });
+        if (existingUser) {
+            return res.status(400).json({ message: "Email already registered as Company" });
         }
 
         if (accessLevel == "Member") {
@@ -1169,10 +1175,12 @@ exports.changePassword = async (req, res) => {
 
         const subject = "Password Changed";
 
+        const resetPasswordUrl = `${process.env.FRONTEND_URL}/reset-password`;
+
         const body = `
             Hi ${user.fullName}, <br /><br />
             Your account password has been successfully changed. If you didn’t make this change, please reset your password immediately. <br /><br />
-            <a href="${process.env.FRONTEND_URL}/reset-password">Reset Password</a><br /><br />
+            <a href="${resetPasswordUrl}">Reset Password</a><br /><br />
             Best regards,<br />
             The RFP & Grants Team
         `;
