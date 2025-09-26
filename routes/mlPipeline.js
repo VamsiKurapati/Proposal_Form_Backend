@@ -6,7 +6,7 @@ const verifyUser = require('../utils/verifyUser');
 
 const { getRecommendedAndSavedRFPs, getOtherRFPs, saveRFP, unsaveRFP, postAllRFPs, getSavedAndDraftRFPs, sendDataForProposalGeneration, sendDataForRFPDiscovery, handleFileUploadAndSendForRFPExtraction, sendGrantDataForProposalGeneration, getRecentAndSavedGrants, getOtherGrants, getSavedAndDraftGrants, saveGrant, unsaveGrant, handleFileUploadAndSendForGrantExtraction, getGrantProposalStatus } = require('../controllers/mlPipelineController');
 
-router.post('/postAllRFPs', postAllRFPs);
+// router.post('/postAllRFPs', postAllRFPs);
 
 router.get('/getRecommendedAndSavedRFPs', verifyUser(["company", "employee"]), getRecommendedAndSavedRFPs);
 router.post('/getOtherRFPs', verifyUser(["company", "employee"]), getOtherRFPs);
