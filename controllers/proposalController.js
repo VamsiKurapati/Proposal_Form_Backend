@@ -410,7 +410,7 @@ exports.advancedComplianceCheckPdf = [
 
       const dataAdvancedCompliance = resProposal.data.report;
 
-      res.status(200).json({ compliance_dataBasicCompliance, dataAdvancedCompliance });
+      res.status(200).json({ compliance_dataBasicCompliance, dataAdvancedCompliance, rfpTitle: rfp_1.title });
 
     } catch (error) {
       console.error('Error in advancedComplianceCheckPdf:', error);
