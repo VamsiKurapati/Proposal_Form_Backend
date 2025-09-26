@@ -748,7 +748,7 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
 
     const dataInArray = [data];
 
-    const res_1 = await axios.post(`${process.env.NEW_PIPELINE_URL}/run-rfp-discovery`, dataInArray);
+    const res_1 = await axios.post(`${process.env.PIPELINE_URL}/run-rfp-discovery`, dataInArray);
 
     const matches = res_1.data.matches;
 

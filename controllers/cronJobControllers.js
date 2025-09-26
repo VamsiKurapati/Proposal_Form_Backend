@@ -19,7 +19,7 @@ const Payment = require('../models/Payments');
 exports.fetchGrants = async () => {
     try {
         console.log('Starting grant fetch cron job...');
-        const grants = await axios.get(`${process.env.NEW_PIPELINE_URL}/grant/getgrants`);
+        const grants = await axios.get(`${process.env.PIPELINE_URL}/grants/getgrants`);
 
         const grants_data = grants.data;
         console.log(`Fetched ${grants_data.length} grants from API`);
@@ -223,7 +223,7 @@ exports.fetchRFPs = async () => {
     try {
         //Fetch RFPs from the RFP API and save them to the database
         console.log('Starting RFP fetch cron job...');
-        const response = await axios.get(`${process.env.NEW_PIPELINE_URL}/rfp/getRFPs`, {
+        const response = await axios.get(`${process.env.PIPELINE_URL}/rfp/getRFPs`, {
             responseType: 'arraybuffer' // This ensures we get binary data for decompression
         });
         console.log(`Fetched ${rfp_data.length} RFPs from API`);
