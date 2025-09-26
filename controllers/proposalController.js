@@ -410,7 +410,7 @@ exports.advancedComplianceCheckPdf = [
 
       const dataAdvancedCompliance = resProposal.data.report;
 
-      const rfpTitle = rfp_1.title;
+      const rfpTitle = rfp.title;
 
       res.status(200).json({ compliance_dataBasicCompliance, dataAdvancedCompliance, rfpTitle });
 
