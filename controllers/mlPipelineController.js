@@ -169,8 +169,8 @@ exports.getRecommendedAndSavedRFPs = async (req, res) => {
       userEmail = employeeProfile.companyMail;
     }
 
-    // Recommended: from matched RFPs with match >= 60, sorted by latest
-    const recommendedRFPs = await MatchedRFP.find({ email: userEmail, match: { $gte: 60 } })
+    // Recommended: from matched RFPs with match >= 40, sorted by latest
+    const recommendedRFPs = await MatchedRFP.find({ email: userEmail, match: { $gte: 40 } })
       .sort({ createdAt: -1 })
       .lean();
 
@@ -742,27 +742,9 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
       }
     };
 
-    const data = {
-      user: userData,
-    };
-
-    // const dataInArray = [data];
-
-    console.log("Sending data for RFP discovery");
-
-    console.log("User data", userData);
-
-    console.log("Data", data);
-
     const res_1 = await axios.post(`${process.env.PIPELINE_URL}/run-rfp-discovery`, userData);
 
-    console.log("RFP discovery response received");
-
     const matches = res_1.data.matches;
-
-    console.log("Response received", res_1.data);
-
-    console.log("Matches received", res_1.data.matches);
 
     const transformedData = [];
 
