@@ -10,7 +10,7 @@ const path = require("path");
 const Subscription = require("../models/Subscription");
 const Notification = require("../models/Notification");
 const OTP = require("../models/OTP");
-const nodemailer = require("nodemailer");
+const VerificationCode = require("../models/VerificationCode");
 const { sendEmail } = require("../utils/mailSender");
 const { validateEmail, validatePassword, sanitizeInput, validateRequiredFields } = require("../utils/validation");
 
@@ -80,6 +80,11 @@ exports.signupWithProfile = [
       // Validate email format
       if (!validateEmail(sanitizedEmail)) {
         return res.status(400).json({ message: "Invalid email format" });
+      }
+
+      const verificationCodeData = await VerificationCode.findOne({ email: sanitizedEmail });
+      if (!verificationCodeData || !verificationCodeData.verifiedAt) {
+        return res.status(400).json({ message: "Email not verified" });
       }
 
       // Validate password
@@ -161,6 +166,9 @@ exports.signupWithProfile = [
         console.error('Email sending failed:', emailError);
         // Don't fail the signup if email fails
       }
+
+      // Delete the verification code
+      await VerificationCode.deleteOne({ email: sanitizedEmail });
 
       res.status(201).json({ message: "Signup and profile created successfully" });
     } catch (err) {
@@ -448,6 +456,70 @@ exports.resetPassword = async (req, res) => {
 
     res.status(200).json({ message: "Password reset successfully" });
   } catch (err) {
+    res.status(500).json({ message: err.message || "Server error" });
+  }
+};
+
+exports.sendVerificationEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email: sanitizeInput(email) });
+    if (user) {
+      return res.status(404).json({ message: "User already exists with this email" });
+    }
+
+    const verificationCode = crypto.randomInt(100000, 999999).toString();
+
+    // Delete the existing verification codes
+    await VerificationCode.deleteMany({ email: sanitizeInput(email) });
+
+    const verificationCodeData = new VerificationCode({ email: sanitizeInput(email), code: verificationCode, expiresAt: new Date(Date.now() + 10 * 60 * 1000) });
+    await verificationCodeData.save();
+
+    const subject = "Email Verification Code";
+    const body = `
+      Hello, <br /><br />
+      Your verification code is: <strong>${verificationCode}</strong><br /><br />
+      This code will expire in 10 minutes.<br /><br />
+      If you did not request this verification, please ignore this email.<br /><br />
+      Best regards,<br />
+      The RFP & Grants Team
+    `;
+
+    try {
+      await sendEmail(sanitizeInput(email), subject, body);
+      console.log("Verification email sent to: ", sanitizeInput(email));
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+      return res.status(500).json({ message: "Email sending failed" });
+    }
+
+    res.status(200).json({ message: "Verification email sent" });
+  } catch (err) {
+    res.status(500).json({ message: err.message || "Server error" });
+  }
+};
+
+exports.verifyEmail = async (req, res) => {
+  try {
+    const { email, code } = req.body;
+
+    const verificationCodeData = await VerificationCode.findOne({ email: sanitizeInput(email), code });
+    if (!verificationCodeData) {
+      return res.status(404).json({ message: "Invalid verification code" });
+    }
+
+    if (verificationCodeData.expiresAt < new Date()) {
+      return res.status(404).json({ message: "Verification code expired" });
+    }
+
+    verificationCodeData.verifiedAt = new Date();
+    await verificationCodeData.save();
+
+    res.status(200).json({ message: "Email verified successfully" });
+  } catch (err) {
+    console.error('Verify email error:', err);
     res.status(500).json({ message: err.message || "Server error" });
   }
 };
