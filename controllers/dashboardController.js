@@ -596,15 +596,6 @@ exports.updateProposal = async (req, res) => {
         }
 
         if (updates.submittedAt) proposal.submittedAt = updates.submittedAt;
-        if (updates.submittedAt) {
-            const calendarEvent = await CalendarEvent.findOne({ proposalId: proposalId, status: { $ne: "Deadline" } });
-            if (calendarEvent) {
-                calendarEvent.status = "Submitted";
-                calendarEvent.startDate = proposal.submittedAt;
-                calendarEvent.endDate = proposal.submittedAt;
-                await calendarEvent.save();
-            }
-        }
 
         if (updates.status) proposal.status = updates.status;
         if (updates.status && updates.status !== proposal.status) {
