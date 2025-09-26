@@ -742,13 +742,17 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
       }
     };
 
-    // const data = {
-    //   user: userData,
-    // };
+    const data = {
+      user: userData,
+    };
 
     // const dataInArray = [data];
 
     console.log("Sending data for RFP discovery");
+
+    console.log("User data", userData);
+
+    console.log("Data", data);
 
     const res_1 = await axios.post(`${process.env.PIPELINE_URL}/run-rfp-discovery`, userData);
 
