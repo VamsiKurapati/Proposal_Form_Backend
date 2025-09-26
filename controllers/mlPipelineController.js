@@ -756,7 +756,9 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
 
     const matches = res_1.data.matches;
 
-    console.log("Matches received", matches);
+    console.log("Response received", res_1.data);
+
+    console.log("Matches received", res_1.data.matches);
 
     const transformedData = [];
 
