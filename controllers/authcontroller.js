@@ -357,6 +357,8 @@ exports.forgotPassword = async (req, res) => {
       },
     });
 
+    console.log("Sending Mail to: ", sanitizedEmail);
+
     const mailOptions = {
       from: process.env.MAIL_USER,
       to: sanitizedEmail,
@@ -369,6 +371,7 @@ exports.forgotPassword = async (req, res) => {
         console.error('Email sending failed:', err);
         return res.status(500).json({ message: "Email sending failed" });
       }
+      console.log(info);
     });
 
     res.status(200).json({ message: "Password reset email sent" });
