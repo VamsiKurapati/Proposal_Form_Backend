@@ -1853,22 +1853,31 @@ exports.getRFPProposal = async (req, res) => {
             initialProposal: data,
             generatedProposal: data,
             docx_base64: document,
-            title: proposal.title,
-            client: proposal.client,
+            title: proposal.title || "Not found",
+            client: proposal.organization || "Not found",
             companyMail: userEmail,
             deadline: getDeadline(proposal.deadline),
             url: proposal.url || "",
             status: "In Progress",
             submittedAt: new Date(),
             currentEditor: currentEditor,
+            isDeleted: false,
+            deletedAt: null,
+            deletedBy: null,
+            isSaved: false,
+            savedAt: null,
+            savedBy: null,
+            restoreBy: null,
+            restoredBy: null,
+            restoredAt: null
           });
-          await new_prop.save();
+          await new_prop.save({ session });
 
           if (new_Draft) {
             new_Draft.docx_base64 = document;
             new_Draft.generatedProposal = data;
             new_Draft.proposalId = new_prop._id;
-            await new_Draft.save();
+            await new_Draft.save({ session });
           } else {
             const new_Draft = new DraftRFP({
               rfpId: proposal.rfpId,
@@ -1879,7 +1888,7 @@ exports.getRFPProposal = async (req, res) => {
               docx_base64: document,
               proposalId: new_prop._id
             });
-            await new_Draft.save();
+            await new_Draft.save({ session });
           }
 
           const new_CalendarEvent = new CalendarEvent({
@@ -1887,12 +1896,12 @@ exports.getRFPProposal = async (req, res) => {
             employeeId: currentEditor,
             proposalId: new_prop._id,
             rfpId: proposal.rfpId,
-            title: proposal.title,
+            title: proposal.title || "Not found",
             startDate: new Date(),
             endDate: new Date(),
             status: "In Progress",
           });
-          await new_CalendarEvent.save();
+          await new_CalendarEvent.save({ session });
 
           //Also add new calendar event with deadline
           const new_CalendarEvent_Deadline = new CalendarEvent({
@@ -1900,12 +1909,12 @@ exports.getRFPProposal = async (req, res) => {
             employeeId: currentEditor,
             proposalId: null,
             rfpId: proposal.rfpId,
-            title: proposal.title,
+            title: proposal.title || "Not found",
             startDate: getDeadline(proposal.deadline),
             endDate: getDeadline(proposal.deadline),
             status: "Deadline",
           });
-          await new_CalendarEvent_Deadline.save();
+          await new_CalendarEvent_Deadline.save({ session });
 
           proposalTracker.status = "success";
           proposalTracker.proposalId = new_prop._id;
@@ -2010,7 +2019,7 @@ exports.getGrantProposal = async (req, res) => {
             initialProposal: data,
             generatedProposal: data,
             docx_base64: document,
-            title: grant.OPPORTUNITY_TITLE,
+            title: grant.OPPORTUNITY_TITLE || "Not found",
             client: grant.AGENCY_NAME,
             companyMail: userEmail,
             deadline: getDeadline(grant.ESTIMATED_APPLICATION_DUE_DATE),
@@ -2018,6 +2027,16 @@ exports.getGrantProposal = async (req, res) => {
             status: "In Progress",
             submittedAt: new Date(),
             currentEditor: currentEditor,
+            isDeleted: false,
+            deletedAt: null,
+            deletedBy: null,
+            isSaved: false,
+            savedAt: null,
+            savedBy: null,
+            restoreBy: null,
+            restoredBy: null,
+            restoredAt: null,
+            isRestored: false
           });
           await new_prop.save({ session });
 
@@ -2044,7 +2063,7 @@ exports.getGrantProposal = async (req, res) => {
             employeeId: currentEditor,
             proposalId: new_prop._id,
             grantId: grant._id,
-            title: grant.OPPORTUNITY_TITLE,
+            title: grant.OPPORTUNITY_TITLE || "Not found",
             startDate: new Date(),
             endDate: new Date(),
             status: "In Progress",
@@ -2057,7 +2076,7 @@ exports.getGrantProposal = async (req, res) => {
             employeeId: currentEditor,
             proposalId: null,
             grantId: grant._id,
-            title: grant.OPPORTUNITY_TITLE,
+            title: grant.OPPORTUNITY_TITLE || "Not found",
             startDate: getDeadline(grant.ESTIMATED_APPLICATION_DUE_DATE),
             endDate: getDeadline(grant.ESTIMATED_APPLICATION_DUE_DATE),
             status: "Deadline",
