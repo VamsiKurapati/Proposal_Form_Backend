@@ -18,6 +18,7 @@ const { summarizePdfBuffer } = require("../utils/documentSummarizer");
 const CalendarEvent = require("../models/CalendarEvents");
 const { sendEmail } = require("../utils/mailSender");
 const { validateEmail, sanitizeInput, validateRequiredFields } = require("../utils/validation");
+const { cleanupUploadedFiles } = require("../utils/fileCleanup");
 
 const storage = new GridFsStorage({
     url: process.env.MONGO_URI,
@@ -367,12 +368,16 @@ exports.uploadLogo = [
             // Validate file type
             const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
             if (!allowedTypes.includes(req.file.mimetype)) {
+                // Clean up uploaded file on validation failure
+                await cleanupUploadedFiles(req);
                 return res.status(400).json({ message: "Invalid file type. Only JPEG, JPG, and PNG images are allowed." });
             }
 
             // Validate file size (1MB limit)
             const maxSize = 1 * 1024 * 1024; // 1MB
             if (req.file.size > maxSize) {
+                // Clean up uploaded file on validation failure
+                await cleanupUploadedFiles(req);
                 return res.status(400).json({ message: "File size exceeds 1MB limit" });
             }
 
@@ -390,10 +395,15 @@ exports.uploadLogo = [
                     { new: true }
                 );
             } else {
+                // Clean up uploaded file on validation failure
+                await cleanupUploadedFiles(req);
                 return res.status(403).json({ message: "Invalid user role for logo upload" });
             }
             res.status(200).json({ logoUrl });
         } catch (error) {
+            // Clean up uploaded file on error
+            await cleanupUploadedFiles(req);
+
             console.error('Logo upload error:', error);
             res.status(500).json({ message: error.message || "Server error" });
         }
@@ -421,65 +431,78 @@ exports.updateCompanyProfile = [
                 return res.status(403).json({ message: "You are not authorized to update this profile" });
             }
 
-            // Sanitize inputs
-            const sanitizedPhone = phone ? sanitizeInput(phone) : user.mobile;
-            user.mobile = sanitizedPhone;
-            await user.save();
+            // Use transaction for data consistency
+            const session = await mongoose.startSession();
+            session.startTransaction();
 
-            let parsedServices = [];
-            if (typeof services === "string") {
-                try {
-                    parsedServices = JSON.parse(services);
-                    if (!Array.isArray(parsedServices)) {
+            try {
+                // Sanitize inputs
+                const sanitizedPhone = phone ? sanitizeInput(phone) : user.mobile;
+                user.mobile = sanitizedPhone;
+                await user.save({ session });
+
+                let parsedServices = [];
+                if (typeof services === "string") {
+                    try {
+                        parsedServices = JSON.parse(services);
+                        if (!Array.isArray(parsedServices)) {
+                            parsedServices = [];
+                        }
+                    } catch {
                         parsedServices = [];
                     }
-                } catch {
-                    parsedServices = [];
                 }
-            }
 
-            let parsedAwards = [];
-            let parsedClients = [];
+                let parsedAwards = [];
+                let parsedClients = [];
 
-            if (typeof awards === "string") {
-                try {
-                    parsedAwards = JSON.parse(awards);
-                    if (!Array.isArray(parsedAwards)) {
+                if (typeof awards === "string") {
+                    try {
+                        parsedAwards = JSON.parse(awards);
+                        if (!Array.isArray(parsedAwards)) {
+                            parsedAwards = [];
+                        }
+                    } catch {
                         parsedAwards = [];
                     }
-                } catch {
-                    parsedAwards = [];
                 }
-            }
 
-            if (typeof clients === "string") {
-                try {
-                    parsedClients = JSON.parse(clients);
-                    if (!Array.isArray(parsedClients)) {
+                if (typeof clients === "string") {
+                    try {
+                        parsedClients = JSON.parse(clients);
+                        if (!Array.isArray(parsedClients)) {
+                            parsedClients = [];
+                        }
+                    } catch {
                         parsedClients = [];
                     }
-                } catch {
-                    parsedClients = [];
                 }
-            }
 
-            let parsedPreferredIndustries = [];
-            if (typeof preferredIndustries === "string") {
-                try {
-                    parsedPreferredIndustries = JSON.parse(preferredIndustries);
-                    if (!Array.isArray(parsedPreferredIndustries)) {
+                let parsedPreferredIndustries = [];
+                if (typeof preferredIndustries === "string") {
+                    try {
+                        parsedPreferredIndustries = JSON.parse(preferredIndustries);
+                        if (!Array.isArray(parsedPreferredIndustries)) {
+                            parsedPreferredIndustries = [];
+                        }
+                    } catch {
                         parsedPreferredIndustries = [];
                     }
-                } catch {
-                    parsedPreferredIndustries = [];
                 }
-            }
 
-            const companyProfile = await CompanyProfile.findOneAndUpdate(
-                { userId: req.user._id },
-                { companyName, adminName, industry, location, linkedIn, website, services: parsedServices, establishedYear, numberOfEmployees, bio, awards: parsedAwards, clients: parsedClients, preferredIndustries: parsedPreferredIndustries },
-                { new: true }
-            );
+                const companyProfile = await CompanyProfile.findOneAndUpdate(
+                    { userId: req.user._id },
+                    { companyName, adminName, industry, location, linkedIn, website, services: parsedServices, establishedYear, numberOfEmployees, bio, awards: parsedAwards, clients: parsedClients, preferredIndustries: parsedPreferredIndustries },
+                    { new: true, session }
+                );
+
+                await session.commitTransaction();
+            } catch (error) {
+                await session.abortTransaction();
+                throw error;
+            } finally {
+                session.endSession();
+            }
             res.status(200).json({ message: "Company profile updated successfully" });
         } catch (error) {
             console.error('Update company profile error:', error);
@@ -514,27 +537,40 @@ exports.updateEmployeeProfile = [
             const sanitizedName = sanitizeInput(name);
             const sanitizedLocation = sanitizeInput(location);
 
-            user.mobile = sanitizedPhone;
-            user.fullName = sanitizedName;
-            await user.save();
+            // Use transaction for data consistency
+            const session = await mongoose.startSession();
+            session.startTransaction();
 
-            const employeeProfile = await EmployeeProfile.findOneAndUpdate(
-                { userId: req.user._id },
-                { name: sanitizedName, location: sanitizedLocation, phone: sanitizedPhone, highestQualification, skills },
-                { new: true }
-            );
+            try {
+                user.mobile = sanitizedPhone;
+                user.fullName = sanitizedName;
+                await user.save({ session });
 
-            const companyProfile = await CompanyProfile.findOne({ email: employeeProfile.companyMail });
-            if (companyProfile && companyProfile.employees) {
-                const employeeIndex = companyProfile.employees.findIndex(emp => emp.email === employeeProfile.email);
-                if (employeeIndex !== -1) {
-                    companyProfile.employees[employeeIndex].name = name;
-                    // companyProfile.employees[employeeIndex].email = email;
-                    companyProfile.employees[employeeIndex].phone = phone;
-                    companyProfile.employees[employeeIndex].highestQualification = highestQualification;
-                    companyProfile.employees[employeeIndex].skills = skills;
-                    await companyProfile.save();
+                const employeeProfile = await EmployeeProfile.findOneAndUpdate(
+                    { userId: req.user._id },
+                    { name: sanitizedName, location: sanitizedLocation, phone: sanitizedPhone, highestQualification, skills },
+                    { new: true, session }
+                );
+
+                const companyProfile = await CompanyProfile.findOne({ email: employeeProfile.companyMail });
+                if (companyProfile && companyProfile.employees) {
+                    const employeeIndex = companyProfile.employees.findIndex(emp => emp.email === employeeProfile.email);
+                    if (employeeIndex !== -1) {
+                        companyProfile.employees[employeeIndex].name = name;
+                        // companyProfile.employees[employeeIndex].email = email;
+                        companyProfile.employees[employeeIndex].phone = phone;
+                        companyProfile.employees[employeeIndex].highestQualification = highestQualification;
+                        companyProfile.employees[employeeIndex].skills = skills;
+                        await companyProfile.save({ session });
+                    }
                 }
+
+                await session.commitTransaction();
+            } catch (error) {
+                await session.abortTransaction();
+                throw error;
+            } finally {
+                session.endSession();
             }
             res.status(200).json({ message: "Employee profile updated successfully" });
         } catch (error) {

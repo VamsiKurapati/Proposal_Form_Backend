@@ -13,6 +13,7 @@ const CalendarEvent = require('../models/CalendarEvents');
 const Subscription = require('../models/Subscription');
 const User = require('../models/User');
 const SavedGrant = require('../models/SavedGrant');
+const { cleanupUploadedFiles } = require('../utils/fileCleanup');
 const DraftGrant = require('../models/DraftGrant');
 const GrantProposal = require('../models/GrantProposal');
 const ProposalTracker = require('../models/ProposalTracker');
@@ -491,82 +492,95 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
         if (res_data.status === "success") {
           const document = res_data.result.docx_base64;
-
           const data = res_data.result.result;
 
-          const new_Proposal = new Proposal({
-            rfpId: proposal._id || "",
-            title: proposal.title || "",
-            client: proposal.organization || "Not found",
-            initialProposal: data,
-            generatedProposal: data,
-            docx_base64: document,
-            companyMail: userEmail,
-            url: proposal.link || "",
-            deadline: getDeadline(proposal.deadline),
-            status: "In Progress",
-            submittedAt: new Date(),
-            currentEditor: req.user._id,
-            isDeleted: false,
-            deletedAt: null,
-            deletedBy: null,
-            isSaved: false,
-            savedAt: null,
-            savedBy: null,
-            restoreBy: null,
-            restoredBy: null,
-            restoredAt: null,
-          });
+          // Use transaction for data consistency
+          const session = await mongoose.startSession();
+          session.startTransaction();
 
-          await new_Proposal.save();
+          try {
+            const new_Proposal = new Proposal({
+              rfpId: proposal._id || "",
+              title: proposal.title || "",
+              client: proposal.organization || "Not found",
+              initialProposal: data,
+              generatedProposal: data,
+              docx_base64: document,
+              companyMail: userEmail,
+              url: proposal.link || "",
+              deadline: getDeadline(proposal.deadline),
+              status: "In Progress",
+              submittedAt: new Date(),
+              currentEditor: req.user._id,
+              isDeleted: false,
+              deletedAt: null,
+              deletedBy: null,
+              isSaved: false,
+              savedAt: null,
+              savedBy: null,
+              restoreBy: null,
+              restoredBy: null,
+              restoredAt: null,
+            });
 
-          const new_Draft = new DraftRFP({
-            userEmail: userEmail,
-            rfpId: proposal._id || "",
-            proposalId: new_Proposal._id || "",
-            rfp: { ...proposal },
-            generatedProposal: data,
-            docx_base64: document,
-            currentEditor: req.user._id,
-          });
-          await new_Draft.save();
+            await new_Proposal.save({ session });
 
-          const new_CalendarEvent = new CalendarEvent({
-            companyId: companyProfile_1._id,
-            employeeId: req.user._id,
-            proposalId: new_Proposal._id,
-            grantId: null,
-            title: proposal.title || "",
-            startDate: new Date(),
-            endDate: new Date(),
-            status: "In Progress",
-          });
-          await new_CalendarEvent.save();
+            const new_Draft = new DraftRFP({
+              userEmail: userEmail,
+              rfpId: proposal._id || "",
+              proposalId: new_Proposal._id || "",
+              rfp: { ...proposal },
+              generatedProposal: data,
+              docx_base64: document,
+              currentEditor: req.user._id,
+            });
+            await new_Draft.save({ session });
 
-          //Also add new calendar event with deadline
-          const new_CalendarEvent_Deadline = new CalendarEvent({
-            companyId: companyProfile_1._id,
-            employeeId: req.user._id,
-            proposalId: new_Proposal._id,
-            grantId: null,
-            title: proposal.title || "",
-            startDate: getDeadline(proposal.deadline),
-            endDate: getDeadline(proposal.deadline),
-            status: "Deadline",
-          });
-          await new_CalendarEvent_Deadline.save();
+            const new_CalendarEvent = new CalendarEvent({
+              companyId: companyProfile_1._id,
+              employeeId: req.user._id,
+              proposalId: new_Proposal._id,
+              grantId: null,
+              title: proposal.title || "",
+              startDate: new Date(),
+              endDate: new Date(),
+              status: "In Progress",
+            });
+            await new_CalendarEvent.save({ session });
 
-          proposalTracker.status = "success";
-          proposalTracker.proposalId = new_Proposal._id;
-          await proposalTracker.save();
+            //Also add new calendar event with deadline
+            const new_CalendarEvent_Deadline = new CalendarEvent({
+              companyId: companyProfile_1._id,
+              employeeId: req.user._id,
+              proposalId: new_Proposal._id,
+              grantId: null,
+              title: proposal.title || "",
+              startDate: getDeadline(proposal.deadline),
+              endDate: getDeadline(proposal.deadline),
+              status: "Deadline",
+            });
+            await new_CalendarEvent_Deadline.save({ session });
 
-          const subscription_1 = await Subscription.findOne({ user_id: userId });
-          if (!subscription_1) {
-            return res.status(400).json({ error: 'Subscription not found' });
+            proposalTracker.status = "success";
+            proposalTracker.proposalId = new_Proposal._id;
+            await proposalTracker.save({ session });
+
+            const subscription_1 = await Subscription.findOne({ user_id: userId });
+            if (!subscription_1) {
+              await session.abortTransaction();
+              return res.status(400).json({ error: 'Subscription not found' });
+            }
+
+            subscription_1.current_rfp_proposal_generations++;
+            await subscription_1.save({ session });
+
+            await session.commitTransaction();
+          } catch (error) {
+            await session.abortTransaction();
+            throw error;
+          } finally {
+            session.endSession();
           }
-
-          subscription_1.current_rfp_proposal_generations++;
-          await subscription_1.save();
 
           return res.status(200).json({ message: 'Proposal Generation completed successfully.', proposal: document, proposalId: new_Proposal._id });
         } else if (res_data.status === "processing") {
@@ -842,6 +856,8 @@ exports.handleFileUploadAndSendForRFPExtraction = [
       // File validation using utility function
       const validation = validateFile(req.file);
       if (!validation.isValid) {
+        // Clean up uploaded file on validation failure
+        await cleanupUploadedFiles(req);
         return res.status(400).json({
           error: 'File validation failed',
           details: validation.errors
@@ -853,6 +869,8 @@ exports.handleFileUploadAndSendForRFPExtraction = [
       if (req.user.role === "employee") {
         const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
         if (!employeeProfile) {
+          // Clean up uploaded file on error
+          await cleanupUploadedFiles(req);
           return res.status(404).json({ error: 'Employee profile not found' });
         }
         userEmail = employeeProfile.companyMail;
@@ -1007,17 +1025,8 @@ exports.handleFileUploadAndSendForRFPExtraction = [
       });
 
     } catch (err) {
-      // Clean up: Delete the uploaded file from GridFS even if there's an error
-      // if (req.file) {
-      //   try {
-      //     const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-      //       bucketName: 'uploads'
-      //     });
-      //     await bucket.delete(req.file.id);
-      //   } catch (deleteError) {
-      //     console.error('Failed to delete uploaded file from GridFS after error:', deleteError);
-      //   }
-      // }
+      // Clean up uploaded file if it exists and there was an error
+      await cleanupUploadedFiles(req);
 
       // Handle specific error types
       if (err.response?.status === 422) {
@@ -1081,6 +1090,8 @@ exports.handleFileUploadAndSendForGrantExtraction = [
       // File validation using utility function
       const validation = validateFile(req.file);
       if (!validation.isValid) {
+        // Clean up uploaded file on validation failure
+        await cleanupUploadedFiles(req);
         return res.status(400).json({
           error: 'File validation failed',
           details: validation.errors
@@ -1092,6 +1103,8 @@ exports.handleFileUploadAndSendForGrantExtraction = [
       if (req.user.role === "employee") {
         const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
         if (!employeeProfile) {
+          // Clean up uploaded file on error
+          await cleanupUploadedFiles(req);
           return res.status(404).json({ error: 'Employee profile not found' });
         }
         userEmail = employeeProfile.companyMail;
@@ -1214,6 +1227,9 @@ exports.handleFileUploadAndSendForGrantExtraction = [
       });
 
     } catch (err) {
+      // Clean up uploaded file if it exists and there was an error
+      await cleanupUploadedFiles(req);
+
       if (err.response?.status === 422) {
         return res.status(422).json({
           error: 'File format not supported or invalid content',
@@ -1564,81 +1580,94 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
           const document = res_data.result.docx_base64;
           const data = res_data.result.result;
 
-          const new_prop = new GrantProposal({
-            grantId: grant._id,
-            project_inputs: formData,
-            initialProposal: data,
-            generatedProposal: data,
-            docx_base64: document,
-            title: grant.OPPORTUNITY_TITLE,
-            client: userData.companyName,
-            companyMail: userEmail,
-            deadline: getDeadline(grant.ESTIMATED_APPLICATION_DUE_DATE),
-            url: grant.OPPORTUNITY_NUMBER_LINK || "",
-            status: "In Progress",
-            submittedAt: new Date(),
-            currentEditor: req.user._id,
-            isDeleted: false,
-            deletedAt: null,
-            deletedBy: null,
-            isSaved: false,
-            savedAt: null,
-            savedBy: null,
-            isRestored: false,
-            restoredAt: null,
-            restoredBy: null,
-            restoredAt: null,
-          });
-          await new_prop.save();
+          // Use transaction for data consistency
+          const session = await mongoose.startSession();
+          session.startTransaction();
 
-          const new_Draft = new DraftGrant({
-            grantId: grant._id,
-            userEmail: userEmail,
-            grant: grant,
-            generatedProposal: data,
-            docx_base64: document,
-            currentEditor: req.user._id,
-            proposalId: new_prop._id,
-          });
-          await new_Draft.save();
+          try {
+            const new_prop = new GrantProposal({
+              grantId: grant._id,
+              project_inputs: formData,
+              initialProposal: data,
+              generatedProposal: data,
+              docx_base64: document,
+              title: grant.OPPORTUNITY_TITLE,
+              client: userData.companyName,
+              companyMail: userEmail,
+              deadline: getDeadline(grant.ESTIMATED_APPLICATION_DUE_DATE),
+              url: grant.OPPORTUNITY_NUMBER_LINK || "",
+              status: "In Progress",
+              submittedAt: new Date(),
+              currentEditor: req.user._id,
+              isDeleted: false,
+              deletedAt: null,
+              deletedBy: null,
+              isSaved: false,
+              savedAt: null,
+              savedBy: null,
+              isRestored: false,
+              restoredAt: null,
+              restoredBy: null,
+              restoredAt: null,
+            });
+            await new_prop.save({ session });
 
-          const new_CalendarEvent = new CalendarEvent({
-            companyId: companyProfile_1._id,
-            employeeId: req.user._id,
-            proposalId: new_prop._id,
-            grantId: grant._id,
-            title: grant.OPPORTUNITY_TITLE,
-            startDate: new Date(),
-            endDate: new Date(),
-            status: "In Progress",
-          });
-          await new_CalendarEvent.save();
+            const new_Draft = new DraftGrant({
+              grantId: grant._id,
+              userEmail: userEmail,
+              grant: grant,
+              generatedProposal: data,
+              docx_base64: document,
+              currentEditor: req.user._id,
+              proposalId: new_prop._id,
+            });
+            await new_Draft.save({ session });
 
-          //Also add new calendar event with deadline
-          const new_CalendarEvent_Deadline = new CalendarEvent({
-            companyId: companyProfile_1._id,
-            employeeId: req.user._id,
-            proposalId: null,
-            grantId: grant._id,
-            title: grant.OPPORTUNITY_TITLE,
-            startDate: getDeadline(grant.ESTIMATED_APPLICATION_DUE_DATE),
-            endDate: getDeadline(grant.ESTIMATED_APPLICATION_DUE_DATE),
-            status: "Deadline",
-          });
-          await new_CalendarEvent_Deadline.save();
+            const new_CalendarEvent = new CalendarEvent({
+              companyId: companyProfile_1._id,
+              employeeId: req.user._id,
+              proposalId: new_prop._id,
+              grantId: grant._id,
+              title: grant.OPPORTUNITY_TITLE,
+              startDate: new Date(),
+              endDate: new Date(),
+              status: "In Progress",
+            });
+            await new_CalendarEvent.save({ session });
 
+            //Also add new calendar event with deadline
+            const new_CalendarEvent_Deadline = new CalendarEvent({
+              companyId: companyProfile_1._id,
+              employeeId: req.user._id,
+              proposalId: null,
+              grantId: grant._id,
+              title: grant.OPPORTUNITY_TITLE,
+              startDate: getDeadline(grant.ESTIMATED_APPLICATION_DUE_DATE),
+              endDate: getDeadline(grant.ESTIMATED_APPLICATION_DUE_DATE),
+              status: "Deadline",
+            });
+            await new_CalendarEvent_Deadline.save({ session });
 
-          proposalTracker.status = "success";
-          proposalTracker.grantProposalId = new_prop._id;
-          await proposalTracker.save();
+            proposalTracker.status = "success";
+            proposalTracker.grantProposalId = new_prop._id;
+            await proposalTracker.save({ session });
 
-          const subscription_1 = await Subscription.findOne({ user_id: userId });
-          if (!subscription_1) {
-            return res.status(400).json({ error: 'Subscription not found' });
+            const subscription_1 = await Subscription.findOne({ user_id: userId });
+            if (!subscription_1) {
+              await session.abortTransaction();
+              return res.status(400).json({ error: 'Subscription not found' });
+            }
+
+            subscription_1.current_grant_proposal_generations++;
+            await subscription_1.save({ session });
+
+            await session.commitTransaction();
+          } catch (error) {
+            await session.abortTransaction();
+            throw error;
+          } finally {
+            session.endSession();
           }
-
-          subscription_1.current_grant_proposal_generations++;
-          await subscription_1.save();
 
           return res.status(200).json({ message: 'Grant Proposal Generation completed successfully.', proposal: document, proposalId: new_prop._id });
 

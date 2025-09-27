@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 const User = require("../models/User");
 const CompanyProfile = require("../models/CompanyProfile");
 const EmployeeProfile = require("../models/EmployeeProfile");
@@ -13,6 +14,7 @@ const OTP = require("../models/OTP");
 const VerificationCode = require("../models/VerificationCode");
 const { sendEmail } = require("../utils/mailSender");
 const { validateEmail, validatePassword, sanitizeInput, validateRequiredFields } = require("../utils/validation");
+const { cleanupUploadedFiles } = require("../utils/fileCleanup");
 
 const storage = new GridFsStorage({
   url: process.env.MONGO_URI,
@@ -66,6 +68,8 @@ exports.signupWithProfile = [
       const requiredFields = ['email', 'fullName', 'password', 'phone', 'role'];
       const validation = validateRequiredFields(req.body, requiredFields);
       if (!validation.isValid) {
+        // Clean up uploaded files on validation failure
+        await cleanupUploadedFiles(req);
         return res.status(400).json({
           message: "Missing required fields",
           missingFields: validation.missingFields
@@ -79,27 +83,37 @@ exports.signupWithProfile = [
 
       // Validate email format
       if (!validateEmail(sanitizedEmail)) {
+        // Clean up uploaded files on validation failure
+        await cleanupUploadedFiles(req);
         return res.status(400).json({ message: "Invalid email format" });
       }
 
       const verificationCodeData = await VerificationCode.findOne({ email: sanitizedEmail });
       if (!verificationCodeData || !verificationCodeData.verifiedAt) {
+        // Clean up uploaded files on validation failure
+        await cleanupUploadedFiles(req);
         return res.status(400).json({ message: "Email not verified" });
       }
 
       // Validate password
       if (!validatePassword(password)) {
+        // Clean up uploaded files on validation failure
+        await cleanupUploadedFiles(req);
         return res.status(400).json({ message: "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character" });
       }
 
       // Validate role. Only company role is allowed
       const validRoles = ['company'];
       if (!validRoles.includes(role)) {
+        // Clean up uploaded files on validation failure
+        await cleanupUploadedFiles(req);
         return res.status(400).json({ message: "Invalid role. Must be 'company'" });
       }
 
       const existing = await User.findOne({ email: sanitizedEmail });
       if (existing) {
+        // Clean up uploaded files on validation failure
+        await cleanupUploadedFiles(req);
         return res.status(400).json({ message: "Email already registered" });
       }
 
@@ -107,44 +121,57 @@ exports.signupWithProfile = [
       const saltRounds = 12;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-      const user = new User({
-        email: sanitizedEmail,
-        fullName: sanitizedFullName,
-        password: hashedPassword,
-        mobile: sanitizedPhone,
-        role
-      });
-      await user.save();
+      // Use transaction for data consistency
+      const session = await mongoose.startSession();
+      session.startTransaction();
 
-      const profileData = {
-        userId: user._id,
-      };
+      try {
+        const user = new User({
+          email: sanitizedEmail,
+          fullName: sanitizedFullName,
+          password: hashedPassword,
+          mobile: sanitizedPhone,
+          role
+        });
+        await user.save({ session });
 
-      if (role === "company") {
-        // Validate and sanitize company profile data
-        const companyFields = ['companyName', 'industry', 'location', 'numberOfEmployees', 'website', 'bio', 'establishedYear', 'linkedIn', 'adminName'];
-        const companyData = {};
+        const profileData = {
+          userId: user._id,
+        };
 
-        for (const field of companyFields) {
-          if (req.body[field]) {
-            companyData[field] = sanitizeInput(req.body[field]);
+        if (role === "company") {
+          // Validate and sanitize company profile data
+          const companyFields = ['companyName', 'industry', 'location', 'numberOfEmployees', 'website', 'bio', 'establishedYear', 'linkedIn', 'adminName'];
+          const companyData = {};
+
+          for (const field of companyFields) {
+            if (req.body[field]) {
+              companyData[field] = sanitizeInput(req.body[field]);
+            }
           }
+
+          profileData.email = sanitizedEmail;
+          Object.assign(profileData, companyData);
+
+          const companyProfile = new CompanyProfile(profileData);
+          await companyProfile.save({ session });
         }
 
-        profileData.email = sanitizedEmail;
-        Object.assign(profileData, companyData);
+        const notification = new Notification({
+          type: "User",
+          title: "New user registered",
+          description: "A new user has registered to the platform",
+          created_at: new Date(),
+        });
+        await notification.save({ session });
 
-        const companyProfile = new CompanyProfile(profileData);
-        await companyProfile.save();
+        await session.commitTransaction();
+      } catch (error) {
+        await session.abortTransaction();
+        throw error;
+      } finally {
+        session.endSession();
       }
-
-      const notification = new Notification({
-        type: "User",
-        title: "New user registered",
-        description: "A new user has registered to the platform",
-        created_at: new Date(),
-      });
-      await notification.save();
 
       const subject = `Welcome to RFP & Grants, ${sanitizedFullName}!`;
 
@@ -172,6 +199,9 @@ exports.signupWithProfile = [
 
       res.status(201).json({ message: "Signup and profile created successfully" });
     } catch (err) {
+      // Clean up uploaded files if signup fails
+      await cleanupUploadedFiles(req);
+
       console.error('Signup error:', err);
       res.status(500).json({ message: err.message || "Server error" });
     }

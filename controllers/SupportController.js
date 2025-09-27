@@ -1,9 +1,12 @@
 const Support = require('../models/Support');
 const mongoose = require('mongoose');
 const Notification = require('../models/Notification');
+const { deleteMultipleGridFSFiles } = require('../utils/fileCleanup');
 
 // Create ticket API
 exports.createTicket = async (req, res) => {
+  let uploadedFileIds = [];
+
   try {
     const { userId, category, subCategory, description, plan_name } = req.body;
 
@@ -30,6 +33,9 @@ exports.createTicket = async (req, res) => {
         });
 
         uploadStream.end(file.buffer);
+
+        // Store file ID for potential cleanup
+        uploadedFileIds.push(uploadStream.id);
 
         attachments.push({
           fileName: file.originalname,
@@ -60,6 +66,12 @@ exports.createTicket = async (req, res) => {
 
     res.status(201).json({ message: "Ticket created successfully", ticket: savedTicket });
   } catch (err) {
+    // Clean up uploaded files if ticket creation fails
+    if (uploadedFileIds.length > 0) {
+      await deleteMultipleGridFSFiles(uploadedFileIds);
+      console.log(`Cleaned up ${uploadedFileIds.length} uploaded files due to ticket creation failure`);
+    }
+
     res.status(500).json({ message: "Error creating ticket", error: err.message });
   }
 };
