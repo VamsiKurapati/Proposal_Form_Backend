@@ -598,7 +598,7 @@ exports.updateProposal = async (req, res) => {
         if (updates.submittedAt) proposal.submittedAt = updates.submittedAt;
 
         if (updates.status) proposal.status = updates.status;
-        if (updates.status && updates.status !== proposal.status) {
+        if (updates.status) {
             const calendarEvent = await CalendarEvent.findOne({ proposalId: proposalId, status: { $ne: "Deadline" } });
             if (calendarEvent) {
                 calendarEvent.status = updates.status;
@@ -652,7 +652,7 @@ exports.updateGrantProposal = async (req, res) => {
         }
         if (updates.submittedAt) grantProposal.submittedAt = updates.submittedAt;
         if (updates.status) grantProposal.status = updates.status;
-        if (updates.status && updates.status !== grantProposal.status) {
+        if (updates.status) {
             const calendarEvent = await CalendarEvent.findOne({ grantId: grantProposalId, status: { $ne: "Deadline" } });
             if (calendarEvent) {
                 calendarEvent.status = updates.status;
