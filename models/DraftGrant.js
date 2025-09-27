@@ -31,10 +31,10 @@ const DraftGrantSchema = new mongoose.Schema({
         FUNDING_DESCRIPTION: String,
         ELIGIBLE_APPLICANTS: String
     },
-    generatedProposal: { type: Object, required: true, default: null },
+    generatedProposal: { type: Object, required: false, default: null },
     docx_base64: { type: String, default: null },
     currentEditor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    proposalId: { type: mongoose.Schema.Types.ObjectId, ref: "GrantProposal", required: true, default: null },
+    proposalId: { type: mongoose.Schema.Types.ObjectId, ref: "GrantProposal", required: false, default: null },
 }, { timestamps: true });
 
 // Database indexes for performance optimization
