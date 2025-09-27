@@ -238,7 +238,7 @@ exports.login = async (req, res) => {
     const token = jwt.sign(
       { user: userWithoutPassword },
       process.env.JWT_SECRET,
-      { expiresIn: "5m", issuer: "rfp-grants-api", audience: "rfp-grants-client" }
+      { expiresIn: "12h", issuer: "rfp-grants-api", audience: "rfp-grants-client" }
     );
 
     if (user.role === "SuperAdmin" || user.role === "company") {
