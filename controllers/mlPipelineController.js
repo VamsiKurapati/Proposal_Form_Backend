@@ -812,9 +812,61 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
       console.log('Invalid entry:', invalidEntry);
     }
 
-    const result = await MatchedRFP.insertMany(transformedData);
+    // Fetch existing matched RFPs and create a lookup map
+    const solicitationNumbers = transformedData.map(rfp => rfp.solicitationNumber).filter(Boolean);
+    const existingRFPs = await MatchedRFP.find({
+      solicitationNumber: { $in: solicitationNumbers }
+    });
 
-    res.status(200).json(result);
+    // Create a map for O(1) lookup
+    const existingRFPMap = new Map();
+    existingRFPs.forEach(rfp => {
+      existingRFPMap.set(rfp.solicitationNumber, rfp);
+    });
+
+    // Process RFPs with efficient lookup
+    const result = await Promise.all(transformedData.map(async (rfp) => {
+      try {
+        const existingRFP = existingRFPMap.get(rfp.solicitationNumber);
+        if (existingRFP) {
+          //Update the existing RFP
+          existingRFP.title = rfp.title;
+          existingRFP.description = rfp.description;
+          existingRFP.logo = rfp.logo;
+          existingRFP.match = rfp.match;
+          existingRFP.budget = rfp.budget;
+          existingRFP.deadline = rfp.deadline;
+          existingRFP.organization = rfp.organization;
+          existingRFP.fundingType = rfp.fundingType;
+          existingRFP.organizationType = rfp.organizationType;
+          existingRFP.link = rfp.link;
+          existingRFP.type = rfp.type;
+          existingRFP.contact = rfp.contact;
+          existingRFP.timeline = rfp.timeline;
+          existingRFP.baseType = rfp.baseType;
+          existingRFP.setAside = rfp.setAside;
+          existingRFP.solicitationNumber = rfp.solicitationNumber;
+          await existingRFP.save();
+          return existingRFP;
+        } else {
+          return await MatchedRFP.create(rfp);
+        }
+      } catch (error) {
+        console.error(`Error processing RFP ${rfp.solicitationNumber}:`, error);
+        return null; // or handle the error as needed
+      }
+    }));
+
+    // Filter out any null results from failed operations
+    const successfulResults = result.filter(rfp => rfp !== null);
+
+    res.status(200).json({
+      message: 'RFP discovery completed successfully',
+      totalProcessed: transformedData.length,
+      successful: successfulResults.length,
+      failed: transformedData.length - successfulResults.length,
+      data: successfulResults
+    });
   } catch (err) {
     console.error('Error in /sendDataForRFPDiscovery:', err);
     res.status(500).json({ error: 'Failed to send data for RFP discovery' });
@@ -1756,7 +1808,7 @@ exports.getRFPProposal = async (req, res) => {
       userId = req.user._id;
     }
 
-    //Check if a draft proposal with the same rfpId already exists
+    //Check if a draft proposal with the same rfpId already exists and is not null
     const draftProposal = await DraftRFP.findOne({ rfpId: proposal.rfpId, userEmail: userEmail });
     if (draftProposal && draftProposal.docx_base64 !== null) {
       return res.status(200).json({ message: "Proposal Generated successfully.", proposal: draftProposal.docx_base64, proposalId: draftProposal.proposalId });
@@ -1773,8 +1825,10 @@ exports.getRFPProposal = async (req, res) => {
       const proposal = await Proposal.findOne({ _id: proposalTracker.proposalId, companyMail: userEmail });
       return res.status(200).json({ message: "Proposal Generated successfully.", proposal: proposal.docx_base64, proposalId: proposal._id });
     } else if (proposalTracker.status === "error") {
+      await ProposalTracker.deleteOne({ rfpId: proposal.rfpId, companyMail: userEmail });
       return res.status(400).json({ error: "Failed to generate proposal. Please try again later." });
-    } else if (proposalTracker.status === "processing") {
+    } else if (proposalTracker.status === "progress") {
+
       const res_1 = await axios.get(`${process.env.PROPOSAL_PIPELINE_URL}/task-status/${proposalTracker.trackingId}`, {
         headers: {
           'Content-Type': 'application/json',
@@ -1786,80 +1840,92 @@ exports.getRFPProposal = async (req, res) => {
         const document = res_data.result.docx_base64;
         const data = res_data.result.result;
 
-        const new_Draft = await DraftRFP.findOne({ rfpId: proposal.rfpId, userEmail: userEmail });
+        const session = await mongoose.startSession();
+        session.startTransaction();
+        try {
 
-        const currentEditor = new_Draft.currentEditor ? new_Draft.currentEditor : req.user._id;
+          const new_Draft = await DraftRFP.findOne({ rfpId: proposal.rfpId, userEmail: userEmail });
 
-        const new_prop = new Proposal({
-          rfpId: proposal.rfpId,
-          initialProposal: data,
-          generatedProposal: data,
-          docx_base64: document,
-          title: proposal.title,
-          client: proposal.client,
-          companyMail: userEmail,
-          deadline: getDeadline(proposal.deadline),
-          url: proposal.url || "",
-          status: "In Progress",
-          submittedAt: new Date(),
-          currentEditor: currentEditor,
-        });
-        await new_prop.save();
+          const currentEditor = new_Draft.currentEditor ? new_Draft.currentEditor : req.user._id;
 
-        if (new_Draft) {
-          new_Draft.docx_base64 = document;
-          new_Draft.generatedProposal = data;
-          new_Draft.proposalId = new_prop._id;
-          await new_Draft.save();
-        } else {
-          const new_Draft = new DraftRFP({
+          const new_prop = new Proposal({
             rfpId: proposal.rfpId,
-            userEmail: userEmail,
-            rfp: proposal,
-            currentEditor: currentEditor,
+            initialProposal: data,
             generatedProposal: data,
             docx_base64: document,
-            proposalId: new_prop._id
+            title: proposal.title,
+            client: proposal.client,
+            companyMail: userEmail,
+            deadline: getDeadline(proposal.deadline),
+            url: proposal.url || "",
+            status: "In Progress",
+            submittedAt: new Date(),
+            currentEditor: currentEditor,
           });
-          await new_Draft.save();
+          await new_prop.save();
+
+          if (new_Draft) {
+            new_Draft.docx_base64 = document;
+            new_Draft.generatedProposal = data;
+            new_Draft.proposalId = new_prop._id;
+            await new_Draft.save();
+          } else {
+            const new_Draft = new DraftRFP({
+              rfpId: proposal.rfpId,
+              userEmail: userEmail,
+              rfp: proposal,
+              currentEditor: currentEditor,
+              generatedProposal: data,
+              docx_base64: document,
+              proposalId: new_prop._id
+            });
+            await new_Draft.save();
+          }
+
+          const new_CalendarEvent = new CalendarEvent({
+            companyId: companyProfile_1._id,
+            employeeId: currentEditor,
+            proposalId: new_prop._id,
+            rfpId: proposal.rfpId,
+            title: proposal.title,
+            startDate: new Date(),
+            endDate: new Date(),
+            status: "In Progress",
+          });
+          await new_CalendarEvent.save();
+
+          //Also add new calendar event with deadline
+          const new_CalendarEvent_Deadline = new CalendarEvent({
+            companyId: companyProfile_1._id,
+            employeeId: currentEditor,
+            proposalId: null,
+            rfpId: proposal.rfpId,
+            title: proposal.title,
+            startDate: getDeadline(proposal.deadline),
+            endDate: getDeadline(proposal.deadline),
+            status: "Deadline",
+          });
+          await new_CalendarEvent_Deadline.save();
+
+          proposalTracker.status = "success";
+          proposalTracker.proposalId = new_prop._id;
+          await proposalTracker.save({ session });
+
+          const subscription_1 = await Subscription.findOne({ user_id: userId });
+          if (!subscription_1) {
+            return res.status(400).json({ error: "Subscription not found" });
+          }
+
+          subscription_1.current_rfp_proposal_generations++;
+          await subscription_1.save({ session });
+
+          await session.commitTransaction();
+        } catch (error) {
+          await session.abortTransaction();
+          throw error;
+        } finally {
+          session.endSession();
         }
-
-        const new_CalendarEvent = new CalendarEvent({
-          companyId: companyProfile_1._id,
-          employeeId: currentEditor,
-          proposalId: new_prop._id,
-          rfpId: proposal.rfpId,
-          title: proposal.title,
-          startDate: new Date(),
-          endDate: new Date(),
-          status: "In Progress",
-        });
-        await new_CalendarEvent.save();
-
-        //Also add new calendar event with deadline
-        const new_CalendarEvent_Deadline = new CalendarEvent({
-          companyId: companyProfile_1._id,
-          employeeId: currentEditor,
-          proposalId: null,
-          rfpId: proposal.rfpId,
-          title: proposal.title,
-          startDate: getDeadline(proposal.deadline),
-          endDate: getDeadline(proposal.deadline),
-          status: "Deadline",
-        });
-        await new_CalendarEvent_Deadline.save();
-
-        proposalTracker.status = "success";
-        proposalTracker.proposalId = new_prop._id;
-        await proposalTracker.save();
-
-        const subscription_1 = await Subscription.findOne({ user_id: userId });
-        if (!subscription_1) {
-          return res.status(400).json({ error: "Subscription not found" });
-        }
-
-        subscription_1.current_rfp_proposal_generations++;
-        await subscription_1.save();
 
         return res.status(200).json({ message: "Proposal Generated successfully.", proposal: document, proposalId: new_prop._id });
       } else if (res_data.status === "processing") {
@@ -1916,8 +1982,9 @@ exports.getGrantProposal = async (req, res) => {
       const grantProposal = await GrantProposal.findOne({ _id: proposalTracker.grantProposalId, companyMail: userEmail });
       return res.status(200).json({ message: "Grant Proposal Generated successfully.", proposal: grantProposal.docx_base64, proposalId: grantProposal._id });
     } else if (proposalTracker.status === "error") {
+      await ProposalTracker.deleteOne({ grantId: grant._id, companyMail: userEmail });
       return res.status(400).json({ error: "Failed to generate grant proposal. Please try again later." });
-    } else if (proposalTracker.status === "processing") {
+    } else if (proposalTracker.status === "progress") {
       const res_1 = await axios.get(`${process.env.PROPOSAL_PIPELINE_URL}/task-status/${proposalTracker.trackingId}`, {
         headers: {
           'Content-Type': 'application/json',
@@ -1929,81 +1996,93 @@ exports.getGrantProposal = async (req, res) => {
         const document = res_data.result.docx_base64;
         const data = res_data.result.result;
 
-        const new_Draft = await DraftGrant.findOne({ grantId: grant._id, userEmail: userEmail });
+        const session = await mongoose.startSession();
+        session.startTransaction();
+        try {
 
-        const currentEditor = new_Draft ? new_Draft.currentEditor : req.user._id;
+          const new_Draft = await DraftGrant.findOne({ grantId: grant._id, userEmail: userEmail });
 
-        const new_prop = new GrantProposal({
-          grantId: grant._id,
-          project_inputs: proposalTracker.formData,
-          initialProposal: data,
-          generatedProposal: data,
-          docx_base64: document,
-          title: grant.OPPORTUNITY_TITLE,
-          client: grant.AGENCY_NAME,
-          companyMail: userEmail,
-          deadline: getDeadline(grant.ESTIMATED_APPLICATION_DUE_DATE),
-          url: grant.OPPORTUNITY_NUMBER_LINK || "",
-          status: "In Progress",
-          submittedAt: new Date(),
-          currentEditor: currentEditor,
-        });
-        await new_prop.save();
+          const currentEditor = new_Draft ? new_Draft.currentEditor : req.user._id;
 
-        if (!new_Draft) {
-          const new_Draft = new DraftGrant({
+          const new_prop = new GrantProposal({
             grantId: grant._id,
-            grant: grant,
-            userEmail: userEmail,
-            currentEditor: currentEditor,
+            project_inputs: proposalTracker.formData,
+            initialProposal: data,
             generatedProposal: data,
             docx_base64: document,
-            proposalId: new_prop._id,
+            title: grant.OPPORTUNITY_TITLE,
+            client: grant.AGENCY_NAME,
+            companyMail: userEmail,
+            deadline: getDeadline(grant.ESTIMATED_APPLICATION_DUE_DATE),
+            url: grant.OPPORTUNITY_NUMBER_LINK || "",
+            status: "In Progress",
+            submittedAt: new Date(),
+            currentEditor: currentEditor,
           });
-          await new_Draft.save();
-        } else {
-          new_Draft.proposalId = new_prop._id;
-          new_Draft.generatedProposal = data;
-          new_Draft.docx_base64 = document;
-          await new_Draft.save();
+          await new_prop.save({ session });
+
+          if (!new_Draft) {
+            const new_Draft = new DraftGrant({
+              grantId: grant._id,
+              grant: grant,
+              userEmail: userEmail,
+              currentEditor: currentEditor,
+              generatedProposal: data,
+              docx_base64: document,
+              proposalId: new_prop._id,
+            });
+            await new_Draft.save({ session });
+          } else {
+            new_Draft.proposalId = new_prop._id;
+            new_Draft.generatedProposal = data;
+            new_Draft.docx_base64 = document;
+            await new_Draft.save({ session });
+          }
+
+          const new_CalendarEvent = new CalendarEvent({
+            companyId: companyProfile_1._id,
+            employeeId: currentEditor,
+            proposalId: new_prop._id,
+            grantId: grant._id,
+            title: grant.OPPORTUNITY_TITLE,
+            startDate: new Date(),
+            endDate: new Date(),
+            status: "In Progress",
+          });
+          await new_CalendarEvent.save({ session });
+
+          //Also add new calendar event with deadline
+          const new_CalendarEvent_Deadline = new CalendarEvent({
+            companyId: companyProfile_1._id,
+            employeeId: currentEditor,
+            proposalId: null,
+            grantId: grant._id,
+            title: grant.OPPORTUNITY_TITLE,
+            startDate: getDeadline(grant.ESTIMATED_APPLICATION_DUE_DATE),
+            endDate: getDeadline(grant.ESTIMATED_APPLICATION_DUE_DATE),
+            status: "Deadline",
+          });
+          await new_CalendarEvent_Deadline.save({ session });
+
+          proposalTracker.status = "success";
+          proposalTracker.grantProposalId = new_prop._id;
+          await proposalTracker.save({ session });
+
+          const subscription_1 = await Subscription.findOne({ user_id: userId });
+          if (!subscription_1) {
+            return res.status(400).json({ error: "Subscription not found" });
+          }
+
+          subscription_1.current_grant_proposal_generations++;
+          await subscription_1.save({ session });
+
+          await session.commitTransaction();
+        } catch (error) {
+          await session.abortTransaction();
+          throw error;
+        } finally {
+          session.endSession();
         }
-
-        const new_CalendarEvent = new CalendarEvent({
-          companyId: companyProfile_1._id,
-          employeeId: currentEditor,
-          proposalId: new_prop._id,
-          grantId: grant._id,
-          title: grant.OPPORTUNITY_TITLE,
-          startDate: new Date(),
-          endDate: new Date(),
-          status: "In Progress",
-        });
-        await new_CalendarEvent.save();
-
-        //Also add new calendar event with deadline
-        const new_CalendarEvent_Deadline = new CalendarEvent({
-          companyId: companyProfile_1._id,
-          employeeId: currentEditor,
-          proposalId: null,
-          grantId: grant._id,
-          title: grant.OPPORTUNITY_TITLE,
-          startDate: getDeadline(grant.ESTIMATED_APPLICATION_DUE_DATE),
-          endDate: getDeadline(grant.ESTIMATED_APPLICATION_DUE_DATE),
-          status: "Deadline",
-        });
-        await new_CalendarEvent_Deadline.save();
-
-        proposalTracker.status = "success";
-        proposalTracker.grantProposalId = new_prop._id;
-        await proposalTracker.save();
-
-        const subscription_1 = await Subscription.findOne({ user_id: userId });
-        if (!subscription_1) {
-          return res.status(400).json({ error: "Subscription not found" });
-        }
-
-        subscription_1.current_grant_proposal_generations++;
-        await subscription_1.save();
 
         return res.status(200).json({ message: "Grant Proposal Generated successfully.", proposal: document, proposalId: new_prop._id });
       } else if (res_data.status === "processing") {
