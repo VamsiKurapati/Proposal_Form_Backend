@@ -1058,14 +1058,6 @@ exports.handleFileUploadAndSendForRFPExtraction = [
         type: 'Uploaded',
       });
 
-      // Clean up: Delete the uploaded file from GridFS after processing
-      // try {
-      //   await bucket.delete(req.file.id);
-      // } catch (deleteError) {
-      //   // Log error but don't fail the request since RFP was already saved
-      //   console.error('Failed to delete uploaded file from GridFS:', deleteError);
-      // }
-
       res.status(200).json({
         message: 'RFP extracted and saved successfully',
         rfp: newRFP,
@@ -1755,7 +1747,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       grantId: grant._id,
       trackingId: res_data.task_id,
       companyMail: userEmail,
-      status: "processing",
+      status: "progress",
       formData: formData,
       grantProposalId: null,
     });
@@ -1976,7 +1968,7 @@ exports.getGrantProposal = async (req, res) => {
       userId = req.user._id;
     }
 
-    //Chheck if a proposal with the same grantId already exists
+    //Check if a proposal with the same grantId already exists
     const proposal = await GrantProposal.findOne({ grantId: grant._id, companyMail: userEmail });
     if (proposal) {
       return res.status(200).json({ message: "Grant Proposal Generated successfully.", proposal: proposal.docx_base64, proposalId: proposal._id });
