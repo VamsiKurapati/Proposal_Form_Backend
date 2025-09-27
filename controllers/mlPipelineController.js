@@ -146,7 +146,7 @@ exports.getRecommendedAndSavedRFPs = async (req, res) => {
       const proposal = proposals.find(p => p.rfpId.toString() === item._id.toString());
       return {
         ...item,
-        isgenerated: !!(draftRFP || proposal),
+        generated: !!(draftRFP || proposal),
       };
     });
 
@@ -199,7 +199,7 @@ exports.getOtherRFPs = async (req, res) => {
       const proposal = proposals.find(p => p.rfpId.toString() === item._id.toString());
       return {
         ...item,
-        isgenerated: !!(draftRFP || proposal),
+        generated: !!(draftRFP || proposal),
       }
     }));
 
@@ -1355,7 +1355,7 @@ exports.getRecentAndSavedGrants = async (req, res) => {
       const proposal = proposals.find((proposal) => proposal.grantId.toString() === item._id.toString());
       return {
         ...item,
-        isgenerated: !!(draftGrant || proposal),
+        generated: !!(draftGrant || proposal),
       }
     }));
 
@@ -1392,7 +1392,7 @@ exports.getOtherGrants = async (req, res) => {
       const proposal = proposals.find((proposal) => proposal.grantId.toString() === item._id.toString());
       return {
         ...item,
-        isgenerated: !!(draftGrant || proposal),
+        generated: !!(draftGrant || proposal),
       }
     }));
 
@@ -1702,6 +1702,10 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
 
 exports.getRFPProposal = async (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
     const { proposal } = req.body;
 
     let userEmail = req.user.email;
