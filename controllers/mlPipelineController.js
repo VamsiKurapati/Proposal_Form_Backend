@@ -1970,14 +1970,14 @@ exports.getGrantProposal = async (req, res) => {
 
     //Check if a proposal with the same grantId already exists
     console.log("Checking if a proposal with the same grantId already exists");
-    const proposal = await GrantProposal.findOne({ grantId: grant._id, companyMail: userEmail });
+    const proposal = await GrantProposal.findOne({ grantId: grant.grantId, companyMail: userEmail });
     if (proposal) {
       return res.status(200).json({ message: "Grant Proposal Generated successfully.", proposal: proposal.docx_base64, proposalId: proposal._id });
     }
 
     //Check if a proposal tracker with the same grantId already exists
     console.log("Checking if a proposal tracker with the same grantId already exists");
-    const proposalTracker = await ProposalTracker.findOne({ grantId: grant._id, companyMail: userEmail });
+    const proposalTracker = await ProposalTracker.findOne({ grantId: grant.grantId, companyMail: userEmail });
 
     if (!proposalTracker) {
       console.log("Proposal tracker not found");
@@ -1989,7 +1989,7 @@ exports.getGrantProposal = async (req, res) => {
       const grantProposal = await GrantProposal.findOne({ _id: proposalTracker.grantProposalId, companyMail: userEmail });
       return res.status(200).json({ message: "Grant Proposal Generated successfully.", proposal: grantProposal.docx_base64, proposalId: grantProposal._id });
     } else if (proposalTracker.status === "error") {
-      await ProposalTracker.deleteOne({ grantId: grant._id, companyMail: userEmail });
+      await ProposalTracker.deleteOne({ grantId: grant.grantId, companyMail: userEmail });
       return res.status(400).json({ error: "Failed to generate grant proposal. Please try again later." });
     } else if (proposalTracker.status === "progress") {
       console.log("Proposal tracker status is progress");
@@ -2012,14 +2012,14 @@ exports.getGrantProposal = async (req, res) => {
         try {
 
           console.log("Checking if a draft proposal with the same grantId already exists");
-          const new_Draft = await DraftGrant.findOne({ grantId: grant._id, userEmail: userEmail });
+          const new_Draft = await DraftGrant.findOne({ grantId: grant.grantId, userEmail: userEmail });
 
           const currentEditor = new_Draft ? new_Draft.currentEditor : req.user._id;
           console.log("Current editor is", currentEditor);
 
           console.log("Creating new grant proposal");
           const new_prop = new GrantProposal({
-            grantId: grant._id,
+            grantId: grant.grantId,
             project_inputs: proposalTracker.formData,
             initialProposal: data,
             generatedProposal: data,
@@ -2051,7 +2051,7 @@ exports.getGrantProposal = async (req, res) => {
           if (!new_Draft) {
             console.log("Creating new draft proposal");
             const newDraft = new DraftGrant({
-              grantId: grant._id,
+              grantId: grant.grantId,
               grant: grant,
               userEmail: userEmail,
               currentEditor: currentEditor,
@@ -2073,7 +2073,7 @@ exports.getGrantProposal = async (req, res) => {
             companyId: companyProfile_1._id,
             employeeId: currentEditor,
             proposalId: new_prop_id,
-            grantId: grant._id,
+            grantId: grant.grantId,
             title: grant.OPPORTUNITY_TITLE || "Not found",
             startDate: new Date(),
             endDate: new Date(),
@@ -2087,7 +2087,7 @@ exports.getGrantProposal = async (req, res) => {
             companyId: companyProfile_1._id,
             employeeId: currentEditor,
             proposalId: new_prop_id,
-            grantId: grant._id,
+            grantId: grant.grantId,
             title: grant.OPPORTUNITY_TITLE || "Not found",
             startDate: getDeadline(grant.ESTIMATED_APPLICATION_DUE_DATE),
             endDate: getDeadline(grant.ESTIMATED_APPLICATION_DUE_DATE),
