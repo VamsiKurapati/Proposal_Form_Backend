@@ -1840,6 +1840,7 @@ exports.getRFPProposal = async (req, res) => {
         const document = res_data.result.docx_base64;
         const data = res_data.result.result;
 
+        let new_prop_id;
         const session = await mongoose.startSession();
         session.startTransaction();
         try {
@@ -1872,29 +1873,30 @@ exports.getRFPProposal = async (req, res) => {
             restoredAt: null
           });
           await new_prop.save({ session });
+          new_prop_id = new_prop._id;
 
           if (new_Draft) {
             new_Draft.docx_base64 = document;
             new_Draft.generatedProposal = data;
-            new_Draft.proposalId = new_prop._id;
+            new_Draft.proposalId = new_prop_id;
             await new_Draft.save({ session });
           } else {
-            const new_Draft = new DraftRFP({
+            const newDraft = new DraftRFP({
               rfpId: proposal.rfpId,
               userEmail: userEmail,
               rfp: proposal,
               currentEditor: currentEditor,
               generatedProposal: data,
               docx_base64: document,
-              proposalId: new_prop._id
+              proposalId: new_prop_id
             });
-            await new_Draft.save({ session });
+            await newDraft.save({ session });
           }
 
           const new_CalendarEvent = new CalendarEvent({
             companyId: companyProfile_1._id,
             employeeId: currentEditor,
-            proposalId: new_prop._id,
+            proposalId: new_prop_id,
             rfpId: proposal.rfpId,
             title: proposal.title || "Not found",
             startDate: new Date(),
@@ -1907,7 +1909,7 @@ exports.getRFPProposal = async (req, res) => {
           const new_CalendarEvent_Deadline = new CalendarEvent({
             companyId: companyProfile_1._id,
             employeeId: currentEditor,
-            proposalId: null,
+            proposalId: new_prop_id,
             rfpId: proposal.rfpId,
             title: proposal.title || "Not found",
             startDate: getDeadline(proposal.deadline),
@@ -1917,7 +1919,7 @@ exports.getRFPProposal = async (req, res) => {
           await new_CalendarEvent_Deadline.save({ session });
 
           proposalTracker.status = "success";
-          proposalTracker.proposalId = new_prop._id;
+          proposalTracker.proposalId = new_prop_id;
           await proposalTracker.save({ session });
 
           const subscription_1 = await Subscription.findOne({ user_id: userId });
@@ -1936,7 +1938,7 @@ exports.getRFPProposal = async (req, res) => {
           session.endSession();
         }
 
-        return res.status(200).json({ message: "Proposal Generated successfully.", proposal: document, proposalId: new_prop._id });
+        return res.status(200).json({ message: "Proposal Generated successfully.", proposal: document, proposalId: new_prop_id });
       } else if (res_data.status === "processing") {
         return res.status(200).json({ message: "Proposal Generation is still in progress. Please wait for it to complete." });
       } else {
@@ -2005,6 +2007,7 @@ exports.getGrantProposal = async (req, res) => {
         const document = res_data.result.docx_base64;
         const data = res_data.result.result;
 
+        let new_prop_id;
         const session = await mongoose.startSession();
         session.startTransaction();
         try {
@@ -2039,20 +2042,20 @@ exports.getGrantProposal = async (req, res) => {
             isRestored: false
           });
           await new_prop.save({ session });
-
+          new_prop_id = new_prop._id;
           if (!new_Draft) {
-            const new_Draft = new DraftGrant({
+            const newDraft = new DraftGrant({
               grantId: grant._id,
               grant: grant,
               userEmail: userEmail,
               currentEditor: currentEditor,
               generatedProposal: data,
               docx_base64: document,
-              proposalId: new_prop._id,
+              proposalId: new_prop_id,
             });
-            await new_Draft.save({ session });
+            await newDraft.save({ session });
           } else {
-            new_Draft.proposalId = new_prop._id;
+            new_Draft.proposalId = new_prop_id;
             new_Draft.generatedProposal = data;
             new_Draft.docx_base64 = document;
             await new_Draft.save({ session });
@@ -2061,7 +2064,7 @@ exports.getGrantProposal = async (req, res) => {
           const new_CalendarEvent = new CalendarEvent({
             companyId: companyProfile_1._id,
             employeeId: currentEditor,
-            proposalId: new_prop._id,
+            proposalId: new_prop_id,
             grantId: grant._id,
             title: grant.OPPORTUNITY_TITLE || "Not found",
             startDate: new Date(),
@@ -2074,7 +2077,7 @@ exports.getGrantProposal = async (req, res) => {
           const new_CalendarEvent_Deadline = new CalendarEvent({
             companyId: companyProfile_1._id,
             employeeId: currentEditor,
-            proposalId: null,
+            proposalId: new_prop_id,
             grantId: grant._id,
             title: grant.OPPORTUNITY_TITLE || "Not found",
             startDate: getDeadline(grant.ESTIMATED_APPLICATION_DUE_DATE),
@@ -2084,7 +2087,7 @@ exports.getGrantProposal = async (req, res) => {
           await new_CalendarEvent_Deadline.save({ session });
 
           proposalTracker.status = "success";
-          proposalTracker.grantProposalId = new_prop._id;
+          proposalTracker.grantProposalId = new_prop_id;
           await proposalTracker.save({ session });
 
           const subscription_1 = await Subscription.findOne({ user_id: userId });
@@ -2103,7 +2106,7 @@ exports.getGrantProposal = async (req, res) => {
           session.endSession();
         }
 
-        return res.status(200).json({ message: "Grant Proposal Generated successfully.", proposal: document, proposalId: new_prop._id });
+        return res.status(200).json({ message: "Grant Proposal Generated successfully.", proposal: document, proposalId: new_prop_id });
       } else if (res_data.status === "processing") {
         return res.status(200).json({ message: "Grant Proposal Generation is still in progress. Please wait for it to complete." });
       } else {
