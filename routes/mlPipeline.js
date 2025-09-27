@@ -1,12 +1,9 @@
-//rfpDiscoveryMLModel.js
 const express = require('express');
 const router = express.Router();
 
 const verifyUser = require('../utils/verifyUser');
 
-const { getRecommendedAndSavedRFPs, getOtherRFPs, saveRFP, unsaveRFP, postAllRFPs, getSavedAndDraftRFPs, sendDataForProposalGeneration, sendDataForRFPDiscovery, handleFileUploadAndSendForRFPExtraction, sendGrantDataForProposalGeneration, getRecentAndSavedGrants, getOtherGrants, getSavedAndDraftGrants, saveGrant, unsaveGrant, handleFileUploadAndSendForGrantExtraction, getGrantProposal, getRFPProposal } = require('../controllers/mlPipelineController');
-
-// router.post('/postAllRFPs', postAllRFPs);
+const { getRecommendedAndSavedRFPs, getOtherRFPs, saveRFP, unsaveRFP, getSavedAndDraftRFPs, sendDataForProposalGeneration, sendDataForRFPDiscovery, handleFileUploadAndSendForRFPExtraction, sendGrantDataForProposalGeneration, getRecentAndSavedGrants, getOtherGrants, getSavedAndDraftGrants, saveGrant, unsaveGrant, handleFileUploadAndSendForGrantExtraction, getGrantProposal, getRFPProposal } = require('../controllers/mlPipelineController');
 
 router.get('/getRecommendedAndSavedRFPs', verifyUser(["company", "employee"]), getRecommendedAndSavedRFPs);
 router.post('/getOtherRFPs', verifyUser(["company", "employee"]), getOtherRFPs);
