@@ -17,14 +17,7 @@ const DraftGrant = require('../models/DraftGrant');
 const GrantProposal = require('../models/GrantProposal');
 const ProposalTracker = require('../models/ProposalTracker');
 
-
 const axios = require('axios');
-
-const { replaceTextInJson } = require('../utils/json_replacer');
-const { replaceTextInJson_Grant } = require('../utils/grant_json_replacer');
-const path = require('path');
-const template_json = path.join(__dirname, "template.json");
-const grant_template_json = path.join(__dirname, "grant_template.json");
 
 const { GridFsStorage } = require("multer-gridfs-storage");
 const multer = require("multer");
@@ -174,6 +167,14 @@ exports.getRecommendedAndSavedRFPs = async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
+    //Using Promise.all to wait for all the promises to resolve
+    const recommendedRFPs_1 = await Promise.all(recommendedRFPs.map(async (item) => {
+      return {
+        ...item.rfp,
+        isgenerated: await Proposal.findOne({ rfpId: item.rfpId, companyMail: userEmail }) || await DraftRFP.findOne({ rfpId: item.rfpId, companyMail: userEmail }),
+      }
+    }));
+
     // Saved: from SavedRFPs
     const savedRFPs_1 = await SavedRFP.find({ userEmail }).lean();
     const savedRFPs = savedRFPs_1.map((item) => {
@@ -184,7 +185,7 @@ exports.getRecommendedAndSavedRFPs = async (req, res) => {
     });
 
     res.status(200).json({
-      recommendedRFPs,
+      recommendedRFPs: recommendedRFPs_1,
       savedRFPs,
     });
   } catch (err) {
@@ -198,7 +199,14 @@ exports.getOtherRFPs = async (req, res) => {
     const industries = req.body.industries;
     const otherRFPs = await RFP.find({ setAside: { $in: industries } }).lean();
 
-    res.status(200).json({ otherRFPs });
+    const otherRFPs_1 = await Promise.all(otherRFPs.map(async (item) => {
+      return {
+        ...item,
+        isgenerated: await Proposal.findOne({ rfpId: item._id, companyMail: userEmail }) || await DraftRFP.findOne({ rfpId: item._id, companyMail: userEmail }),
+      }
+    }));
+
+    res.status(200).json({ otherRFPs: otherRFPs_1 });
   } catch (err) {
     console.error('Error in /getOtherRFPs:', err);
     res.status(500).json({ error: 'Failed to load RFPs' });
@@ -443,7 +451,6 @@ exports.sendDataForProposalGeneration = async (req, res) => {
       "linkedIn": `${companyProfile_1.linkedIn || ""}`,
       "certifications": certifications_1,
       "documents": companyDocuments_1,
-      // "documents": [],
       "caseStudies": caseStudies_1,
       "pastProjects": pastProjects_1,
       "employees_information": employeeData_1,
@@ -458,7 +465,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
     //Check if there is any proposal in draft with the same rfpId
     const draftProposal = await DraftRFP.findOne({ rfpId: proposal._id, userEmail: userEmail });
-    if (draftProposal) {
+    if (draftProposal && draftProposal.docx_base64 !== null) {
       return res.status(200).json({ message: 'A proposal with the same RFP ID already exists in draft. Please edit the draft proposal instead of generating a new one.' });
     }
 
@@ -484,10 +491,6 @@ exports.sendDataForProposalGeneration = async (req, res) => {
         const res_data = res_1.data;
 
         if (res_data.status === "success") {
-          // const proposalData = res_data.result.result;
-
-          // const processedProposal = replaceTextInJson(template_json, proposalData, userData, rfp);
-
           const document = res_data.result.docx_base64;
 
           const data = res_data.result.result;
@@ -496,8 +499,6 @@ exports.sendDataForProposalGeneration = async (req, res) => {
             rfpId: proposal._id || "",
             title: proposal.title || "",
             client: proposal.organization || "Not found",
-            // initialProposal: processedProposal,
-            // generatedProposal: processedProposal,
             initialProposal: data,
             generatedProposal: data,
             docx_base64: document,
@@ -525,7 +526,6 @@ exports.sendDataForProposalGeneration = async (req, res) => {
             rfpId: proposal._id || "",
             proposalId: new_Proposal._id || "",
             rfp: { ...proposal },
-            // generatedProposal: processedProposal,
             generatedProposal: data,
             docx_base64: document,
             currentEditor: req.user._id,
@@ -639,6 +639,19 @@ exports.sendDataForProposalGeneration = async (req, res) => {
         trackingId: res_data.task_id,
       });
       await new_ProposalTracker.save();
+
+      //Create a new draft proposal
+      const new_Draft = new DraftRFP({
+        userEmail: userEmail,
+        rfpId: proposal._id,
+        proposalId: null,
+        rfp: rfp,
+        generatedProposal: null,
+        docx_base64: null,
+        currentEditor: req.user._id,
+      });
+      await new_Draft.save();
+
       return res.status(200).json({ message: 'Proposal Generation is in Progress. Please visit again after some time.' });
     }
 
@@ -1325,9 +1338,16 @@ exports.getRecentAndSavedGrants = async (req, res) => {
     // Get all grants for recommendations
     const recentGrants = await Grant.find().sort({ createdAt: -1 }).limit(15).lean();
 
+    const recentGrants_1 = await Promise.all(recentGrants.map(async (item) => {
+      return {
+        ...item,
+        isgenerated: await Proposal.findOne({ rfpId: item._id, companyMail: userEmail }) || await DraftRFP.findOne({ rfpId: item._id, companyMail: userEmail }),
+      }
+    }));
+
     const savedGrants = await SavedGrant.find({ userEmail: userEmail }).sort({ createdAt: -1 }).lean();
 
-    res.status(200).json({ recentGrants, savedGrants });
+    res.status(200).json({ recentGrants: recentGrants_1, savedGrants });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -1336,8 +1356,16 @@ exports.getRecentAndSavedGrants = async (req, res) => {
 exports.getOtherGrants = async (req, res) => {
   try {
     const categories = req.body.category;
-    const otherGrants = await Grant.find({ CATEGORY_OF_FUNDING_ACTIVITY: { $in: categories } });
-    res.status(200).json(otherGrants);
+    const otherGrants = await Grant.find({ CATEGORY_OF_FUNDING_ACTIVITY: { $in: categories } }).lean();
+
+    const otherGrants_1 = await Promise.all(otherGrants.map(async (item) => {
+      return {
+        ...item,
+        isgenerated: await Proposal.findOne({ rfpId: item._id, companyMail: userEmail }) || await DraftRFP.findOne({ rfpId: item._id, companyMail: userEmail }),
+      }
+    }));
+
+    res.status(200).json(otherGrants_1);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -1462,7 +1490,6 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       "linkedIn": companyProfile_1.linkedIn || "",
       "certifications": certifications_1,
       "documents": companyDocuments_1,
-      // "documents": [],
       "caseStudies": caseStudies_1,
       "pastProjects": pastProjects_1,
       "employees_information": employeeData_1,
@@ -1477,7 +1504,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
 
     // Check if there is any proposal in draft with the same grantId
     const draftProposal = await DraftGrant.findOne({ grantId: grant._id, userEmail: userEmail });
-    if (draftProposal) {
+    if (draftProposal && draftProposal.docx_base64 !== null) {
       return res.status(200).json({ message: 'A proposal with the same Grant ID already exists in draft. Please edit the draft proposal instead of generating a new one.' });
     }
 
@@ -1501,18 +1528,12 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
         const res_data = res_1.data;
 
         if (res_data.status === "success") {
-          // const dummy = res_data.result.result;
-          // const proposalData = JSON.parse(dummy);
-          // const proposalData = res_data.result.result;
-
-          // const processedProposal = replaceTextInJson_Grant(grant_template_json, userData, grant, proposalData);
           const document = res_data.result.docx_base64;
           const data = res_data.result.result;
 
           const new_prop = new GrantProposal({
             grantId: grant._id,
             project_inputs: formData,
-            // initialProposal: processedProposal,
             initialProposal: data,
             generatedProposal: data,
             docx_base64: document,
@@ -1541,7 +1562,6 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
             grantId: grant._id,
             userEmail: userEmail,
             grant: grant,
-            // generatedProposal: processedProposal,
             generatedProposal: data,
             docx_base64: document,
             currentEditor: req.user._id,
@@ -1592,7 +1612,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
         } else if (res_data.status === "processing") {
           return res.status(200).json({ message: 'Grant Proposal Generation is still in progress. Please wait for it to complete.' });
         } else {
-          //await ProposalTracker.deleteOne({ grantId: grant._id });
+          await ProposalTracker.deleteOne({ grantId: grant._id, companyMail: userEmail });
           return res.status(400).json({ error: 'Failed to generate grant proposal. Please try again later.' });
         }
       }
@@ -1603,7 +1623,6 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       return res.status(404).json({ error: 'Subscription not found or expired. Please upgrade your subscription to generate more proposals.' });
     }
 
-    // const currentGrants = await GrantProposal.find({ companyMail: userEmail, createdAt: { $gte: subscription.start_date, $lte: subscription.end_date } }).countDocuments();
     if (subscription.max_grant_proposal_generations <= subscription.current_grant_proposal_generations) {
       return res.status(400).json({ error: 'You have reached the maximum number of grant proposals. Please upgrade your subscription to generate more proposals.' });
     }
@@ -1627,6 +1646,19 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
       grantProposalId: null,
     });
     await new_tracker.save();
+
+    //Create a new draft proposal
+    const new_Draft = new DraftGrant({
+      grantId: grant._id,
+      userEmail: userEmail,
+      grant: grant,
+      generatedProposal: null,
+      docx_base64: null,
+      currentEditor: req.user._id,
+      proposalId: null,
+    });
+    await new_Draft.save();
+
     return res.status(200).json({ message: 'Grant Proposal Generation is in Progress. Please visit again after some time.' });
 
   } catch (err) {
@@ -1635,7 +1667,150 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
   }
 };
 
-exports.getGrantProposalStatus = async (req, res) => {
+exports.getRFPProposal = async (req, res) => {
+  try {
+    const { proposal } = req.body;
+
+    let userEmail = req.user.email;
+    let userId = "";
+
+    let companyProfile_1 = "";
+
+    if (req.user.role === "employee") {
+      const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+      if (!employeeProfile) {
+        return res.status(404).json({ error: 'Employee profile not found. Please complete your employee profile first.' });
+      }
+      userEmail = employeeProfile.companyMail;
+      companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
+      const user = await User.findOne({ email: userEmail });
+      userId = user._id;
+    } else {
+      companyProfile_1 = await CompanyProfile.findOne({ email: userEmail });
+      userId = req.user._id;
+    }
+
+    //Check if a draft proposal with the same rfpId already exists
+    const draftProposal = await DraftRFP.findOne({ rfpId: proposal.rfpId, companyMail: userEmail });
+    if (draftProposal && draftProposal.docx_base64 !== null) {
+      return res.status(200).json({ message: 'Proposal Generated successfully.', proposal: draftProposal.docx_base64, proposalId: draftProposal.proposalId });
+    }
+
+    //Check if a proposal tracker with the same rfpId already exists
+    const proposalTracker = await ProposalTracker.findOne({ rfpId: proposal.rfpId, companyMail: userEmail });
+
+    if (!proposalTracker) {
+      return res.status(404).json({ error: 'Proposal tracker not found' });
+    }
+
+    if (proposalTracker.status === "success") {
+      const proposal = await Proposal.findOne({ _id: proposalTracker.proposalId, companyMail: userEmail });
+      return res.status(200).json({ message: 'Proposal Generated successfully.', proposal: proposal.docx_base64, proposalId: proposal._id });
+    } else if (proposalTracker.status === "error") {
+      return res.status(400).json({ error: 'Failed to generate proposal. Please try again later.' });
+    } else if (proposalTracker.status === "processing") {
+      const res_1 = await axios.get(`${process.env.PROPOSAL_PIPELINE_URL}/task-status/${proposalTracker.trackingId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+      });
+      const res_data = res_1.data;
+      if (res_data.status === "success") {
+        const document = res_data.result.docx_base64;
+        const data = res_data.result.result;
+
+        const new_Draft = await DraftRFP.findOne({ rfpId: proposal.rfpId, companyMail: userEmail });
+
+        const currentEditor = new_Draft.currentEditor ? new_Draft.currentEditor : req.user._id;
+
+        const new_prop = new Proposal({
+          rfpId: proposal.rfpId,
+          initialProposal: data,
+          generatedProposal: data,
+          docx_base64: document,
+          title: proposal.title,
+          client: proposal.client,
+          companyMail: userEmail,
+          deadline: getDeadline(proposal.deadline),
+          url: proposal.url || "",
+          status: "In Progress",
+          submittedAt: new Date(),
+          currentEditor: currentEditor,
+        });
+        await new_prop.save();
+
+        if (new_Draft) {
+          new_Draft.docx_base64 = document;
+          new_Draft.generatedProposal = data;
+          new_Draft.proposalId = new_prop._id;
+          await new_Draft.save();
+        } else {
+          const new_Draft = new DraftRFP({
+            rfpId: proposal.rfpId,
+            userEmail: userEmail,
+            rfp: proposal,
+            currentEditor: currentEditor,
+            generatedProposal: data,
+            docx_base64: document,
+            proposalId: new_prop._id
+          });
+          await new_Draft.save();
+        }
+
+        const new_CalendarEvent = new CalendarEvent({
+          companyId: companyProfile_1._id,
+          employeeId: currentEditor,
+          proposalId: new_prop._id,
+          rfpId: proposal.rfpId,
+          title: proposal.title,
+          startDate: new Date(),
+          endDate: new Date(),
+          status: "In Progress",
+        });
+        await new_CalendarEvent.save();
+
+        //Also add new calendar event with deadline
+        const new_CalendarEvent_Deadline = new CalendarEvent({
+          companyId: companyProfile_1._id,
+          employeeId: currentEditor,
+          proposalId: null,
+          rfpId: proposal.rfpId,
+          title: proposal.title,
+          startDate: getDeadline(proposal.deadline),
+          endDate: getDeadline(proposal.deadline),
+          status: "Deadline",
+        });
+        await new_CalendarEvent_Deadline.save();
+
+        proposalTracker.status = "success";
+        proposalTracker.proposalId = new_prop._id;
+        await proposalTracker.save();
+
+        const subscription_1 = await Subscription.findOne({ user_id: userId });
+        if (!subscription_1) {
+          return res.status(400).json({ error: 'Subscription not found' });
+        }
+
+        subscription_1.current_rfp_proposal_generations++;
+        await subscription_1.save();
+
+        return res.status(200).json({ message: 'Proposal Generated successfully.', proposal: document, proposalId: new_prop._id });
+      } else if (res_data.status === "processing") {
+        return res.status(200).json({ message: 'Proposal Generation is still in progress. Please wait for it to complete.' });
+      } else {
+        proposalTracker.status = "error";
+        await proposalTracker.save();
+        return res.status(400).json({ error: 'Failed to generate proposal. Please try again later.' });
+      }
+    }
+  } catch (err) {
+    console.error('Error in /getRFPProposal:', err.message);
+    return res.status(500).json({ error: 'Failed to get RFP proposal' });
+  }
+};
+
+exports.getGrantProposal = async (req, res) => {
   try {
     const { grant } = req.body;
 
@@ -1685,17 +1860,16 @@ exports.getGrantProposalStatus = async (req, res) => {
       });
       const res_data = res_1.data;
       if (res_data.status === "success") {
-        // const dummy = res_data.result.result;
-        // const proposalData = JSON.parse(dummy);
-        // const proposalData = res_data.result.result;
-
-        // const processedProposal = replaceTextInJson_Grant(grant_template_json, companyProfile_1, grant, proposalData);
         const document = res_data.result.docx_base64;
         const data = res_data.result.result;
+
+        const new_Draft = await DraftGrant.findOne({ grantId: grant._id, companyMail: userEmail });
+
+        const currentEditor = new_Draft ? new_Draft.currentEditor : req.user._id;
+
         const new_prop = new GrantProposal({
           grantId: grant._id,
           project_inputs: proposalTracker.formData,
-          // initialProposal: processedProposal,
           initialProposal: data,
           generatedProposal: data,
           docx_base64: document,
@@ -1706,24 +1880,31 @@ exports.getGrantProposalStatus = async (req, res) => {
           url: grant.OPPORTUNITY_NUMBER_LINK || "",
           status: "In Progress",
           submittedAt: new Date(),
-          currentEditor: req.user._id,
+          currentEditor: currentEditor,
         });
         await new_prop.save();
 
-        const new_Draft = new DraftGrant({
-          grantId: grant._id,
-          userEmail: userEmail,
-          grant: grant,
-          currentEditor: req.user._id,
-          generatedProposal: data,
-          docx_base64: document,
-          proposalId: new_prop._id,
-        });
-        await new_Draft.save();
+        if (!new_Draft) {
+          const new_Draft = new DraftGrant({
+            grantId: grant._id,
+            grant: grant,
+            userEmail: userEmail,
+            currentEditor: currentEditor,
+            generatedProposal: data,
+            docx_base64: document,
+            proposalId: new_prop._id,
+          });
+          await new_Draft.save();
+        } else {
+          new_Draft.proposalId = new_prop._id;
+          new_Draft.generatedProposal = data;
+          new_Draft.docx_base64 = document;
+          await new_Draft.save();
+        }
 
         const new_CalendarEvent = new CalendarEvent({
           companyId: companyProfile_1._id,
-          employeeId: req.user._id,
+          employeeId: currentEditor,
           proposalId: new_prop._id,
           grantId: grant._id,
           title: grant.OPPORTUNITY_TITLE,
@@ -1736,7 +1917,7 @@ exports.getGrantProposalStatus = async (req, res) => {
         //Also add new calendar event with deadline
         const new_CalendarEvent_Deadline = new CalendarEvent({
           companyId: companyProfile_1._id,
-          employeeId: req.user._id,
+          employeeId: currentEditor,
           proposalId: null,
           grantId: grant._id,
           title: grant.OPPORTUNITY_TITLE,
@@ -1768,7 +1949,7 @@ exports.getGrantProposalStatus = async (req, res) => {
       }
     }
   } catch (err) {
-    console.error('Error in /getGrantProposalStatus:', err.message);
+    console.error('Error in /getGrantProposal:', err.message);
     return res.status(500).json({ error: 'Failed to get grant proposal status' });
   }
 };

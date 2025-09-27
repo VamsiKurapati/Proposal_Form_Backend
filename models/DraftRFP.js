@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const DraftRFPSchema = new mongoose.Schema({
     userEmail: { type: String, required: true },
     rfpId: { type: mongoose.Schema.Types.ObjectId, ref: "RFP", required: true },
-    proposalId: { type: mongoose.Schema.Types.ObjectId, ref: "Proposal", required: true },
+    proposalId: { type: mongoose.Schema.Types.ObjectId, ref: "Proposal", required: true, default: null },
     rfp: {
         title: String,
         description: String,
@@ -18,7 +18,7 @@ const DraftRFPSchema = new mongoose.Schema({
         contact: String,
         timeline: String
     },
-    generatedProposal: { type: Object, required: true },
+    generatedProposal: { type: Object, required: true, default: null },
     docx_base64: { type: String, default: null },
     currentEditor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 }, { timestamps: true });
