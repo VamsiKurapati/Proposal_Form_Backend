@@ -167,11 +167,16 @@ exports.getRecommendedAndSavedRFPs = async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    //Using Promise.all to wait for all the promises to resolve
+    const draftRFPs = await DraftRFP.find({ userEmail: userEmail }).lean();
+    const proposals = await Proposal.find({ companyMail: userEmail }).lean();
+
     const recommendedRFPs_1 = await Promise.all(recommendedRFPs.map(async (item) => {
+      const draftRFP = draftRFPs.find((draft) => draft.rfpId === item._id);
+      const proposal = proposals.find((proposal) => proposal.rfpId === item._id);
+      const isgenerated = draftRFP || proposal;
       return {
-        ...item.rfp,
-        isgenerated: await Proposal.findOne({ rfpId: item.rfpId, companyMail: userEmail }) || await DraftRFP.findOne({ rfpId: item.rfpId, companyMail: userEmail }),
+        ...item,
+        isgenerated: isgenerated,
       }
     }));
 
@@ -199,10 +204,22 @@ exports.getOtherRFPs = async (req, res) => {
     const industries = req.body.industries;
     const otherRFPs = await RFP.find({ setAside: { $in: industries } }).lean();
 
+    let userEmail = req.user.email;
+    if (req.user.role === "employee") {
+      const employeeProfile = await EmployeeProfile.findOne({ userId: req.user._id });
+      userEmail = employeeProfile.companyMail;
+    }
+
+    const draftRFPs = await DraftRFP.find({ userEmail: userEmail }).lean();
+    const proposals = await Proposal.find({ companyMail: userEmail }).lean();
+
     const otherRFPs_1 = await Promise.all(otherRFPs.map(async (item) => {
+      const draftRFP = draftRFPs.find((draft) => draft.rfpId === item._id);
+      const proposal = proposals.find((proposal) => proposal.rfpId === item._id);
+      const isgenerated = draftRFP || proposal;
       return {
         ...item,
-        isgenerated: await Proposal.findOne({ rfpId: item._id, companyMail: userEmail }) || await DraftRFP.findOne({ rfpId: item._id, companyMail: userEmail }),
+        isgenerated: isgenerated,
       }
     }));
 
@@ -1338,10 +1355,16 @@ exports.getRecentAndSavedGrants = async (req, res) => {
     // Get all grants for recommendations
     const recentGrants = await Grant.find().sort({ createdAt: -1 }).limit(15).lean();
 
+    const draftGrants = await DraftGrant.find({ userEmail: userEmail }).lean();
+    const proposals = await Proposal.find({ companyMail: userEmail }).lean();
+
     const recentGrants_1 = await Promise.all(recentGrants.map(async (item) => {
+      const draftGrant = draftGrants.find((draft) => draft.grantId === item._id);
+      const proposal = proposals.find((proposal) => proposal.grantId === item._id);
+      const isgenerated = draftGrant || proposal;
       return {
         ...item,
-        isgenerated: await Proposal.findOne({ rfpId: item._id, companyMail: userEmail }) || await DraftRFP.findOne({ rfpId: item._id, companyMail: userEmail }),
+        isgenerated: isgenerated,
       }
     }));
 
@@ -1358,10 +1381,16 @@ exports.getOtherGrants = async (req, res) => {
     const categories = req.body.category;
     const otherGrants = await Grant.find({ CATEGORY_OF_FUNDING_ACTIVITY: { $in: categories } }).lean();
 
+    const draftGrants = await DraftGrant.find({ userEmail: userEmail }).lean();
+    const proposals = await Proposal.find({ companyMail: userEmail }).lean();
+
     const otherGrants_1 = await Promise.all(otherGrants.map(async (item) => {
+      const draftGrant = draftGrants.find((draft) => draft.grantId === item._id);
+      const proposal = proposals.find((proposal) => proposal.grantId === item._id);
+      const isgenerated = draftGrant || proposal;
       return {
         ...item,
-        isgenerated: await Proposal.findOne({ rfpId: item._id, companyMail: userEmail }) || await DraftRFP.findOne({ rfpId: item._id, companyMail: userEmail }),
+        isgenerated: isgenerated,
       }
     }));
 
@@ -1691,7 +1720,7 @@ exports.getRFPProposal = async (req, res) => {
     }
 
     //Check if a draft proposal with the same rfpId already exists
-    const draftProposal = await DraftRFP.findOne({ rfpId: proposal.rfpId, companyMail: userEmail });
+    const draftProposal = await DraftRFP.findOne({ rfpId: proposal.rfpId, userEmail: userEmail });
     if (draftProposal && draftProposal.docx_base64 !== null) {
       return res.status(200).json({ message: 'Proposal Generated successfully.', proposal: draftProposal.docx_base64, proposalId: draftProposal.proposalId });
     }
@@ -1720,7 +1749,7 @@ exports.getRFPProposal = async (req, res) => {
         const document = res_data.result.docx_base64;
         const data = res_data.result.result;
 
-        const new_Draft = await DraftRFP.findOne({ rfpId: proposal.rfpId, companyMail: userEmail });
+        const new_Draft = await DraftRFP.findOne({ rfpId: proposal.rfpId, userEmail: userEmail });
 
         const currentEditor = new_Draft.currentEditor ? new_Draft.currentEditor : req.user._id;
 
@@ -1863,7 +1892,7 @@ exports.getGrantProposal = async (req, res) => {
         const document = res_data.result.docx_base64;
         const data = res_data.result.result;
 
-        const new_Draft = await DraftGrant.findOne({ grantId: grant._id, companyMail: userEmail });
+        const new_Draft = await DraftGrant.findOne({ grantId: grant._id, userEmail: userEmail });
 
         const currentEditor = new_Draft ? new_Draft.currentEditor : req.user._id;
 
