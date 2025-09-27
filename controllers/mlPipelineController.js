@@ -658,7 +658,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
         userEmail: userEmail,
         rfpId: proposal._id,
         proposalId: null,
-        rfp: rfp,
+        rfp: { ...proposal },
         generatedProposal: null,
         docx_base64: null,
         currentEditor: req.user._id,
