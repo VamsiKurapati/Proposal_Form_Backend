@@ -35,7 +35,7 @@ function chunkText(text, maxChunkSize = 100000) {
     return chunks;
 }
 
-async function processLargeDocument(text, openai) {
+async function processLargeDocument(text, openai, abortSignal = null) {
     console.log("Processing Large Document Started at:", new Date().toISOString());
     const chunks = chunkText(text, 80000); // Smaller chunks to be safe
 
@@ -63,6 +63,11 @@ async function processLargeDocument(text, openai) {
 
     // Process each chunk and accumulate information
     for (let i = 0; i < chunks.length; i++) {
+        // Check for abort signal
+        if (abortSignal && abortSignal.aborted) {
+            console.log("Process aborted during chunk processing at:", new Date().toISOString());
+            throw new Error('Process aborted');
+        }
         const chunkPrompt = `Extract information from this PDF text chunk and return a JSON object. Look for content related to these sections and extract ALL relevant text (do not summarize):
 
 Required sections: summary, objectives, proposed_solution, deliverables, project_plan_tech_stack, timeline, risk_assessment, budget_estimate, team_details, certifications_awards, case_studies, past_projects, partnership_overview, references_proven_results, why_us, terms_conditions, cover_letter
@@ -122,7 +127,7 @@ Return ONLY a valid JSON object.`;
     return JSON.stringify(extractedSections, null, 2);
 }
 
-async function convertPdfToJson(text) {
+async function convertPdfToJson(text, abortSignal = null) {
     console.log("Converting Text to Json Started at:", new Date().toISOString());
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -131,7 +136,7 @@ async function convertPdfToJson(text) {
     // If the text is very large, we might need to process it in chunks
     if (estimatedTokens > 120000) { // GPT-4o has ~128k context limit
         console.log("Converting Text to Json Large Document Started at:", new Date().toISOString());
-        return await processLargeDocument(text, openai);
+        return await processLargeDocument(text, openai, abortSignal);
     }
 
     console.log("Converting Text to Json Small Document Started at:", new Date().toISOString());
@@ -172,11 +177,17 @@ Return ONLY a valid JSON object with no other text, no markdown formatting, no c
     try {
         console.log("Converting Text to Json Small Document Completion Started at:", new Date().toISOString());
 
+        // Check for abort signal before starting
+        if (abortSignal && abortSignal.aborted) {
+            console.log("Process aborted before API call at:", new Date().toISOString());
+            throw new Error('Process aborted');
+        }
+
         // Add timeout wrapper for OpenAI API call
         const timeoutPromise = new Promise((_, reject) => {
             setTimeout(() => {
                 reject(new Error('OpenAI API call timed out after 5 minutes'));
-            }, 300000); // 5 minute timeout
+            }, 600000); // 10 minute timeout
         });
 
         completion = await Promise.race([
@@ -201,7 +212,7 @@ Return ONLY a valid JSON object with no other text, no markdown formatting, no c
             const retryTimeoutPromise = new Promise((_, reject) => {
                 setTimeout(() => {
                     reject(new Error('OpenAI API retry call timed out after 5 minutes'));
-                }, 300000);
+                }, 600000);
             });
 
             completion = await Promise.race([
@@ -280,14 +291,14 @@ exports.convertPdfToJsonBuffer = async (pdfBuffer) => {
     }
 };
 
-exports.convertPdfToJsonFile = async (pdfFile) => {
+exports.convertPdfToJsonFile = async (pdfFile, abortSignal = null) => {
     try {
         console.log("Convert Pdf To Json File Started at:", new Date().toISOString());
         console.log("Converting Buffer to Text Started at:", new Date().toISOString());
         const pdfText = await extractPdfText(pdfFile);
         console.log("Converting Buffer to Text Completed at:", new Date().toISOString());
         console.log("Converting Text to Json Started at:", new Date().toISOString());
-        const json = await convertPdfToJson(pdfText);
+        const json = await convertPdfToJson(pdfText, abortSignal);
         console.log("Converting Text to Json Completed at:", new Date().toISOString());
         return json;
     } catch (err) {

@@ -350,22 +350,26 @@ exports.advancedComplianceCheckPdf = [
 
       console.log("File Buffer Conversion to JSON Started at:", new Date().toISOString());
 
+      // Create abort controller for proper cleanup
+      const abortController = new AbortController();
+
       // Add timeout wrapper for PDF conversion
-      const conversionTimeout = 120000; // 2 minutes timeout for PDF conversion
+      const conversionTimeout = 600000; // 10 minutes timeout for PDF conversion (to allow for 5min OpenAI + processing time)
       const conversionTimeoutPromise = new Promise((_, reject) => {
         setTimeout(() => {
           console.log("PDF conversion timeout reached at:", new Date().toISOString());
-          reject(new Error('PDF conversion timed out after 2 minutes'));
+          abortController.abort(); // Signal abort to stop ongoing processes
+          reject(new Error('PDF conversion timed out after 10 minutes'));
         }, conversionTimeout);
       });
 
       // Add progress monitoring
       const progressInterval = setInterval(() => {
         console.log("PDF conversion still in progress at:", new Date().toISOString());
-      }, 15000); // Log every 15 seconds
+      }, 60000); // Log every 1 minute
 
       const jsonString = await Promise.race([
-        convertPdfToJsonFile(fileBuffer),
+        convertPdfToJsonFile(fileBuffer, abortController.signal),
         conversionTimeoutPromise
       ]);
 
@@ -468,8 +472,13 @@ exports.advancedComplianceCheckPdf = [
     } catch (error) {
       console.error('Error in advancedComplianceCheckPdf:', error);
 
+      // Clean up any remaining intervals
+      if (typeof progressInterval !== 'undefined') {
+        clearInterval(progressInterval);
+      }
+
       // Handle specific timeout errors
-      if (error.message.includes('timed out')) {
+      if (error.message.includes('timed out') || error.message.includes('aborted')) {
         return res.status(408).json({
           message: 'Request timeout - PDF processing is taking longer than expected. Please try again or contact support if the issue persists.',
           error: error.message,
