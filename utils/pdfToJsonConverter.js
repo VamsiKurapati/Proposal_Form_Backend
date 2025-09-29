@@ -70,14 +70,24 @@ Required sections: summary, objectives, proposed_solution, deliverables, project
 If a section is not found in this chunk, use 'Text not found' as the value.
 Return ONLY a valid JSON object.`;
 
-        const completion = await openai.chat.completions.create({
-            model: "gpt-4.1-mini",
-            messages: [
-                { role: "system", content: chunkPrompt },
-                { role: "user", content: chunks[i] }
-            ],
-            temperature: 0.0
+        // Add timeout for chunk processing
+        const chunkTimeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => {
+                reject(new Error(`Chunk ${i + 1} processing timed out after 5 minutes`));
+            }, 300000); // 5 minute timeout for chunks
         });
+
+        const completion = await Promise.race([
+            openai.chat.completions.create({
+                model: "gpt-4.1-mini",
+                messages: [
+                    { role: "system", content: chunkPrompt },
+                    { role: "user", content: chunks[i] }
+                ],
+                temperature: 0.0
+            }),
+            chunkTimeoutPromise
+        ]);
         if (!completion) {
             throw new Error("No completion from OpenAI");
         }
@@ -162,14 +172,24 @@ Return ONLY a valid JSON object with no other text, no markdown formatting, no c
     try {
         console.log("Converting Text to Json Small Document Completion Started at:", new Date().toISOString());
 
-        completion = await openai.chat.completions.create({
-            model: "gpt-4.1-mini",
-            messages: [
-                { role: "system", content: prompt },
-                { role: "user", content: text }
-            ],
-            temperature: 0.0
+        // Add timeout wrapper for OpenAI API call
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => {
+                reject(new Error('OpenAI API call timed out after 5 minutes'));
+            }, 300000); // 5 minute timeout
         });
+
+        completion = await Promise.race([
+            openai.chat.completions.create({
+                model: "gpt-4.1-mini",
+                messages: [
+                    { role: "system", content: prompt },
+                    { role: "user", content: text }
+                ],
+                temperature: 0.0
+            }),
+            timeoutPromise
+        ]);
 
         console.log("Converting Text to Json Small Document Completion Completed at:", new Date().toISOString());
 
@@ -178,20 +198,29 @@ Return ONLY a valid JSON object with no other text, no markdown formatting, no c
         try {
             console.log("Converting Text to Json Small Document Completion Retry Started at:", new Date().toISOString());
 
-            completion = await openai.chat.completions.create({
-                model: "gpt-4.1-mini",
-                messages: [
-                    { role: "system", content: prompt },
-                    { role: "user", content: text }
-                ],
-                temperature: 0.0
+            const retryTimeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => {
+                    reject(new Error('OpenAI API retry call timed out after 5 minutes'));
+                }, 300000);
             });
+
+            completion = await Promise.race([
+                openai.chat.completions.create({
+                    model: "gpt-4.1-mini",
+                    messages: [
+                        { role: "system", content: prompt },
+                        { role: "user", content: text }
+                    ],
+                    temperature: 0.0
+                }),
+                retryTimeoutPromise
+            ]);
 
             console.log("Converting Text to Json Small Document Completion Retry Completed at:", new Date().toISOString());
 
-        } catch (error) {
-            console.error("Failed to parse JSON response:", error);
-            throw new Error(`Invalid JSON response from OpenAI: ${error.message}`);
+        } catch (retryError) {
+            console.error("Failed to parse JSON response after retry:", retryError);
+            throw new Error(`Invalid JSON response from OpenAI: ${retryError.message}`);
         }
     } finally {
         //No need to return anything

@@ -279,6 +279,11 @@ exports.advancedComplianceCheckPdf = [
       const { file } = req;
       const { rfpId } = req.body;
 
+      // Set response headers for long-running request
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+
       // Input validation
       if (!rfpId) {
         return res.status(400).json({ message: "rfpId is required" });
@@ -345,8 +350,26 @@ exports.advancedComplianceCheckPdf = [
 
       console.log("File Buffer Conversion to JSON Started at:", new Date().toISOString());
 
-      const jsonString = await convertPdfToJsonFile(fileBuffer);
+      // Add timeout wrapper for PDF conversion
+      const conversionTimeout = 120000; // 2 minutes timeout for PDF conversion
+      const conversionTimeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+          console.log("PDF conversion timeout reached at:", new Date().toISOString());
+          reject(new Error('PDF conversion timed out after 2 minutes'));
+        }, conversionTimeout);
+      });
 
+      // Add progress monitoring
+      const progressInterval = setInterval(() => {
+        console.log("PDF conversion still in progress at:", new Date().toISOString());
+      }, 15000); // Log every 15 seconds
+
+      const jsonString = await Promise.race([
+        convertPdfToJsonFile(fileBuffer),
+        conversionTimeoutPromise
+      ]);
+
+      clearInterval(progressInterval);
       console.log("File Buffer Conversion to JSON Completed at:", new Date().toISOString());
 
       let jsonData;
@@ -444,6 +467,25 @@ exports.advancedComplianceCheckPdf = [
 
     } catch (error) {
       console.error('Error in advancedComplianceCheckPdf:', error);
+
+      // Handle specific timeout errors
+      if (error.message.includes('timed out')) {
+        return res.status(408).json({
+          message: 'Request timeout - PDF processing is taking longer than expected. Please try again or contact support if the issue persists.',
+          error: error.message,
+          data: errorData
+        });
+      }
+
+      // Handle OpenAI API errors
+      if (error.message.includes('OpenAI')) {
+        return res.status(503).json({
+          message: 'AI service temporarily unavailable. Please try again in a few moments.',
+          error: error.message,
+          data: errorData
+        });
+      }
+
       res.status(500).json({ message: error.message, data: errorData });
     }
   }
