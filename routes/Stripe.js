@@ -32,6 +32,14 @@ const verifyToken = (req, res, next) => {
                 });
             }
 
+            //If the user is not a company, return error
+            if (decoded.user.role !== "company") {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Forbidden: User is not a company'
+                });
+            }
+
             req.user = decoded.user;
             next();
         });

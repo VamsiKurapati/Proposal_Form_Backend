@@ -275,6 +275,7 @@ exports.advancedComplianceCheckPdf = [
   singleFileUpload,
   async (req, res) => {
     try {
+      console.log("Process Started");
       const { file } = req;
       const { rfpId } = req.body;
 
@@ -336,13 +337,17 @@ exports.advancedComplianceCheckPdf = [
         return res.status(400).json({ message: "File size exceeds 10MB limit" });
       }
 
+      console.log("File Buffer Receiving Started");
 
       const fileBuffer = await getFileBufferFromGridFS(file.id);
 
+      console.log("File Buffer Receiving Completed");
 
+      console.log("File Buffer Conversion to JSON Started");
 
       const jsonString = await convertPdfToJsonFile(fileBuffer);
 
+      console.log("File Buffer Conversion to JSON Completed");
 
       let jsonData;
       try {
@@ -357,8 +362,11 @@ exports.advancedComplianceCheckPdf = [
         });
       }
 
+      console.log("JSON Data Parsed");
+
       errorData.data = jsonData;
 
+      console.log("Basic Compliance Started");
 
       const resBasicCompliance = await axios.post(`${process.env.PIPELINE_URL}/basic-compliance`, jsonData, {
         headers: {
@@ -366,6 +374,8 @@ exports.advancedComplianceCheckPdf = [
           'Accept': 'application/json'
         }
       });
+
+      console.log("Basic Compliance Completed");
 
       const dataBasicCompliance = resBasicCompliance.data.report;
 
@@ -398,6 +408,8 @@ exports.advancedComplianceCheckPdf = [
         "Timeline": rfp.timeline || "Not found",
       };
 
+      console.log("Advanced Compliance Started");
+
       const resProposal = await axios.post(`${process.env.PIPELINE_URL}/advance-compliance`, {
         "rfp": rfp_1,
         "proposal": jsonData,
@@ -407,6 +419,8 @@ exports.advancedComplianceCheckPdf = [
           'Accept': 'application/json'
         }
       });
+
+      console.log("Advanced Compliance Completed");
 
       const dataAdvancedCompliance = resProposal.data.report;
 

@@ -869,7 +869,7 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
     });
   } catch (err) {
     console.error('Error in /sendDataForRFPDiscovery:', err);
-    res.status(500).json({ error: 'Failed to send data for RFP discovery' });
+    res.status(500).json({ error: err.message || 'Failed to send data for RFP discovery' });
   }
 };
 
