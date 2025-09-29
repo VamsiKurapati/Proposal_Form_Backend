@@ -275,7 +275,7 @@ exports.advancedComplianceCheckPdf = [
   singleFileUpload,
   async (req, res) => {
     try {
-      console.log("Process Started");
+      console.log("Process Started at:", new Date().toISOString());
       const { file } = req;
       const { rfpId } = req.body;
 
@@ -337,17 +337,17 @@ exports.advancedComplianceCheckPdf = [
         return res.status(400).json({ message: "File size exceeds 10MB limit" });
       }
 
-      console.log("File Buffer Receiving Started");
+      console.log("File Buffer Receiving Started at:", new Date().toISOString());
 
       const fileBuffer = await getFileBufferFromGridFS(file.id);
 
-      console.log("File Buffer Receiving Completed");
+      console.log("File Buffer Receiving Completed at:", new Date().toISOString());
 
-      console.log("File Buffer Conversion to JSON Started");
+      console.log("File Buffer Conversion to JSON Started at:", new Date().toISOString());
 
       const jsonString = await convertPdfToJsonFile(fileBuffer);
 
-      console.log("File Buffer Conversion to JSON Completed");
+      console.log("File Buffer Conversion to JSON Completed at:", new Date().toISOString());
 
       let jsonData;
       try {
@@ -362,11 +362,11 @@ exports.advancedComplianceCheckPdf = [
         });
       }
 
-      console.log("JSON Data Parsed");
+      console.log("JSON Data Parsed at:", new Date().toISOString());
 
       errorData.data = jsonData;
 
-      console.log("Basic Compliance Started");
+      console.log("Basic Compliance Started at:", new Date().toISOString());
 
       const resBasicCompliance = await axios.post(`${process.env.PIPELINE_URL}/basic-compliance`, jsonData, {
         headers: {
@@ -375,7 +375,7 @@ exports.advancedComplianceCheckPdf = [
         }
       });
 
-      console.log("Basic Compliance Completed");
+      console.log("Basic Compliance Completed at:", new Date().toISOString());
 
       const dataBasicCompliance = resBasicCompliance.data.report;
 
@@ -408,7 +408,7 @@ exports.advancedComplianceCheckPdf = [
         "Timeline": rfp.timeline || "Not found",
       };
 
-      console.log("Advanced Compliance Started");
+      console.log("Advanced Compliance Started at:", new Date().toISOString());
 
       const resProposal = await axios.post(`${process.env.PIPELINE_URL}/advance-compliance`, {
         "rfp": rfp_1,
@@ -420,7 +420,7 @@ exports.advancedComplianceCheckPdf = [
         }
       });
 
-      console.log("Advanced Compliance Completed");
+      console.log("Advanced Compliance Completed at:", new Date().toISOString());
 
       const dataAdvancedCompliance = resProposal.data.report;
 
