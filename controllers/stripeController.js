@@ -312,48 +312,40 @@ const activateSubscription = async (req, res) => {
                 { upsert: true, new: true, session }
             );
 
-            //Check the no.of edtors and viewers from subscription and delete the extra editors and viewers from the company profile, Employee profile, amd Users Database and update the company profile
-            const companyProfile = await CompanyProfile.findById(userId);
-            const employees = companyProfile.employees;
-            let toBeDeletedEmployees = [];
-            let toBeDeletedUsers = [];
-            //Delete the extra editors and viewers from the employees
-            for (const employee of employees) {
-                if (employee.accessLevel === "Editor" && subscription.max_editors < employees.length) {
-                    toBeDeletedEmployees.push(employee.employeeId);
-                    const employeeProfile = await EmployeeProfile.findById(employee.employeeId);
-                    toBeDeletedEmployees.push(employeeProfile.userId);
-                    toBeDeletedUsers.push(employeeProfile.userId);
-                }
-                if (employee.accessLevel === "Viewer" && subscription.max_viewers < employees.length) {
-                    toBeDeletedEmployees.push(employee.employeeId);
-                    const employeeProfile = await EmployeeProfile.findById(employee.employeeId);
-                    toBeDeletedEmployees.push(employeeProfile.userId);
-                    toBeDeletedUsers.push(employeeProfile.userId);
-                }
-            }
+            // //Check the no.of edtors and viewers from subscription and delete the extra editors and viewers from the company profile, Employee profile, amd Users Database and update the company profile
+            // const companyProfile = await CompanyProfile.findById(userId);
+            // const employees = companyProfile.employees;
+            // let toBeDeletedEmployees = [];
+            // let toBeDeletedUsers = [];
+            // //Delete the extra editors and viewers from the employees
+            // for (const employee of employees) {
+            //     if (employee.accessLevel === "Editor" && subscription.max_editors < employees.length) {
+            //         toBeDeletedEmployees.push(employee.employeeId);
+            //         const employeeProfile = await EmployeeProfile.findById(employee.employeeId);
+            //         toBeDeletedEmployees.push(employeeProfile.userId);
+            //         toBeDeletedUsers.push(employeeProfile.userId);
+            //     }
+            //     if (employee.accessLevel === "Viewer" && subscription.max_viewers < employees.length) {
+            //         toBeDeletedEmployees.push(employee.employeeId);
+            //         const employeeProfile = await EmployeeProfile.findById(employee.employeeId);
+            //         toBeDeletedEmployees.push(employeeProfile.userId);
+            //         toBeDeletedUsers.push(employeeProfile.userId);
+            //     }
+            // }
 
-            //Delete the extra editors and viewers from the employee PROFILES
-            for (const employeeId of toBeDeletedEmployees) {
-                await EmployeeProfile.findByIdAndDelete(employeeId);
-            }
+            // //Delete the extra editors and viewers from the employee PROFILES
+            // for (const employeeId of toBeDeletedEmployees) {
+            //     await EmployeeProfile.findByIdAndDelete(employeeId);
+            // }
 
-            //Delete the extra editors and viewers from the users DATABASE
-            for (const userId of toBeDeletedUsers) {
-                await User.findByIdAndDelete(userId);
-            }
+            // //Delete the extra editors and viewers from the users DATABASE
+            // for (const userId of toBeDeletedUsers) {
+            //     await User.findByIdAndDelete(userId);
+            // }
 
-            //Update the company profile
-            companyProfile.employees = companyProfile.employees.filter(employee => !toBeDeletedEmployees.includes(employee.employeeId));
-            await companyProfile.save({ session });
-
-            //Update the user
-            const user = await User.findById(userId);
-            if (user) {
-                user.max_editors = subscription.max_editors;
-                user.max_viewers = subscription.max_viewers;
-                await user.save();
-            }
+            // //Update the company profile
+            // companyProfile.employees = companyProfile.employees.filter(employee => !toBeDeletedEmployees.includes(employee.employeeId));
+            // await companyProfile.save({ session });
 
             // Update user subscription status
             await User.findByIdAndUpdate(userId, {
