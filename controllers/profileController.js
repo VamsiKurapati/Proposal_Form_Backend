@@ -227,7 +227,8 @@ exports.getProfile = async (req, res) => {
         });
         const totalProposals = Proposals_1.length + GrantProposals_1.length;
         const wonProposals = Proposals_1.filter(proposal => proposal.status === "Won").length + GrantProposals_1.filter(proposal => proposal.status === "Won").length;
-        const successRate = totalProposals === 0 ? "0.00" : ((wonProposals / totalProposals) * 100).toFixed(2);
+        const lostProposals = Proposals_1.filter(proposal => proposal.status === "Rejected").length + GrantProposals_1.filter(proposal => proposal.status === "Rejected").length;
+        const successRate = totalProposals === 0 ? "0.00" : ((wonProposals / (wonProposals + lostProposals)) * 100).toFixed(2);
         const data_1 = {
             ...data,
             totalProposals,
