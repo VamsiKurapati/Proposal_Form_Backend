@@ -809,7 +809,7 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
     );
 
     if (invalidEntry) {
-      console.log('Invalid entry:', invalidEntry);
+      // Invalid entry found but continuing processing
     }
 
     // Fetch existing matched RFPs and create a lookup map
@@ -1969,30 +1969,25 @@ exports.getGrantProposal = async (req, res) => {
     }
 
     //Check if a proposal with the same grantId already exists
-    console.log("Checking if a proposal with the same grantId already exists");
     const proposal = await GrantProposal.findOne({ grantId: grant.grantId, companyMail: userEmail });
     if (proposal) {
       return res.status(200).json({ message: "Grant Proposal Generated successfully.", proposal: proposal.docx_base64, proposalId: proposal._id });
     }
 
     //Check if a proposal tracker with the same grantId already exists
-    console.log("Checking if a proposal tracker with the same grantId already exists");
     const proposalTracker = await ProposalTracker.findOne({ grantId: grant.grantId, companyMail: userEmail });
 
     if (!proposalTracker) {
-      console.log("Proposal tracker not found");
       return res.status(404).json({ error: "Proposal tracker not found" });
     }
 
     if (proposalTracker.status === "success") {
-      console.log("Proposal found with the same grantId");
       const grantProposal = await GrantProposal.findOne({ _id: proposalTracker.grantProposalId, companyMail: userEmail });
       return res.status(200).json({ message: "Grant Proposal Generated successfully.", proposal: grantProposal.docx_base64, proposalId: grantProposal._id });
     } else if (proposalTracker.status === "error") {
       await ProposalTracker.deleteOne({ grantId: grant.grantId, companyMail: userEmail });
       return res.status(400).json({ error: "Failed to generate grant proposal. Please try again later." });
     } else if (proposalTracker.status === "progress") {
-      console.log("Proposal tracker status is progress");
       const res_1 = await axios.get(`${process.env.PROPOSAL_PIPELINE_URL}/task-status/${proposalTracker.trackingId}`, {
         headers: {
           'Content-Type': 'application/json',
@@ -2001,23 +1996,17 @@ exports.getGrantProposal = async (req, res) => {
       });
       const res_data = res_1.data;
       if (res_data.status === "success") {
-        console.log("Proposal generation is successful");
         const document = res_data.result.docx_base64;
         const data = res_data.result.result;
 
-        console.log("Starting transaction");
         let new_prop_id;
         const session = await mongoose.startSession();
         session.startTransaction();
         try {
 
-          console.log("Checking if a draft proposal with the same grantId already exists");
           const new_Draft = await DraftGrant.findOne({ grantId: grant.grantId, userEmail: userEmail });
 
           const currentEditor = new_Draft ? new_Draft.currentEditor : req.user._id;
-          console.log("Current editor is", currentEditor);
-
-          console.log("Creating new grant proposal");
           const new_prop = new GrantProposal({
             grantId: grant.grantId,
             project_inputs: proposalTracker.formData,
@@ -2046,10 +2035,7 @@ exports.getGrantProposal = async (req, res) => {
           await new_prop.save({ session });
           new_prop_id = new_prop._id;
 
-          console.log("New grant proposal created with id", new_prop_id);
-
           if (!new_Draft) {
-            console.log("Creating new draft proposal");
             const newDraft = new DraftGrant({
               grantId: grant.grantId,
               grant: grant,
@@ -2061,14 +2047,12 @@ exports.getGrantProposal = async (req, res) => {
             });
             await newDraft.save({ session });
           } else {
-            console.log("Updating existing draft proposal");
             new_Draft.proposalId = new_prop_id;
             new_Draft.generatedProposal = data;
             new_Draft.docx_base64 = document;
             await new_Draft.save({ session });
           }
 
-          console.log("Creating new calendar event");
           const new_CalendarEvent = new CalendarEvent({
             companyId: companyProfile_1._id,
             employeeId: currentEditor,
@@ -2082,7 +2066,6 @@ exports.getGrantProposal = async (req, res) => {
           await new_CalendarEvent.save({ session });
 
           //Also add new calendar event with deadline
-          console.log("Creating new calendar event with deadline");
           const new_CalendarEvent_Deadline = new CalendarEvent({
             companyId: companyProfile_1._id,
             employeeId: currentEditor,
@@ -2094,33 +2077,23 @@ exports.getGrantProposal = async (req, res) => {
             status: "Deadline",
           });
           await new_CalendarEvent_Deadline.save({ session });
-
-          console.log("Updating proposal tracker status to success");
           proposalTracker.status = "success";
           proposalTracker.grantProposalId = new_prop_id;
           await proposalTracker.save({ session });
-
-          console.log("Checking if subscription exists");
           const subscription_1 = await Subscription.findOne({ user_id: userId });
           if (!subscription_1) {
             return res.status(400).json({ error: "Subscription not found" });
           }
 
-          console.log("Updating subscription current grant proposal generations");
           subscription_1.current_grant_proposal_generations++;
           await subscription_1.save({ session });
-
-          console.log("Committing transaction");
           await session.commitTransaction();
         } catch (error) {
-          console.log("Aborting transaction");
           await session.abortTransaction();
           throw error;
         } finally {
-          console.log("Ending session");
           session.endSession();
         }
-        console.log("Setting response status to 200");
         return res.status(200).json({ message: "Grant Proposal Generated successfully.", proposal: document, proposalId: new_prop_id });
       } else if (res_data.status === "processing") {
         return res.status(200).json({ message: "Grant Proposal Generation is still in progress. Please wait for it to complete." });

@@ -69,7 +69,6 @@ exports.createTicket = async (req, res) => {
     // Clean up uploaded files if ticket creation fails
     if (uploadedFileIds.length > 0) {
       await deleteMultipleGridFSFiles(uploadedFileIds);
-      console.log(`Cleaned up ${uploadedFileIds.length} uploaded files due to ticket creation failure`);
     }
 
     res.status(500).json({ message: "Error creating ticket", error: err.message });

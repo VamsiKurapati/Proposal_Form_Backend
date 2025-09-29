@@ -401,7 +401,6 @@ exports.forgotPassword = async (req, res) => {
 
     try {
       await sendEmail(sanitizedEmail, subject, body);
-      console.log("Password reset email sent to: ", sanitizedEmail);
     } catch (emailError) {
       console.error('Email sending failed:', emailError);
       // Clean up OTP record if email fails
@@ -519,7 +518,6 @@ exports.sendVerificationEmail = async (req, res) => {
 
     try {
       await sendEmail(sanitizeInput(email), subject, body);
-      console.log("Verification email sent to: ", sanitizeInput(email));
     } catch (emailError) {
       console.error('Email sending failed:', emailError);
       return res.status(500).json({ message: "Email sending failed" });

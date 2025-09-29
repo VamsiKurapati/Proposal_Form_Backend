@@ -158,7 +158,6 @@ exports.basicComplianceCheckPdf = [
       try {
         jsonData = JSON.parse(jsonString);
       } catch (parseError) {
-        console.error('Failed to parse JSON from PDF converter:', parseError);
         errorData.data = jsonString;
         return res.status(500).json({
           message: "Failed to parse extracted JSON data",
@@ -186,7 +185,6 @@ exports.basicComplianceCheckPdf = [
 
       res.status(200).json(compliance_data);
     } catch (error) {
-      console.error('Error in basicComplianceCheckPdf:', error);
       res.status(500).json({ message: error.message, data: errorData });
     }
   }
@@ -266,7 +264,6 @@ exports.advancedComplianceCheck = async (req, res) => {
   } catch (error) {
     const statusCode = error.response && error.response.status ? error.response.status : 500;
     const responseData = error.response && error.response.data ? error.response.data : null;
-    console.error('Error in advancedComplianceCheck:', responseData || error.message);
     res.status(statusCode).json({ message: 'Advanced compliance check failed', error: responseData || error.message });
   }
 };
@@ -275,7 +272,6 @@ exports.advancedComplianceCheckPdf = [
   singleFileUpload,
   async (req, res) => {
     try {
-      console.log("Process Started at:", new Date().toISOString());
       const { file } = req;
       const { rfpId } = req.body;
 
@@ -342,13 +338,7 @@ exports.advancedComplianceCheckPdf = [
         return res.status(400).json({ message: "File size exceeds 10MB limit" });
       }
 
-      console.log("File Buffer Receiving Started at:", new Date().toISOString());
-
       const fileBuffer = await getFileBufferFromGridFS(file.id);
-
-      console.log("File Buffer Receiving Completed at:", new Date().toISOString());
-
-      console.log("File Buffer Conversion to JSON Started at:", new Date().toISOString());
 
       // Create abort controller for proper cleanup
       const abortController = new AbortController();
@@ -357,30 +347,20 @@ exports.advancedComplianceCheckPdf = [
       const conversionTimeout = 600000; // 10 minutes timeout for PDF conversion (to allow for 5min OpenAI + processing time)
       const conversionTimeoutPromise = new Promise((_, reject) => {
         setTimeout(() => {
-          console.log("PDF conversion timeout reached at:", new Date().toISOString());
           abortController.abort(); // Signal abort to stop ongoing processes
           reject(new Error('PDF conversion timed out after 10 minutes'));
         }, conversionTimeout);
       });
-
-      // Add progress monitoring
-      const progressInterval = setInterval(() => {
-        console.log("PDF conversion still in progress at:", new Date().toISOString());
-      }, 60000); // Log every 1 minute
 
       const jsonString = await Promise.race([
         convertPdfToJsonFile(fileBuffer, abortController.signal),
         conversionTimeoutPromise
       ]);
 
-      clearInterval(progressInterval);
-      console.log("File Buffer Conversion to JSON Completed at:", new Date().toISOString());
-
       let jsonData;
       try {
         jsonData = JSON.parse(jsonString);
       } catch (parseError) {
-        console.error('Failed to parse JSON from PDF converter:', parseError);
         errorData.data = jsonString;
         return res.status(500).json({
           message: "Failed to parse extracted JSON data",
@@ -389,11 +369,7 @@ exports.advancedComplianceCheckPdf = [
         });
       }
 
-      console.log("JSON Data Parsed at:", new Date().toISOString());
-
       errorData.data = jsonData;
-
-      console.log("Basic Compliance Started at:", new Date().toISOString());
 
       //Set timeout for 10 minutes
       const timeout = 10 * 60 * 1000;
@@ -412,8 +388,6 @@ exports.advancedComplianceCheckPdf = [
         }),
         timeoutPromise
       ]);
-
-      console.log("Basic Compliance Completed at:", new Date().toISOString());
 
       const dataBasicCompliance = resBasicCompliance.data.report;
 
@@ -446,8 +420,6 @@ exports.advancedComplianceCheckPdf = [
         "Timeline": rfp.timeline || "Not found",
       };
 
-      console.log("Advanced Compliance Started at:", new Date().toISOString());
-
       const resProposal = await Promise.race([
         axios.post(`${process.env.PIPELINE_URL}/advance-compliance`, {
           "rfp": rfp_1,
@@ -461,8 +433,6 @@ exports.advancedComplianceCheckPdf = [
         timeoutPromise
       ]);
 
-      console.log("Advanced Compliance Completed at:", new Date().toISOString());
-
       const dataAdvancedCompliance = resProposal.data.report;
 
       const rfpTitle = rfp.title;
@@ -470,8 +440,6 @@ exports.advancedComplianceCheckPdf = [
       res.status(200).json({ compliance_dataBasicCompliance, dataAdvancedCompliance, rfpTitle });
 
     } catch (error) {
-      console.error('Error in advancedComplianceCheckPdf:', error);
-
       // Clean up any remaining intervals
       if (typeof progressInterval !== 'undefined') {
         clearInterval(progressInterval);
@@ -515,7 +483,6 @@ exports.generatePDF = async (req, res) => {
     res.setHeader('Content-Disposition', 'attachment; filename="proposal.pdf"');
     res.status(200).send(pdf.data);
   } catch (error) {
-    console.error('Error in generatePDF:', error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -580,7 +547,6 @@ exports.autoSaveProposal = async (req, res) => {
     res.status(404).json({ message: 'Proposal not found' });
 
   } catch (error) {
-    console.error('Error in autoSaveProposal:', error);
     res.status(500).json({ message: error.message });
   }
 };

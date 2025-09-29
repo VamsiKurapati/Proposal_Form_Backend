@@ -18,7 +18,6 @@ const deleteGridFSFile = async (fileId, bucketName = 'uploads') => {
         });
 
         await bucket.delete(fileId);
-        console.log(`Successfully deleted file ${fileId} from bucket ${bucketName}`);
         return true;
     } catch (error) {
         console.error(`Failed to delete file ${fileId} from bucket ${bucketName}:`, error);
@@ -52,7 +51,6 @@ const cleanupUploadedFiles = async (req, bucketName = 'uploads') => {
         // Handle single file upload
         if (req.file && req.file.id) {
             await deleteGridFSFile(req.file.id, bucketName);
-            console.log(`Cleaned up uploaded file: ${req.file.id}`);
         }
 
         // Handle multiple file uploads
@@ -77,7 +75,6 @@ const cleanupUploadedFiles = async (req, bucketName = 'uploads') => {
 
             if (fileIds.length > 0) {
                 await deleteMultipleGridFSFiles(fileIds, bucketName);
-                console.log(`Cleaned up ${fileIds.length} uploaded files`);
             }
         }
     } catch (error) {
