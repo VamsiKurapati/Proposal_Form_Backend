@@ -643,7 +643,7 @@ exports.updateGrantProposal = async (req, res) => {
 
         if (updates.deadline) grantProposal.deadline = updates.deadline;
         if (updates.deadline) {
-            const calendarEvent = await CalendarEvent.findOne({ grantId: grantProposalId, status: "Deadline" });
+            const calendarEvent = await CalendarEvent.findOne({ proposalId: grantProposalId, status: "Deadline" });
             if (calendarEvent) {
                 calendarEvent.startDate = updates.deadline;
                 calendarEvent.endDate = updates.deadline;
@@ -653,7 +653,7 @@ exports.updateGrantProposal = async (req, res) => {
         if (updates.submittedAt) grantProposal.submittedAt = updates.submittedAt;
         if (updates.status) grantProposal.status = updates.status;
         if (updates.status) {
-            const calendarEvent = await CalendarEvent.findOne({ grantId: grantProposalId, status: { $ne: "Deadline" } });
+            const calendarEvent = await CalendarEvent.findOne({ proposalId: grantProposalId, status: { $ne: "Deadline" } });
             if (calendarEvent) {
                 calendarEvent.status = updates.status;
                 await calendarEvent.save();
