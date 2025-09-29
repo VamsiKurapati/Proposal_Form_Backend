@@ -368,12 +368,23 @@ exports.advancedComplianceCheckPdf = [
 
       console.log("Basic Compliance Started at:", new Date().toISOString());
 
-      const resBasicCompliance = await axios.post(`${process.env.PIPELINE_URL}/basic-compliance`, jsonData, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
+      //Set timeout for 10 minutes
+      const timeout = 10 * 60 * 1000;
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Request timed out'));
+        }, timeout);
       });
+
+      const resBasicCompliance = await Promise.race([
+        axios.post(`${process.env.PIPELINE_URL}/basic-compliance`, jsonData, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        }),
+        timeoutPromise
+      ]);
 
       console.log("Basic Compliance Completed at:", new Date().toISOString());
 
@@ -410,15 +421,18 @@ exports.advancedComplianceCheckPdf = [
 
       console.log("Advanced Compliance Started at:", new Date().toISOString());
 
-      const resProposal = await axios.post(`${process.env.PIPELINE_URL}/advance-compliance`, {
-        "rfp": rfp_1,
-        "proposal": jsonData,
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-      });
+      const resProposal = await Promise.race([
+        axios.post(`${process.env.PIPELINE_URL}/advance-compliance`, {
+          "rfp": rfp_1,
+          "proposal": jsonData,
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        }),
+        timeoutPromise
+      ]);
 
       console.log("Advanced Compliance Completed at:", new Date().toISOString());
 

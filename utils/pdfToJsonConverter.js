@@ -36,6 +36,7 @@ function chunkText(text, maxChunkSize = 100000) {
 }
 
 async function processLargeDocument(text, openai) {
+    console.log("Processing Large Document Started at:", new Date().toISOString());
     const chunks = chunkText(text, 80000); // Smaller chunks to be safe
 
     const extractedSections = {
@@ -57,6 +58,8 @@ async function processLargeDocument(text, openai) {
         terms_conditions: 'Text not found',
         cover_letter: 'Text not found'
     };
+
+    console.log("Processing Large Document Chunks Started at:", new Date().toISOString());
 
     // Process each chunk and accumulate information
     for (let i = 0; i < chunks.length; i++) {
@@ -102,18 +105,26 @@ Return ONLY a valid JSON object.`;
         }
     }
 
+    console.log("Processing Large Document Chunks Completed at:", new Date().toISOString());
+
+    console.log("Processing Large Document Completed at:", new Date().toISOString());
+
     return JSON.stringify(extractedSections, null, 2);
 }
 
 async function convertPdfToJson(text) {
+    console.log("Converting Text to Json Started at:", new Date().toISOString());
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     const estimatedTokens = estimateTokenCount(text);
 
     // If the text is very large, we might need to process it in chunks
     if (estimatedTokens > 120000) { // GPT-4o has ~128k context limit
+        console.log("Converting Text to Json Large Document Started at:", new Date().toISOString());
         return await processLargeDocument(text, openai);
     }
+
+    console.log("Converting Text to Json Small Document Started at:", new Date().toISOString());
 
     const prompt = `You are a helpful assistant that extracts text from a PDF document and converts it to JSON format. 
 
@@ -149,6 +160,8 @@ Return ONLY a valid JSON object with no other text, no markdown formatting, no c
     let completion;
 
     try {
+        console.log("Converting Text to Json Small Document Completion Started at:", new Date().toISOString());
+
         completion = await openai.chat.completions.create({
             model: "gpt-4.1-mini",
             messages: [
@@ -157,9 +170,14 @@ Return ONLY a valid JSON object with no other text, no markdown formatting, no c
             ],
             temperature: 0.0
         });
+
+        console.log("Converting Text to Json Small Document Completion Completed at:", new Date().toISOString());
+
     } catch (error) {
         //Try once more with gpt-4.1-mini model
         try {
+            console.log("Converting Text to Json Small Document Completion Retry Started at:", new Date().toISOString());
+
             completion = await openai.chat.completions.create({
                 model: "gpt-4.1-mini",
                 messages: [
@@ -168,6 +186,9 @@ Return ONLY a valid JSON object with no other text, no markdown formatting, no c
                 ],
                 temperature: 0.0
             });
+
+            console.log("Converting Text to Json Small Document Completion Retry Completed at:", new Date().toISOString());
+
         } catch (error) {
             console.error("Failed to parse JSON response:", error);
             throw new Error(`Invalid JSON response from OpenAI: ${error.message}`);
@@ -177,17 +198,25 @@ Return ONLY a valid JSON object with no other text, no markdown formatting, no c
     }
 
 
+    console.log("Converting Text to Json Small Document Response Started at:", new Date().toISOString());
+
     let jsonResponse = completion?.choices[0]?.message?.content;
     if (!jsonResponse) {
         throw new Error("No JSON response from OpenAI");
     }
 
+    console.log("Converting Text to Json Small Document Response Completed at:", new Date().toISOString());
+
     // Clean up the response - remove markdown formatting if present
     jsonResponse = jsonResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+
+    console.log("Converting Text to Json Small Document Response Cleaned at:", new Date().toISOString());
 
     // Attempt to parse the JSON to ensure it's valid
     try {
         const parsedJson = JSON.parse(jsonResponse);
+
+        console.log("Converting Text to Json Small Document Response Parsed at:", new Date().toISOString());
 
         // Log which sections have content vs "Text not found"
         const sectionStatus = {};
@@ -197,10 +226,13 @@ Return ONLY a valid JSON object with no other text, no markdown formatting, no c
             sectionStatus[key] = hasContent ? `${value.length} chars` : 'No content';
         });
 
+        console.log("Converting Text to Json Small Document Response Section Status Completed at:", new Date().toISOString());
+
         return JSON.stringify(parsedJson, null, 2); // Return formatted JSON string
     } catch (parseError) {
         console.error("Failed to parse JSON response:", parseError);
         console.error("Raw response:", jsonResponse);
+        console.log("Converting Text to Json Small Document Response Parse Error at:", new Date().toISOString());
         throw new Error(`Invalid JSON response from OpenAI: ${parseError.message}`);
     }
 }
@@ -210,17 +242,24 @@ exports.convertPdfToJsonBuffer = async (pdfBuffer) => {
     try {
         const pdfText = await extractPdfText(pdfBuffer);
         const json = await convertPdfToJson(pdfText);
+        console.log("Converting Buffer to Json Completed at:", new Date().toISOString());
         return json;
     } catch (err) {
         console.error("Error:", err);
+        console.log("Converting Buffer to Json Error at:", new Date().toISOString());
         throw err;
     }
 };
 
 exports.convertPdfToJsonFile = async (pdfFile) => {
     try {
+        console.log("Convert Pdf To Json File Started at:", new Date().toISOString());
+        console.log("Converting Buffer to Text Started at:", new Date().toISOString());
         const pdfText = await extractPdfText(pdfFile);
+        console.log("Converting Buffer to Text Completed at:", new Date().toISOString());
+        console.log("Converting Text to Json Started at:", new Date().toISOString());
         const json = await convertPdfToJson(pdfText);
+        console.log("Converting Text to Json Completed at:", new Date().toISOString());
         return json;
     } catch (err) {
         console.error("Error:", err);
