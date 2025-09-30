@@ -226,7 +226,6 @@ exports.fetchRFPs = async () => {
         const response = await axios.get(`${process.env.PIPELINE_URL}/rfp/getRFPs`, {
             responseType: 'arraybuffer' // This ensures we get binary data for decompression
         });
-        console.log(`Fetched ${rfp_data.length} RFPs from API`);
         //We will receive compressed data, so we need to decompress it
         let decompressedData;
         try {
