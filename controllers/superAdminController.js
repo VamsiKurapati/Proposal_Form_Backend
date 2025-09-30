@@ -199,6 +199,22 @@ exports.getSupportStatsAndData = async (req, res) => {
     let FeatureRequests = 0;
     let Others = 0;
 
+    //Initialize counters for each category
+    let BillingPaymentsCompleted = 0;
+    let ProposalIssuesCompleted = 0;
+    let AccountAccessCompleted = 0;
+    let TechnicalErrorsCompleted = 0;
+    let FeatureRequestsCompleted = 0;
+    let OthersCompleted = 0;
+
+    //Initialize counters for each category
+    let BillingPaymentsEnterprise = 0;
+    let ProposalIssuesEnterprise = 0;
+    let AccountAccessEnterprise = 0;
+    let TechnicalErrorsEnterprise = 0;
+    let FeatureRequestsEnterprise = 0;
+    let OthersEnterprise = 0;
+
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
@@ -231,8 +247,83 @@ exports.getSupportStatsAndData = async (req, res) => {
 
     //Filter the tickets into three categories: Completed, Enterprise, and Other
     const completedTickets = supportWithCompany.filter(ticket => ticket.status === "Completed");
-    const enterpriseTickets = supportWithCompany.filter(ticket => ticket.plan_name === "Enterprise" && ticket.status !== "Completed");
-    const otherTickets = supportWithCompany.filter(ticket => ticket.plan_name !== "Enterprise" && ticket.status !== "Completed");
+    const enterpriseTickets = supportWithCompany.filter(ticket => (ticket.plan_name === "Enterprise" || ticket.plan_name === "CustomEnterprise Plan") && ticket.status !== "Completed");
+    const otherTickets = supportWithCompany.filter(ticket => ticket.plan_name !== "Enterprise" && ticket.plan_name !== "CustomEnterprise Plan" && ticket.status !== "Completed");
+
+    completedTickets.forEach(ticket => {
+      const createdAt = new Date(ticket.createdAt);
+      if (createdAt.getMonth() === currentMonth && createdAt.getFullYear() === currentYear) {
+        switch (ticket.category) {
+          case "Billing & Payments":
+            BillingPaymentsCompleted++;
+            break;
+          case "Proposal Issues":
+            ProposalIssuesCompleted++;
+            break;
+          case "Account & Access":
+            AccountAccessCompleted++;
+            break;
+          case "Technical Errors":
+            TechnicalErrorsCompleted++;
+            break;
+          case "Feature Requests":
+            FeatureRequestsCompleted++;
+            break;
+          default:
+            OthersCompleted++;
+        }
+      }
+    });
+
+    enterpriseTickets.forEach(ticket => {
+      const createdAt = new Date(ticket.createdAt);
+      if (createdAt.getMonth() === currentMonth && createdAt.getFullYear() === currentYear) {
+        switch (ticket.category) {
+          case "Billing & Payments":
+            BillingPaymentsEnterprise++;
+            break;
+          case "Proposal Issues":
+            ProposalIssuesEnterprise++;
+            break;
+          case "Account & Access":
+            AccountAccessEnterprise++;
+            break;
+          case "Technical Errors":
+            TechnicalErrorsEnterprise++;
+            break;
+          case "Feature Requests":
+            FeatureRequestsEnterprise++;
+            break;
+          default:
+            OthersEnterprise++;
+        }
+      }
+    });
+
+    otherTickets.forEach(ticket => {
+      const createdAt = new Date(ticket.createdAt);
+      if (createdAt.getMonth() === currentMonth && createdAt.getFullYear() === currentYear) {
+        switch (ticket.category) {
+          case "Billing & Payments":
+            BillingPayments++;
+            break;
+          case "Proposal Issues":
+            ProposalIssues++;
+            break;
+          case "Account & Access":
+            AccountAccess++;
+            break;
+          case "Technical Errors":
+            TechnicalErrors++;
+            break;
+          case "Feature Requests":
+            FeatureRequests++;
+            break;
+          default:
+            Others++;
+        }
+      }
+    });
 
     res.json({
       TicketStats: {
@@ -242,6 +333,22 @@ exports.getSupportStatsAndData = async (req, res) => {
         "Technical Errors": TechnicalErrors,
         "Feature Requests": FeatureRequests,
         "Others": Others,
+      },
+      TicketStatsCompleted: {
+        "Billing & Payments": BillingPaymentsCompleted,
+        "Proposal Issues": ProposalIssuesCompleted,
+        "Account & Access": AccountAccessCompleted,
+        "Technical Errors": TechnicalErrorsCompleted,
+        "Feature Requests": FeatureRequestsCompleted,
+        "Others": OthersCompleted,
+      },
+      TicketStatsEnterprise: {
+        "Billing & Payments": BillingPaymentsEnterprise,
+        "Proposal Issues": ProposalIssuesEnterprise,
+        "Account & Access": AccountAccessEnterprise,
+        "Technical Errors": TechnicalErrorsEnterprise,
+        "Feature Requests": FeatureRequestsEnterprise,
+        "Others": OthersEnterprise,
       },
       supportTicketsData: otherTickets,
       enterpriseTicketsData: enterpriseTickets,
