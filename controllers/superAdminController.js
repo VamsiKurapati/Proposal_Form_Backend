@@ -229,6 +229,11 @@ exports.getSupportStatsAndData = async (req, res) => {
       }
     });
 
+    //Filter the tickets into three categories: Completed, Enterprise, and Other
+    const completedTickets = supportWithCompany.filter(ticket => ticket.status === "Completed");
+    const enterpriseTickets = supportWithCompany.filter(ticket => ticket.plan_name === "Enterprise" && ticket.status !== "Completed");
+    const otherTickets = supportWithCompany.filter(ticket => ticket.plan_name !== "Enterprise" && ticket.status !== "Completed");
+
     res.json({
       TicketStats: {
         "Billing & Payments": BillingPayments,
@@ -238,7 +243,9 @@ exports.getSupportStatsAndData = async (req, res) => {
         "Feature Requests": FeatureRequests,
         "Others": Others,
       },
-      TicketData: supportWithCompany,
+      supportTicketsData: otherTickets,
+      enterpriseTicketsData: enterpriseTickets,
+      completedTicketsData: completedTickets
     });
   } catch (err) {
     res.status(500).json({
