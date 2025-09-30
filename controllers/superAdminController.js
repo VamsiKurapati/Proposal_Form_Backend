@@ -219,36 +219,10 @@ exports.getSupportStatsAndData = async (req, res) => {
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
 
-    // Count this month's tickets by category
-    supportWithCompany.forEach(ticket => {
-      const createdAt = new Date(ticket.createdAt);
-      if (createdAt.getMonth() === currentMonth && createdAt.getFullYear() === currentYear) {
-        switch (ticket.category) {
-          case "Billing & Payments":
-            BillingPayments++;
-            break;
-          case "Proposal Issues":
-            ProposalIssues++;
-            break;
-          case "Account & Access":
-            AccountAccess++;
-            break;
-          case "Technical Errors":
-            TechnicalErrors++;
-            break;
-          case "Feature Requests":
-            FeatureRequests++;
-            break;
-          default:
-            Others++;
-        }
-      }
-    });
-
     //Filter the tickets into three categories: Completed, Enterprise, and Other
     const completedTickets = supportWithCompany.filter(ticket => ticket.status === "Completed");
-    const enterpriseTickets = supportWithCompany.filter(ticket => (ticket.plan_name === "Enterprise" || ticket.plan_name === "CustomEnterprise Plan") && ticket.status !== "Completed");
-    const otherTickets = supportWithCompany.filter(ticket => ticket.plan_name !== "Enterprise" && ticket.plan_name !== "CustomEnterprise Plan" && ticket.status !== "Completed");
+    const enterpriseTickets = supportWithCompany.filter(ticket => (ticket.plan_name === "Enterprise" || ticket.plan_name === "Custom Enterprise Plan") && ticket.status !== "Completed");
+    const otherTickets = supportWithCompany.filter(ticket => ticket.plan_name !== "Enterprise" && ticket.plan_name !== "Custom Enterprise Plan" && ticket.status !== "Completed");
 
     completedTickets.forEach(ticket => {
       const createdAt = new Date(ticket.createdAt);
