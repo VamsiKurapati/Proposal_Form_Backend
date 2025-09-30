@@ -80,7 +80,7 @@ Return ONLY a valid JSON object.`;
 
         const completion = await Promise.race([
             openai.chat.completions.create({
-                model: "gpt-4.1-mini",
+                model: "gpt-4o-mini",
                 messages: [
                     { role: "system", content: chunkPrompt },
                     { role: "user", content: chunks[i] }
@@ -94,7 +94,7 @@ Return ONLY a valid JSON object.`;
         }
 
         try {
-            const chunkResponse = completion?.choices[0]?.message?.content?.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+            const chunkResponse = completion?.choices[0]?.message?.content?.replace(/```json\n?/g, '').replace(/```\n?/g, '');
             if (!chunkResponse) {
                 throw new Error("No JSON response from OpenAI");
             }
@@ -102,7 +102,7 @@ Return ONLY a valid JSON object.`;
 
             // Merge non-empty sections from this chunk
             Object.keys(chunkData).forEach(key => {
-                if (chunkData[key] && chunkData[key] !== 'Text not found' && chunkData[key].trim().length > 0) {
+                if (chunkData[key] && chunkData[key] !== 'Text not found' && chunkData[key].length > 0) {
                     if (extractedSections[key] === 'Text not found') {
                         extractedSections[key] = chunkData[key];
                     } else {
@@ -177,7 +177,7 @@ Return ONLY a valid JSON object with no other text, no markdown formatting, no c
 
         completion = await Promise.race([
             openai.chat.completions.create({
-                model: "gpt-4.1-mini",
+                model: "gpt-4o-mini",
                 messages: [
                     { role: "system", content: prompt },
                     { role: "user", content: text }
@@ -188,7 +188,7 @@ Return ONLY a valid JSON object with no other text, no markdown formatting, no c
         ]);
 
     } catch (error) {
-        //Try once more with gpt-4.1-mini model
+        //Try once more with gpt-4o-mini model
         try {
             const retryTimeoutPromise = new Promise((_, reject) => {
                 setTimeout(() => {
@@ -198,7 +198,7 @@ Return ONLY a valid JSON object with no other text, no markdown formatting, no c
 
             completion = await Promise.race([
                 openai.chat.completions.create({
-                    model: "gpt-4.1-mini",
+                    model: "gpt-4o-mini",
                     messages: [
                         { role: "system", content: prompt },
                         { role: "user", content: text }
@@ -222,7 +222,7 @@ Return ONLY a valid JSON object with no other text, no markdown formatting, no c
     }
 
     // Clean up the response - remove markdown formatting if present
-    jsonResponse = jsonResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    jsonResponse = jsonResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '');
 
     // Attempt to parse the JSON to ensure it's valid
     try {
@@ -232,7 +232,7 @@ Return ONLY a valid JSON object with no other text, no markdown formatting, no c
         const sectionStatus = {};
         Object.keys(parsedJson).forEach(key => {
             const value = parsedJson[key];
-            const hasContent = value && value !== 'Text not found' && value.trim().length > 0;
+            const hasContent = value && value !== 'Text not found' && value.length > 0;
             sectionStatus[key] = hasContent ? `${value.length} chars` : 'No content';
         });
 
