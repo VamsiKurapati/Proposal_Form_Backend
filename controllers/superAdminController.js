@@ -521,14 +521,14 @@ exports.getPaymentsSummaryAndData = async (req, res) => {
 
     res.json({
       PaymentStats: {
-        "Total Revenue": `$${totalRevenue}`,
+        "Total Revenue": `${totalRevenue}`,
         // "Successful Payments": successfulPayments,
         // "Failed Payments": failedPayments,
         "Active Subscriptions": `${activeUsers}`,
         "Inactive Subscriptions": `${inactiveUsers}`,
         // "Total Refunds": totalRefunds,
         // "Pending Refunds": pendingRefunds,
-        "Revenue This Month": `$${revenueThisMonth}`
+        "Revenue This Month": `${revenueThisMonth}`
       },
       PaymentData: paymentsWithCompanyName
     });
