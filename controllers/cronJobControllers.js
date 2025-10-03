@@ -19,7 +19,7 @@ const Payment = require('../models/Payments');
 exports.fetchGrants = async () => {
     try {
         console.log('Starting grant fetch cron job...');
-        const grants = await axios.get(`${process.env.PIPELINE_URL}/grants/getgrants`);
+        const grants = await axios.get(`${process.env.PIPELINE_URL}/grants/getGrants`);
 
         const grants_data = grants.data;
         console.log(`Fetched ${grants_data.length} grants from API`);
