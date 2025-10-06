@@ -225,78 +225,78 @@ exports.getSupportStatsAndData = async (req, res) => {
     const otherTickets = supportWithCompany.filter(ticket => ticket.plan_name !== "Enterprise" && ticket.plan_name !== "Custom Enterprise Plan" && ticket.status !== "Completed");
 
     completedTickets.forEach(ticket => {
-      const createdAt = new Date(ticket.createdAt);
-      if (createdAt.getMonth() === currentMonth && createdAt.getFullYear() === currentYear) {
-        switch (ticket.category) {
-          case "Billing & Payments":
-            BillingPaymentsCompleted++;
-            break;
-          case "Proposal Issues":
-            ProposalIssuesCompleted++;
-            break;
-          case "Account & Access":
-            AccountAccessCompleted++;
-            break;
-          case "Technical Errors":
-            TechnicalErrorsCompleted++;
-            break;
-          case "Feature Requests":
-            FeatureRequestsCompleted++;
-            break;
-          default:
-            OthersCompleted++;
-        }
+      // const createdAt = new Date(ticket.createdAt);
+      // if (createdAt.getMonth() === currentMonth && createdAt.getFullYear() === currentYear) {
+      switch (ticket.category) {
+        case "Billing & Payments":
+          BillingPaymentsCompleted++;
+          break;
+        case "Proposal Issues":
+          ProposalIssuesCompleted++;
+          break;
+        case "Account & Access":
+          AccountAccessCompleted++;
+          break;
+        case "Technical Errors":
+          TechnicalErrorsCompleted++;
+          break;
+        case "Feature Requests":
+          FeatureRequestsCompleted++;
+          break;
+        default:
+          OthersCompleted++;
       }
+      // }
     });
 
     enterpriseTickets.forEach(ticket => {
-      const createdAt = new Date(ticket.createdAt);
-      if (createdAt.getMonth() === currentMonth && createdAt.getFullYear() === currentYear) {
-        switch (ticket.category) {
-          case "Billing & Payments":
-            BillingPaymentsEnterprise++;
-            break;
-          case "Proposal Issues":
-            ProposalIssuesEnterprise++;
-            break;
-          case "Account & Access":
-            AccountAccessEnterprise++;
-            break;
-          case "Technical Errors":
-            TechnicalErrorsEnterprise++;
-            break;
-          case "Feature Requests":
-            FeatureRequestsEnterprise++;
-            break;
-          default:
-            OthersEnterprise++;
-        }
+      //  const createdAt = new Date(ticket.createdAt);
+      // if (createdAt.getMonth() === currentMonth && createdAt.getFullYear() === currentYear) {
+      switch (ticket.category) {
+        case "Billing & Payments":
+          BillingPaymentsEnterprise++;
+          break;
+        case "Proposal Issues":
+          ProposalIssuesEnterprise++;
+          break;
+        case "Account & Access":
+          AccountAccessEnterprise++;
+          break;
+        case "Technical Errors":
+          TechnicalErrorsEnterprise++;
+          break;
+        case "Feature Requests":
+          FeatureRequestsEnterprise++;
+          break;
+        default:
+          OthersEnterprise++;
       }
+      // }
     });
 
     otherTickets.forEach(ticket => {
-      const createdAt = new Date(ticket.createdAt);
-      if (createdAt.getMonth() === currentMonth && createdAt.getFullYear() === currentYear) {
-        switch (ticket.category) {
-          case "Billing & Payments":
-            BillingPayments++;
-            break;
-          case "Proposal Issues":
-            ProposalIssues++;
-            break;
-          case "Account & Access":
-            AccountAccess++;
-            break;
-          case "Technical Errors":
-            TechnicalErrors++;
-            break;
-          case "Feature Requests":
-            FeatureRequests++;
-            break;
-          default:
-            Others++;
-        }
+      // const createdAt = new Date(ticket.createdAt);
+      // if (createdAt.getMonth() === currentMonth && createdAt.getFullYear() === currentYear) {
+      switch (ticket.category) {
+        case "Billing & Payments":
+          BillingPayments++;
+          break;
+        case "Proposal Issues":
+          ProposalIssues++;
+          break;
+        case "Account & Access":
+          AccountAccess++;
+          break;
+        case "Technical Errors":
+          TechnicalErrors++;
+          break;
+        case "Feature Requests":
+          FeatureRequests++;
+          break;
+        default:
+          Others++;
       }
+      // }
     });
 
     res.json({
