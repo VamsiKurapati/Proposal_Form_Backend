@@ -1,5 +1,41 @@
+const axios = require('axios');
+
+// Simple in-memory cache for IP lookups
+// Format: { "IP_ADDRESS": { locationInfo: "City, Region, Country", timestamp: 1690000000000 } }
+const ipCache = {};
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+async function getLocationFromIP(ipAddress) {
+    if (!ipAddress) return 'Unknown Location';
+
+    const now = Date.now();
+    const cached = ipCache[ipAddress];
+
+    // ✅ If cached and still valid, return it
+    if (cached && now - cached.timestamp < CACHE_TTL) {
+        return cached.locationInfo;
+    }
+
+    try {
+        const response = await axios.get(`https://ipapi.co/${ipAddress}/json/`);
+        const data = response.data;
+
+        let locationInfo = 'Unknown Location';
+        if (data && data.city && data.region && data.country_name) {
+            locationInfo = `${data.city}, ${data.region}, ${data.country_name}`;
+        }
+
+        // ✅ Cache the result
+        ipCache[ipAddress] = { locationInfo, timestamp: now };
+        return locationInfo;
+    } catch (err) {
+        console.error('Error fetching IP location:', err.message);
+        return 'Unknown Location';
+    }
+}
+
 /**
- * Modern Email Templates for RFP & Grants
+ * Modern Email Templates for RFP2GRANTS
  * Featuring responsive design, modern styling, and professional branding
  */
 
@@ -18,7 +54,7 @@ const getBaseTemplate = (content, preheader = '') => {
             .ReadMsgBody { width: 100%; }
             .ExternalClass { width: 100%; }
         </style>` : ''}
-        <title>RFP & Grants</title>
+        <title>RFP2GRANTS</title>
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
             
@@ -268,7 +304,7 @@ const getBaseTemplate = (content, preheader = '') => {
                     <div class="email-wrapper">
                         <!-- Header -->
                         <div class="email-header">
-                            <div class="email-logo">RFP & Grants</div>
+                            <div class="email-logo">RFP2GRANTS</div>
                         </div>
                         
                         <!-- Content -->
@@ -279,7 +315,7 @@ const getBaseTemplate = (content, preheader = '') => {
                         <!-- Footer -->
                         <div class="email-footer">
                             <p class="footer-text">
-                                © ${new Date().getFullYear()} RFP & Grants. All rights reserved.
+                                © ${new Date().getFullYear()} RFP2GRANTS. All rights reserved.
                             </p>
                             <div class="footer-links">
                                 <a href="${process.env.FRONTEND_URL}/dashboard" class="footer-link">Dashboard</a>
@@ -302,7 +338,7 @@ const getBaseTemplate = (content, preheader = '') => {
 // Welcome Email Template
 exports.getWelcomeEmail = (fullName) => {
     const content = `
-        <div class="greeting">Welcome to RFP & Grants! 🎉</div>
+        <div class="greeting">Welcome to RFP2GRANTS! 🎉</div>
         <p class="message">
             Hi <strong>${fullName}</strong>,
         </p>
@@ -334,23 +370,38 @@ exports.getWelcomeEmail = (fullName) => {
         </p>
     `;
 
-    return getBaseTemplate(content, 'Welcome to RFP & Grants - Your account is ready!');
+    return getBaseTemplate(content, 'Welcome to RFP2GRANTS - Your account is ready!');
 };
 
-// Login Alert Email Template
-exports.getLoginAlertEmail = (fullName) => {
+exports.getLoginAlertEmail = async (fullName, ipAddress) => {
+    const locationInfo = await getLocationFromIP(ipAddress);
+
+    // Get current time & timezone
+    const date = new Date();
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const formattedTime = date.toLocaleString('en-US', { timeZone });
+
     const content = `
         <div class="greeting">New Sign-In Detected 🔐</div>
         <p class="message">
             Hi <strong>${fullName}</strong>,
         </p>
         <p class="message">
-            We detected a sign-in to your account from a new device or location. If this was you, no action is required.
+            We detected a sign-in to your account from a new device or location. 
+            If this was you, no action is required.
         </p>
         <div class="highlight-box">
             <div class="info-item">
                 <div class="info-label">Sign-in Time</div>
-                <div class="info-value">${new Date().toLocaleString()}</div>
+                <div class="info-value">${formattedTime} (${timeZone})</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">IP Address</div>
+                <div class="info-value">${ipAddress || 'Unknown'}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Location</div>
+                <div class="info-value">${locationInfo}</div>
             </div>
         </div>
         <div class="warning-box">
@@ -442,7 +493,7 @@ exports.getEmailVerificationEmail = (verificationCode) => {
             Hello!
         </p>
         <p class="message">
-            Thank you for signing up with RFP & Grants. To complete your registration, please verify your email address using the code below:
+            Thank you for signing up with RFP2GRANTS. To complete your registration, please verify your email address using the code below:
         </p>
         <div class="otp-code">
             ${verificationCode}
@@ -456,7 +507,7 @@ exports.getEmailVerificationEmail = (verificationCode) => {
         </p>
         <div class="warning-box">
             <p>
-                If you didn't create an account with RFP & Grants, you can safely ignore this email.
+                If you didn't create an account with RFP2GRANTS, you can safely ignore this email.
             </p>
         </div>
     `;
@@ -472,7 +523,7 @@ exports.getEmployeeWelcomeEmail = (name, email, password, companyName) => {
             Hi <strong>${name}</strong>,
         </p>
         <p class="message">
-            An account has been created for you to collaborate on ${companyName}'s RFP & Grants workspace. 
+            An account has been created for you to collaborate on ${companyName}'s RFP2GRANTS workspace. 
             Use the credentials below to get started:
         </p>
         <div class="highlight-box">
@@ -500,7 +551,7 @@ exports.getEmployeeWelcomeEmail = (name, email, password, companyName) => {
         </div>
     `;
 
-    return getBaseTemplate(content, `Welcome to ${companyName} on RFP & Grants`);
+    return getBaseTemplate(content, `Welcome to ${companyName} on RFP2GRANTS`);
 };
 
 // Payment Success Email Template
@@ -628,7 +679,7 @@ exports.getPasswordChangedEmail = (fullName) => {
             For your security, we recommend:
         </p>
         <ul style="margin: 12px 0 0 20px; color: #475569;">
-            <li style="margin: 8px 0;">Using a unique password for your RFP & Grants account</li>
+            <li style="margin: 8px 0;">Using a unique password for your RFP2GRANTS account</li>
             <li style="margin: 8px 0;">Enabling two-factor authentication when available</li>
             <li style="margin: 8px 0;">Never sharing your password with anyone</li>
         </ul>
@@ -685,7 +736,7 @@ exports.getEnterprisePlanEmail = (fullName, email, price, planType, maxEditors, 
         </p>
     `;
 
-    return getBaseTemplate(content, `Your Enterprise Plan Payment Link - RFP & Grants`);
+    return getBaseTemplate(content, `Your Enterprise Plan Payment Link - RFP2GRANTS`);
 };
 
 // Enterprise Payment Success Template
@@ -733,7 +784,7 @@ exports.getEnterprisePaymentSuccessEmail = (fullName, planType, price, maxEditor
             </a>
         </div>
         <p class="message">
-            Thank you for choosing RFP & Grants Enterprise. Our team is here to support your success!
+            Thank you for choosing RFP2GRANTS Enterprise. Our team is here to support your success!
         </p>
     `;
 
