@@ -318,12 +318,12 @@ const getBaseTemplate = (content, preheader = '') => {
                                 © ${new Date().getFullYear()} RFP2GRANTS. All rights reserved.
                             </p>
                             <div class="footer-links">
-                                <a href="${process.env.FRONTEND_URL}/dashboard" class="footer-link">Dashboard</a>
-                                <a href="${process.env.FRONTEND_URL}/support" class="footer-link">Support</a>
+                                <a href="${process.env.FRONTEND_URL}" class="footer-link">Home</a>
+                                <a href="${process.env.FRONTEND_URL}/contact" class="footer-link">Contact Us</a>
                                 <a href="${process.env.FRONTEND_URL}/privacy" class="footer-link">Privacy Policy</a>
                             </div>
                             <p class="footer-text" style="margin-top: 20px;">
-                                Need help? Contact us at <a href="mailto:support@rfp2grants.com" style="color: #60a5fa; text-decoration: none;">support@rfp2grants.com</a>
+                                Need help? Contact us at <a href="mailto:${process.env.SUPPORT_EMAIL}" style="color: #60a5fa; text-decoration: none;">${process.env.SUPPORT_EMAIL}</a>
                             </p>
                         </div>
                     </div>
@@ -409,7 +409,7 @@ exports.getLoginAlertEmail = async (fullName, ipAddress) => {
                 ⚠️ <strong>Didn't sign in?</strong> Secure your account immediately by changing your password.
             </p>
         </div>
-        <div style="text-align: center;">
+        <div style="text-align: center; gap: 10px;">
             <a href="${process.env.FRONTEND_URL}/forgot-password" class="btn">
                 Secure My Account
             </a>
@@ -639,7 +639,7 @@ exports.getRefundNotificationEmail = (fullName, planName, refundId, errorMessage
             <li style="margin: 8px 0;">Contact our support team if you have any questions</li>
         </ul>
         <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL}/support" class="btn">
+            <a href="${process.env.FRONTEND_URL}/contact" class="btn">
                 Contact Support
             </a>
         </div>
@@ -816,7 +816,7 @@ exports.getEnterprisePaymentFailedEmail = (fullName) => {
             <a href="${process.env.FRONTEND_URL}/pricing" class="btn">
                 Try Again
             </a>
-            <a href="${process.env.FRONTEND_URL}/support" class="btn btn-secondary">
+            <a href="${process.env.FRONTEND_URL}/contact" class="btn btn-secondary">
                 Contact Support
             </a>
         </div>
