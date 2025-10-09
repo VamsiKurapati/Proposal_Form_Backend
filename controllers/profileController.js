@@ -63,7 +63,7 @@ async function sendEmail_1(email, password, companyName, name) {
                 &nbsp;&nbsp;&nbsp;&nbsp;Temporary Password: ${password}<br /><br />
                 
                 <a href="${process.env.FRONTEND_URL}/login">Login Now</a><br />
-                <a href="${process.env.FRONTEND_URL}/reset-password">Reset Your Password</a><br /><br />
+                <a href="${process.env.FRONTEND_URL}/forgot-password">Reset Your Password</a><br /><br />
 
                 Best regards,<br />
                 The RFP & Grants Team
@@ -1212,7 +1212,7 @@ exports.changePassword = async (req, res) => {
 
         const subject = "Password Changed";
 
-        const resetPasswordUrl = `${process.env.FRONTEND_URL}/reset-password`;
+        const resetPasswordUrl = `${process.env.FRONTEND_URL}/forgot-password`;
 
         const body = `
             Hi ${user.fullName}, <br /><br />

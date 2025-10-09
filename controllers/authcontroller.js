@@ -180,9 +180,8 @@ exports.signupWithProfile = [
         Your account has been successfully created. <br /><br />
         <strong>Your Login Details:</strong><br />
         &nbsp;&nbsp;&nbsp;&nbsp;Email: ${sanitizedEmail}<br />
-        &nbsp;&nbsp;&nbsp;&nbsp;Password: [Your temporary password has been set]<br /><br />
         <a href="${process.env.FRONTEND_URL}/login">Login to Your Account</a><br />
-        <a href="${process.env.FRONTEND_URL}/reset-password">Reset Your Password</a><br /><br />
+        <a href="${process.env.FRONTEND_URL}/forgot-password">Reset Your Password</a><br /><br />
         Best regards,<br />
         The RFP & Grants Team
       `;
@@ -257,7 +256,7 @@ exports.login = async (req, res) => {
       const subject = "New Sign-In Alert";
 
       const loginUrl = `${process.env.FRONTEND_URL}/login`;
-      const resetPasswordUrl = `${process.env.FRONTEND_URL}/reset-password`;
+      const resetPasswordUrl = `${process.env.FRONTEND_URL}/forgot-password`;
 
       const body = `
         Hi ${user.fullName}, <br /><br />
@@ -310,7 +309,7 @@ exports.login = async (req, res) => {
       const body = `
         Hi ${user.fullName}, <br /><br />
         We noticed a sign-in to your account from a new device or location. If this was you, no action is required. Otherwise, please secure your account immediately. <br /><br />
-        <a href="${process.env.FRONTEND_URL}/reset-password">Secure My Account/Change password</a><br /><br />
+        <a href="${process.env.FRONTEND_URL}/forgot-password">Secure My Account/Change password</a><br /><br />
         Best regards,<br />
         The RFP & Grants Team
       `;
@@ -465,7 +464,7 @@ exports.resetPassword = async (req, res) => {
     await OTP.deleteOne({ email: sanitizedEmail, otp });
 
     const loginUrl = `${process.env.FRONTEND_URL}/login`;
-    const resetPasswordUrl = `${process.env.FRONTEND_URL}/reset-password`;
+    const resetPasswordUrl = `${process.env.FRONTEND_URL}/forgot-password`;
 
     const subject = "Password Reset Successfully";
     const body = `
