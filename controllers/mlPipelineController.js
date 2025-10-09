@@ -288,7 +288,7 @@ exports.saveRFP = async (req, res) => {
       logo: rfp.logo,
       match: rfp.match || 0,
       budget: rfp.budget,
-      deadline: rfp.deadline,
+      deadline: getDeadline(rfp.deadline),
       organization: rfp.organization,
       fundingType: rfp.fundingType,
       organizationType: rfp.organizationType,
@@ -493,6 +493,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
         if (res_data.status === "success") {
           const document = res_data.result.docx_base64;
           const data = res_data.result.result;
+          let new_prop_id = "";
 
           // Use transaction for data consistency
           const session = await mongoose.startSession();
@@ -524,6 +525,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
             });
 
             await new_Proposal.save({ session });
+            new_prop_id = new_Proposal._id;
 
             const new_Draft = new DraftRFP({
               userEmail: userEmail,
@@ -582,7 +584,7 @@ exports.sendDataForProposalGeneration = async (req, res) => {
             session.endSession();
           }
 
-          return res.status(200).json({ message: 'Proposal Generation completed successfully.', proposal: document, proposalId: new_Proposal._id });
+          return res.status(200).json({ message: 'Proposal Generation completed successfully.', proposal: document, proposalId: new_prop_id });
         } else if (res_data.status === "processing") {
           return res.status(200).json({ message: 'Proposal Generation is still in progress. Please wait for it to complete.' });
         } else {
@@ -813,7 +815,7 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
           logo: rfp.logo || 'None',
           match: rfp.matching_percentage || 0,
           budget: rfp.budget || 'Not found',
-          deadline: rfp.deadline || "",
+          deadline: getDeadline(rfp.deadline),
           organization: rfp.organization || "",
           fundingType: rfp.fundingType || "Not found",
           organizationType: rfp.organizationType || "",
@@ -1037,7 +1039,7 @@ exports.handleFileUploadAndSendForRFPExtraction = [
               organizationType: fields['Industry'] || 'Unknown',
               link: fields['url'] || `${process.env.BACKEND_URL}/profile/getDocument/${req.file.id}`,
               budget: fields['Budget or Funding Limit'] || 'Not specified',
-              deadline: fields['Submission Deadline'] || 'Not specified',
+              deadline: getDeadline(fields['Submission Deadline']) || 'Not specified',
               contact: fields['Contact Information'] || "",
               timeline: fields['Timeline / Project Schedule'] || "",
               proposalInstructions: fields['Proposal Submission Instructions'] || "",
@@ -1058,7 +1060,7 @@ exports.handleFileUploadAndSendForRFPExtraction = [
           organizationType: 'Unknown',
           link: `${process.env.BACKEND_URL}/profile/getDocument/${req.file.id}`,
           budget: 'Not specified',
-          deadline: 'Not specified',
+          deadline: getDeadline('Not specified'),
           contact: "",
           timeline: "",
           logo: "None"
@@ -1085,7 +1087,7 @@ exports.handleFileUploadAndSendForRFPExtraction = [
         link: rfp.link || `${process.env.BACKEND_URL}/profile/getDocument/${req.file.id}`,
         email: userEmail,
         budget: rfp.budget || 'Not found',
-        deadline: new Date(rfp.deadline) || "",
+        deadline: getDeadline(rfp.deadline),
         contact: rfp.contact || "",
         timeline: rfp.timeline || "",
         match: 100.00,
@@ -1658,6 +1660,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
         if (res_data.status === "success") {
           const document = res_data.result.docx_base64;
           const data = res_data.result.result;
+          let new_prop_id = "";
 
           // Use transaction for data consistency
           const session = await mongoose.startSession();
@@ -1690,6 +1693,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
               restoredAt: null,
             });
             await new_prop.save({ session });
+            new_prop_id = new_prop._id;
 
             const new_Draft = new DraftGrant({
               grantId: grant._id,
@@ -1748,7 +1752,7 @@ exports.sendGrantDataForProposalGeneration = async (req, res) => {
             session.endSession();
           }
 
-          return res.status(200).json({ message: 'Grant Proposal Generation completed successfully.', proposal: document, proposalId: new_prop._id });
+          return res.status(200).json({ message: 'Grant Proposal Generation completed successfully.', proposal: document, proposalId: new_prop_id });
 
         } else if (res_data.status === "processing") {
           return res.status(200).json({ message: 'Grant Proposal Generation is still in progress. Please wait for it to complete.' });

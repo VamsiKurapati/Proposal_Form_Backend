@@ -245,7 +245,7 @@ exports.login = async (req, res) => {
       }
 
       const subject = "New Sign-In Alert";
-      const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+      const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || "Not found";
       const body = await emailTemplates.getLoginAlertEmail(user.fullName, ipAddress);
 
       try {
@@ -286,7 +286,7 @@ exports.login = async (req, res) => {
       }
 
       const subject = "New Sign-In Alert";
-      const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+      const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || "Not found";
       const body = await emailTemplates.getLoginAlertEmail(user.fullName, ipAddress);
 
       try {
