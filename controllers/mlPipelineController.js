@@ -770,6 +770,8 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
       }
     };
 
+    console.log("User data:", userData);
+
     console.log("Time taken for Assembling the user data:", new Date().getTime() - startTime.getTime(), "ms");
     console.log("Assembled the user data. Sending request to RFP discovery at:", new Date().toISOString());
 
@@ -798,6 +800,7 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
 
     const endTime_1 = new Date();
     console.log("Received response from RFP discovery at:", new Date().toISOString());
+    console.log("Response:", res_1.data);
     const matches = res_1.data.matches;
 
     const transformedData = [];
