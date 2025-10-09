@@ -108,7 +108,7 @@ const sendEmail = async (req, res) => {
 
     const mailOptions = {
       from: process.env.MAIL_USER,
-      to: process.env.MAIL_USER,
+      to: process.env.SUPPORT_EMAIL,
       replyTo: sanitizedEmail,
       subject: `New Contact Request from ${sanitizedName}`,
       html: `
