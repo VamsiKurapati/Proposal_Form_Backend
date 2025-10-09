@@ -8,6 +8,7 @@ const Payment = require('../models/Payments');
 const CompanyProfile = require('../models/CompanyProfile');
 const EmployeeProfile = require('../models/EmployeeProfile');
 const { sendEmail } = require('../utils/mailSender');
+const emailTemplates = require('../utils/emailTemplates');
 
 // Stripe Configuration
 const STRIPE_CONFIG = {
@@ -432,20 +433,15 @@ const activateSubscription = async (req, res) => {
         await notification.save();
 
         const subject = `Payment Successful – ${plan.name} Plan Activated`;
-        const body = `
-            Hi ${req.user.fullName}, <br /><br />
-            
-            Your payment of ${billingCycle === STRIPE_CONFIG.BILLING_CYCLES.YEARLY ? plan.yearlyPrice : plan.monthlyPrice} for the ${plan.name} plan has been successfully processed. Your subscription is now active. <br /><br />
-
-            Plan Details:
-            &nbsp;&nbsp;&nbsp;&nbsp;Plan: ${plan.name}<br />
-            &nbsp;&nbsp;&nbsp;&nbsp;Validity: ${startDate} to ${endDate}<br />
-
-            <a href="${process.env.FRONTEND_URL}/dashboard">Go to Dashboard</a> <br /><br />
-            
-            Best regards,<br />
-            The RFP & Grants Team
-        `;
+        const amount = billingCycle === STRIPE_CONFIG.BILLING_CYCLES.YEARLY ? plan.yearlyPrice : plan.monthlyPrice;
+        const body = emailTemplates.getPaymentSuccessEmail(
+            req.user.fullName,
+            plan.name,
+            amount,
+            billingCycle,
+            startDate,
+            endDate
+        );
 
         await sendEmail(req.user.email, subject, body);
 
@@ -469,30 +465,12 @@ const activateSubscription = async (req, res) => {
 const sendRefundNotification = async (user, plan, refundId, errorMessage) => {
     try {
         const subject = `Payment Refunded - ${plan.name} Plan`;
-        const body = `
-            Hi ${user.fullName}, <br /><br />
-            
-            We encountered a technical issue while processing your subscription for the ${plan.name} plan. 
-            As a result, we have automatically refunded your payment. <br /><br />
-
-            <strong>Refund Details:</strong><br />
-            &nbsp;&nbsp;&nbsp;&nbsp;Plan: ${plan.name}<br />
-            &nbsp;&nbsp;&nbsp;&nbsp;Refund ID: ${refundId}<br />
-            &nbsp;&nbsp;&nbsp;&nbsp;Amount: Refunded to original payment method<br /><br />
-
-            <strong>What happened?</strong><br />
-            ${errorMessage}<br /><br />
-
-            <strong>Next Steps:</strong><br />
-            • Your refund will appear in your account within 5-10 business days<br />
-            • You can try subscribing again once the issue is resolved<br />
-            • Contact support if you have any questions<br /><br />
-
-            We apologize for any inconvenience caused.<br /><br />
-            
-            Best regards,<br />
-            The RFP & Grants Team
-        `;
+        const body = emailTemplates.getRefundNotificationEmail(
+            user.fullName,
+            plan.name,
+            refundId,
+            errorMessage
+        );
 
         await sendEmail(user.email, subject, body);
     } catch (emailError) {

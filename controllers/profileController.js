@@ -19,6 +19,7 @@ const CalendarEvent = require("../models/CalendarEvents");
 const { sendEmail } = require("../utils/mailSender");
 const { validateEmail, sanitizeInput, validateRequiredFields } = require("../utils/validation");
 const { cleanupUploadedFiles } = require("../utils/fileCleanup");
+const emailTemplates = require("../utils/emailTemplates");
 
 const storage = new GridFsStorage({
     url: process.env.MONGO_URI,
@@ -39,45 +40,14 @@ const storage = new GridFsStorage({
 
 // Utility function to send email and await until mail is sent
 async function sendEmail_1(email, password, companyName, name) {
-    return new Promise((resolve, reject) => {
-        const transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 465,
-            secure: true,
-            auth: {
+    const subject = `Welcome to ${companyName} on RFP & Grants`;
+    const body = emailTemplates.getEmployeeWelcomeEmail(name, email, password, companyName);
 
-                user: process.env.MAIL_USER,
-                pass: process.env.MAIL_PASS
-            }
-        });
-
-        const mailOptions = {
-            from: process.env.EMAIL,
-            to: email,
-            subject: `Welcome to ${companyName} on RFP & Grants`,
-            html: `
-                Hi ${name}, <br /><br />
-                
-                An account has been created for you in ${companyName}. Use the details below to log in:<br />
-                &nbsp;&nbsp;&nbsp;&nbsp;Email: ${email}<br />
-                &nbsp;&nbsp;&nbsp;&nbsp;Temporary Password: ${password}<br /><br />
-                
-                <a href="${process.env.FRONTEND_URL}/login">Login Now</a><br />
-                <a href="${process.env.FRONTEND_URL}/forgot-password">Reset Your Password</a><br /><br />
-
-                Best regards,<br />
-                The RFP & Grants Team
-            `
-        };
-
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                reject(error);
-            } else {
-                resolve(info);
-            }
-        });
-    });
+    try {
+        await sendEmail(email, subject, body);
+    } catch (error) {
+        throw error;
+    }
 }
 
 
@@ -1211,16 +1181,7 @@ exports.changePassword = async (req, res) => {
         await user.save();
 
         const subject = "Password Changed";
-
-        const resetPasswordUrl = `${process.env.FRONTEND_URL}/forgot-password`;
-
-        const body = `
-            Hi ${user.fullName}, <br /><br />
-            Your account password has been successfully changed. If you didn’t make this change, please reset your password immediately. <br /><br />
-            <a href="${resetPasswordUrl}">Reset Password</a><br /><br />
-            Best regards,<br />
-            The RFP & Grants Team
-        `;
+        const body = emailTemplates.getPasswordChangedEmail(user.fullName);
 
         await sendEmail(user.email, subject, body);
 

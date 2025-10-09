@@ -13,6 +13,7 @@ const PaymentDetails = require("../models/PaymentDetails");
 const Contact = require("../models/Contact");
 const GrantProposal = require("../models/GrantProposal");
 const EmployeeProfile = require("../models/EmployeeProfile");
+const emailTemplates = require("../utils/emailTemplates");
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
@@ -713,22 +714,17 @@ exports.sendEmail = async (req, res) => {
       from: process.env.MAIL_USER,
       to: email,
       subject: `RFP2GRANTS - Your Enterprise Plan Payment Link`,
-      html: `
-              <h2>Enterprise Plan Payment Link</h2>
-              <p>Hello ${user.fullName || ''},</p>
-              <p>Your custom enterprise plan has been created with the following details:</p>
-              <ul>
-                  <li><strong>Price:</strong> $${price}</li>
-                  <li><strong>Plan Type:</strong> ${planType}</li>
-                  <li><strong>Max Editors:</strong> ${maxEditors}</li>
-                  <li><strong>Max Viewers:</strong> ${maxViewers}</li>
-                  <li><strong>Max RFP Proposal Generations:</strong> ${maxRFPProposalGenerations}</li>
-                  <li><strong>Max Grant Proposal Generations:</strong> ${maxGrantProposalGenerations}</li>
-              </ul>
-              <p>Please complete your payment securely using this link:</p>
-              <a href="${session.url}" target="_blank">Complete Payment</a>
-              <p>Thank you for your business!</p>
-          `
+      html: emailTemplates.getEnterprisePlanEmail(
+        user.fullName || '',
+        email,
+        price,
+        planType,
+        maxEditors,
+        maxViewers,
+        maxRFPProposalGenerations,
+        maxGrantProposalGenerations,
+        session.url
+      )
     };
 
     await transporter.sendMail(mailOptions);
@@ -866,21 +862,15 @@ const handleEnterpriseCheckoutSessionCompleted = async (session) => {
       from: process.env.MAIL_USER,
       to: user.email,
       subject: 'Enterprise Plan Payment Successful',
-      html: `
-              <h2>Enterprise Plan Payment Successful</h2>
-              <p>Hello ${user.fullName || ''},</p>
-              <p>Your payment for the custom Enterprise Plan was successful.</p>
-              <p>Plan Details:</p>
-              <ul>
-                <li><strong>Plan:</strong> ${customPlan.planType}</li>
-                <li><strong>Price:</strong> $${customPlan.price}</li>
-                <li><strong>Max Editors:</strong> ${customPlan.maxEditors}</li>
-                <li><strong>Max Viewers:</strong> ${customPlan.maxViewers}</li>
-                <li><strong>Max RFP Proposal Generations:</strong> ${customPlan.maxRFPProposalGenerations}</li>
-                <li><strong>Max Grant Proposal Generations:</strong> ${customPlan.maxGrantProposalGenerations}</li>
-              </ul>
-              <p>Thank you for your business!</p>
-          `
+      html: emailTemplates.getEnterprisePaymentSuccessEmail(
+        user.fullName || '',
+        customPlan.planType,
+        customPlan.price,
+        customPlan.maxEditors,
+        customPlan.maxViewers,
+        customPlan.maxRFPProposalGenerations,
+        customPlan.maxGrantProposalGenerations
+      )
     };
 
     await transporter.sendMail(mailOptions);
@@ -928,12 +918,7 @@ const handleEnterpriseCheckoutSessionFailed = async (session) => {
       from: process.env.MAIL_USER,
       to: user.email,
       subject: 'Enterprise Plan Payment Failed',
-      html: `
-              <h2>Enterprise Plan Payment Failed</h2>
-              <p>Hello ${user.fullName || ''},</p>
-              <p>Your payment for the custom Enterprise Plan failed.</p>
-              <p>Please try again or contact support.</p>
-          `
+      html: emailTemplates.getEnterprisePaymentFailedEmail(user.fullName || '')
     };
 
     await transporter.sendMail(mailOptions);

@@ -15,6 +15,7 @@ const VerificationCode = require("../models/VerificationCode");
 const { sendEmail } = require("../utils/mailSender");
 const { validateEmail, validatePassword, sanitizeInput, validateRequiredFields } = require("../utils/validation");
 const { cleanupUploadedFiles } = require("../utils/fileCleanup");
+const emailTemplates = require("../utils/emailTemplates");
 
 const storage = new GridFsStorage({
   url: process.env.MONGO_URI,
@@ -174,15 +175,7 @@ exports.signupWithProfile = [
       }
 
       const subject = `Welcome to RFP & Grants, ${sanitizedFullName}!`;
-
-      const body = `
-        Hi ${sanitizedFullName}, <br /><br />
-        Congratulations! Your account with RFP2Grants has been successfully created. <br /><br />
-        We're excited to welcome you. To get started, log in to your account and explore all the features waiting for you:  
-        <a href="${process.env.FRONTEND_URL}/login">Login to Your Account</a><br />
-        Best regards,<br />
-        The RFP & Grants Team
-      `;
+      const body = emailTemplates.getWelcomeEmail(sanitizedFullName);
 
       try {
         await sendEmail(sanitizedEmail, subject, body);
@@ -252,18 +245,7 @@ exports.login = async (req, res) => {
       }
 
       const subject = "New Sign-In Alert";
-
-      const loginUrl = `${process.env.FRONTEND_URL}/login`;
-      const resetPasswordUrl = `${process.env.FRONTEND_URL}/forgot-password`;
-
-      const body = `
-        Hi ${user.fullName}, <br /><br />
-        We noticed a sign-in to your account from a new device or location. If this was you, no action is required. Otherwise, please secure your account immediately. <br /><br />
-        <a href="${resetPasswordUrl}">Secure My Account/Change password</a><br /><br />
-        <a href="${loginUrl}">Login to Your Account</a><br />
-        Best regards,<br />
-        The RFP & Grants Team
-      `;
+      const body = emailTemplates.getLoginAlertEmail(user.fullName);
 
       try {
         await sendEmail(user.email, subject, body);
@@ -303,14 +285,7 @@ exports.login = async (req, res) => {
       }
 
       const subject = "New Sign-In Alert";
-
-      const body = `
-        Hi ${user.fullName}, <br /><br />
-        We noticed a sign-in to your account from a new device or location. If this was you, no action is required. Otherwise, please secure your account immediately. <br /><br />
-        <a href="${process.env.FRONTEND_URL}/forgot-password">Secure My Account/Change password</a><br /><br />
-        Best regards,<br />
-        The RFP & Grants Team
-      `;
+      const body = emailTemplates.getLoginAlertEmail(user.fullName);
 
       try {
         await sendEmail(user.email, subject, body);
@@ -387,14 +362,7 @@ exports.forgotPassword = async (req, res) => {
 
     // Send email with OTP using the existing utility
     const subject = "Password Reset OTP";
-    const body = `
-      Hi ${user.fullName}, <br /><br />
-      Your OTP for password reset is: <strong>${otp}</strong><br /><br />
-      This OTP will expire in 10 minutes.<br /><br />
-      If you didn't request this password reset, please ignore this email.<br /><br />
-      Best regards,<br />
-      The RFP & Grants Team
-    `;
+    const body = emailTemplates.getOTPEmail(user.fullName, otp, 'password reset');
 
     try {
       await sendEmail(sanitizedEmail, subject, body);
@@ -461,23 +429,8 @@ exports.resetPassword = async (req, res) => {
 
     await OTP.deleteOne({ email: sanitizedEmail, otp });
 
-    const loginUrl = `${process.env.FRONTEND_URL}/login`;
-    const resetPasswordUrl = `${process.env.FRONTEND_URL}/forgot-password`;
-
     const subject = "Password Reset Successfully";
-    const body = `
-      Hi ${user.fullName}, <br /><br />
-      Your password has been reset successfully. <br /><br />
-      <strong>Your Login Details:</strong><br />
-      &nbsp;&nbsp;&nbsp;&nbsp;Email: ${user.email}<br />
-      &nbsp;&nbsp;&nbsp;&nbsp;Password: [Your password has been updated]<br /><br />
-      <a href="${loginUrl}">Login to Your Account</a><br /><br />
-
-      <strong>Note:</strong> Please do not share your password with anyone. If you did not request this password reset, please <a href="${resetPasswordUrl}">reset your password immediately</a>.
-      <br /><br />
-      Best regards,<br />
-      The RFP & Grants Team
-    `;
+    const body = emailTemplates.getPasswordResetSuccessEmail(user.fullName);
     await sendEmail(user.email, subject, body);
 
     res.status(200).json({ message: "Password reset successfully" });
@@ -504,14 +457,7 @@ exports.sendVerificationEmail = async (req, res) => {
     await verificationCodeData.save();
 
     const subject = "Email Verification Code";
-    const body = `
-      Hello, <br /><br />
-      Your verification code is: <strong>${verificationCode}</strong><br /><br />
-      This code will expire in 10 minutes.<br /><br />
-      If you did not request this verification, please ignore this email.<br /><br />
-      Best regards,<br />
-      The RFP & Grants Team
-    `;
+    const body = emailTemplates.getEmailVerificationEmail(verificationCode);
 
     try {
       await sendEmail(sanitizeInput(email), subject, body);

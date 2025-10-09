@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Templates Preview - RFP & Grants</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .preview-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .preview-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .preview-header h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .preview-header p {
+            font-size: 20px;
+            opacity: 0.9;
+        }
+
+        .templates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .template-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .template-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .template-header {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            padding: 24px;
+            color: white;
+        }
+
+        .template-header h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .template-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .template-body {
+            padding: 24px;
+        }
+
+        .template-preview {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        .template-features {
+            list-style: none;
+        }
+
+        .template-features li {
+            padding: 8px 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .template-features li::before {
+            content: "✓ ";
+            color: #16a34a;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .btn-preview {
+            display: inline-block;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 16px;
+            transition: transform 0.2s;
+        }
+
+        .btn-preview:hover {
+            transform: translateY(-2px);
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            padding: 40px 20px;
+            opacity: 0.9;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 48px;
+            font-weight: 700;
+            color: #2563eb;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="preview-container">
+        <div class="preview-header">
+            <h1>📧 Email Templates Preview</h1>
+            <p>Modern, Professional Email Templates for RFP & Grants</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">12</div>
+                <div class="stat-label">Email Templates</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">95%</div>
+                <div class="stat-label">Mobile Responsive</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">100%</div>
+                <div class="stat-label">Brand Consistent</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">5+</div>
+                <div class="stat-label">Email Clients</div>
+            </div>
+        </div>
+
+        <div class="templates-grid">
+            <div class="template-card">
+                <div class="template-header">
+                    <h2>🎉 Welcome Email</h2>
+                    <p>New User Registration</p>
+                </div>
+                <div class="template-body">
+                    <div class="template-preview">
+                        Sent when a new user successfully creates an account. Features a warm welcome, success
+                        confirmation, and quick start tips.
+                    </div>
+                    <ul class="template-features">
+                        <li>Success box highlighting account creation</li>
+                        <li>Quick start tips in styled box</li>
+                        <li>Prominent login button</li>
+                        <li>Professional branding</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="template-card">
+                <div class="template-header">
+                    <h2>🔐 Login Alert</h2>
+                    <p>Security Notification</p>
+                </div>
+                <div class="template-body">
+                    <div class="template-preview">
+                        Notifies users of sign-ins from new devices or locations. Includes timestamp and security
+                        actions.
+                    </div>
+                    <ul class="template-features">
+                        <li>Sign-in timestamp display</li>
+                        <li>Warning box for unauthorized access</li>
+                        <li>Two action buttons (Secure/Login)</li>
+                        <li>Mobile-optimized layout</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="template-card">
+                <div class="template-header">
+                    <h2>🔢 OTP/Verification</h2>
+                    <p>One-Time Codes</p>
+                </div>
+                <div class="template-body">
+                    <div class="template-preview">
+                        For password reset and email verification. Features large, easy-to-read OTP code with security
+                        tips.
+                    </div>
+                    <ul class="template-features">
+                        <li>Large 32px OTP code display</li>
+                        <li>Dashed border box for emphasis</li>
+                        <li>Expiration time warning</li>
+                        <li>Security best practices</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="template-card">
+                <div class="template-header">
+                    <h2>✓ Password Reset Success</h2>
+                    <p>Confirmation</p>
+                </div>
+                <div class="template-body">
+                    <div class="template-preview">
+                        Confirms successful password change with security warnings and quick login access.
+                    </div>
+                    <ul class="template-features">
+                        <li>Success confirmation box</li>
+                        <li>Login with new password button</li>
+                        <li>Security warning if unauthorized</li>
+                        <li>Password reset option</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="template-card">
+                <div class="template-header">
+                    <h2>👋 Employee Welcome</h2>
+                    <p>Team Member Onboarding</p>
+                </div>
+                <div class="template-body">
+                    <div class="template-preview">
+                        Welcomes new team members with login credentials and company-specific information.
+                    </div>
+                    <ul class="template-features">
+                        <li>Company-specific branding</li>
+                        <li>Credentials in styled box</li>
+                        <li>Monospace password display</li>
+                        <li>Security reminders</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="template-card">
+                <div class="template-header">
+                    <h2>💳 Payment Success</h2>
+                    <p>Subscription Activation</p>
+                </div>
+                <div class="template-body">
+                    <div class="template-preview">
+                        Celebrates successful payment and provides complete subscription details with dashboard access.
+                    </div>
+                    <ul class="template-features">
+                        <li>Success celebration message</li>
+                        <li>Complete plan details</li>
+                        <li>Green-colored amount</li>
+                        <li>Dashboard access button</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="template-card">
+                <div class="template-header">
+                    <h2>💰 Refund Notification</h2>
+                    <p>Automatic Refunds</p>
+                </div>
+                <div class="template-body">
+                    <div class="template-preview">
+                        Informs users of automatic refunds due to processing issues, with clear next steps.
+                    </div>
+                    <ul class="template-features">
+                        <li>Refund details display</li>
+                        <li>Error explanation</li>
+                        <li>Timeline for refund</li>
+                        <li>Support contact option</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="template-card">
+                <div class="template-header">
+                    <h2>🔒 Password Changed</h2>
+                    <p>Security Notification</p>
+                </div>
+                <div class="template-body">
+                    <div class="template-preview">
+                        Notifies users of password changes with timestamp and security recommendations.
+                    </div>
+                    <ul class="template-features">
+                        <li>Change timestamp</li>
+                        <li>Security recommendations</li>
+                        <li>Warning if unauthorized</li>
+                        <li>Quick reset option</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="template-card">
+                <div class="template-header">
+                    <h2>🚀 Enterprise Plan</h2>
+                    <p>Custom Payment Link</p>
+                </div>
+                <div class="template-body">
+                    <div class="template-preview">
+                        Sends custom enterprise plan details with secure payment link via Stripe.
+                    </div>
+                    <ul class="template-features">
+                        <li>Complete plan details</li>
+                        <li>Feature breakdown</li>
+                        <li>Secure payment button</li>
+                        <li>Stripe security badge</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="template-card">
+                <div class="template-header">
+                    <h2>🎉 Enterprise Success</h2>
+                    <p>Payment Confirmation</p>
+                </div>
+                <div class="template-body">
+                    <div class="template-preview">
+                        Celebrates enterprise subscription activation with all feature details.
+                    </div>
+                    <ul class="template-features">
+                        <li>Success celebration</li>
+                        <li>Complete feature list</li>
+                        <li>Usage limits display</li>
+                        <li>Dashboard access</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="template-card">
+                <div class="template-header">
+                    <h2>⚠️ Payment Failed</h2>
+                    <p>Payment Issues</p>
+                </div>
+                <div class="template-body">
+                    <div class="template-preview">
+                        Explains payment failures with common reasons and provides retry options.
+                    </div>
+                    <ul class="template-features">
+                        <li>Clear failure explanation</li>
+                        <li>Common reasons listed</li>
+                        <li>Retry button</li>
+                        <li>Support contact link</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="template-card">
+                <div class="template-header">
+                    <h2>📧 Email Verification</h2>
+                    <p>Account Verification</p>
+                </div>
+                <div class="template-body">
+                    <div class="template-preview">
+                        Provides verification code for new account email confirmation.
+                    </div>
+                    <ul class="template-features">
+                        <li>Large verification code</li>
+                        <li>Expiration warning</li>
+                        <li>Next steps guidance</li>
+                        <li>Clear instructions</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <h2>✨ Modern Email Experience</h2>
+            <p>Professional, Responsive, and Brand-Consistent</p>
+            <p style="margin-top: 20px; font-size: 14px;">
+                See <strong>utils/EMAIL_TEMPLATES_GUIDE.md</strong> for complete documentation<br>
+                See <strong>utils/EMAIL_TEMPLATES_COMPARISON.md</strong> for before/after comparisons
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>
