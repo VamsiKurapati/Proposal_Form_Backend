@@ -682,6 +682,8 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
 exports.sendDataForRFPDiscovery = async (req, res) => {
   try {
+    console.log("Request received for RFP discovery at:", new Date().toISOString());
+    const startTime = new Date();
     let userEmail = req.user.email;
     let companyProfile_1 = "";
     if (req.user.role === "employee") {
@@ -768,8 +770,13 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
       }
     };
 
-    const res_1 = await axios.post(`${process.env.PIPELINE_URL}/run-rfp-discovery`, userData);
+    console.log("Time taken for Assembling the user data:", new Date().getTime() - startTime.getTime(), "ms");
+    console.log("Assembled the user data. Sending request to RFP discovery at:", new Date().toISOString());
 
+    const startTime_1 = new Date();
+    const res_1 = await axios.post(`${process.env.PIPELINE_URL}/run-rfp-discovery`, userData);
+    const endTime_1 = new Date();
+    console.log("Received response from RFP discovery at:", new Date().toISOString());
     const matches = res_1.data.matches;
 
     const transformedData = [];
@@ -860,6 +867,10 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
     // Filter out any null results from failed operations
     const successfulResults = result.filter(rfp => rfp !== null);
 
+    const endTime = new Date();
+    console.log("Time taken  for Processing RFPs received:", endTime.getTime() - endTime_1.getTime(), "ms");
+    console.log("Time taken for RFP discovery:", endTime_1.getTime() - startTime_1.getTime(), "ms");
+    console.log("Total time taken:", endTime.getTime() - startTime.getTime(), "ms");
     res.status(200).json({
       message: 'RFP discovery completed successfully',
       totalProcessed: transformedData.length,
