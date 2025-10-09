@@ -177,11 +177,9 @@ exports.signupWithProfile = [
 
       const body = `
         Hi ${sanitizedFullName}, <br /><br />
-        Your account has been successfully created. <br /><br />
-        <strong>Your Login Details:</strong><br />
-        &nbsp;&nbsp;&nbsp;&nbsp;Email: ${sanitizedEmail}<br />
+        Congratulations! Your account with RFP2Grants has been successfully created. <br /><br />
+        We're excited to welcome you. To get started, log in to your account and explore all the features waiting for you:  
         <a href="${process.env.FRONTEND_URL}/login">Login to Your Account</a><br />
-        <a href="${process.env.FRONTEND_URL}/forgot-password">Reset Your Password</a><br /><br />
         Best regards,<br />
         The RFP & Grants Team
       `;
