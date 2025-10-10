@@ -815,7 +815,7 @@ const handleEnterpriseCheckoutSessionCompleted = async (session) => {
           max_grant_proposal_generations: newMaxGrant,
           current_rfp_proposal_generations: 0,
           current_grant_proposal_generations: 0,
-          auto_renewal: true,
+          auto_renewal: false,
           stripeSubscriptionId: session.subscription || null,
           stripePriceId: session.payment_intent || session.id || null
         }
@@ -1138,7 +1138,7 @@ exports.createCustomPlan = async (req, res) => {
       max_viewers: maxViewers,
       max_rfp_proposal_generations: maxRFPProposalGenerations,
       max_grant_proposal_generations: maxGrantProposalGenerations,
-      auto_renewal: true,
+      auto_renewal: false,
     });
 
     // 4. Create Payment record

@@ -6,7 +6,6 @@ const Notification = require('../models/Notification');
 const User = require('../models/User');
 const Payment = require('../models/Payments');
 const CompanyProfile = require('../models/CompanyProfile');
-const EmployeeProfile = require('../models/EmployeeProfile');
 const { sendEmail } = require('../utils/mailSender');
 const emailTemplates = require('../utils/emailTemplates');
 
@@ -305,7 +304,7 @@ const activateSubscription = async (req, res) => {
                         max_rfp_proposal_generations: newMaxRfp, // ✅ directly set new total
                         max_grant_proposal_generations: newMaxGrant, // ✅ directly set new total
                         canceled_at: null,
-                        auto_renewal: true,
+                        auto_renewal: false,
                         stripeSubscriptionId: paymentIntent.id,
                         stripePriceId: paymentIntent.metadata.planPriceId || null
                     }
@@ -353,6 +352,9 @@ const activateSubscription = async (req, res) => {
                 subscription_status: 'active',
                 subscription_id: subscription._id
             }, { session });
+
+            // Update company profile subscription status
+            await CompanyProfile.findOneAndUpdate({ userId: userId }, { status: 'Active' }, { session });
 
             // Create payment record
             await Payment.create([{
@@ -417,6 +419,9 @@ const activateSubscription = async (req, res) => {
                     payment_method: 'stripe',
                     failure_reason: `Database error: ${error.message}. Refund failed: ${refundError.message}`
                 });
+
+                // Update company profile subscription status
+                await CompanyProfile.findOneAndUpdate({ userId: userId }, { status: 'Inactive' }, { session });
             }
 
             throw error;
@@ -444,6 +449,9 @@ const activateSubscription = async (req, res) => {
         );
 
         await sendEmail(req.user.email, subject, body);
+
+        // Update company profile subscription status
+        await CompanyProfile.findOneAndUpdate({ userId: userId }, { status: 'Active' }, { session });
 
         res.status(200).json({
             success: true,
@@ -583,6 +591,12 @@ const processManualRefund = async (req, res) => {
                     auto_renewal: false
                 }
             });
+
+            //Update user subscription status
+            await User.findByIdAndUpdate(subscription.user_id, { subscription_status: 'Inactive' }, { session });
+
+            // Update company profile subscription status
+            await CompanyProfile.findOneAndUpdate({ userId: subscription.user_id }, { status: 'Inactive' }, { session });
         }
 
         res.status(200).json({

@@ -13,7 +13,9 @@ const ProposalTracker = require('../models/ProposalTracker');
 const GrantProposal = require('../models/GrantProposal');
 const DraftGrant = require('../models/DraftGrant');
 const Payment = require('../models/Payments');
-
+const Subscription = require('../models/Subscription');
+const User = require('../models/User');
+const CompanyProfile = require('../models/CompanyProfile');
 
 //Trigger Grant Cron Job to fetch Grants from the Grant API and save them to the database
 exports.fetchGrants = async () => {
@@ -312,5 +314,31 @@ exports.fetchRefundPayments = async () => {
     } catch (error) {
         console.error('Error in fetchRefundPayments service:', error);
         return { message: error.message || "Error fetching refund payments" };
+    }
+};
+
+//Update the users subscription status to Inactive if the subscriptions end date is less than today. Parallelly update the company profile's status to inactive
+exports.updateSubscriptionStatus = async () => {
+    try {
+        const subscriptions = await Subscription.find({ subscription_status: 'Active' });
+        console.log(`Found ${subscriptions.length} subscriptions to update to inactive`);
+        await Promise.all(subscriptions.map(async (subscription) => {
+            if (subscription.end_date < new Date()) {
+                //Also update the user's subscription status to inactive
+                await User.findByIdAndUpdate(subscription.user_id, { subscription_status: 'Inactive' });
+                //Also update the company profile's status to inactive
+                await CompanyProfile.findOneAndUpdate({ userId: subscription.user_id }, { status: 'Inactive' });
+            } else {
+                //Also update the user's subscription status to active
+                await User.findByIdAndUpdate(subscription.user_id, { subscription_status: 'Active' });
+                //Also update the company profile's status to active
+                await CompanyProfile.findOneAndUpdate({ userId: subscription.user_id }, { status: 'Active' });
+            }
+        }));
+        console.log('Subscription status updated successfully');
+        return { message: "Subscription status updated successfully" };
+    } catch (error) {
+        console.error('Error in updateSubscriptionStatus service:', error);
+        return { message: error.message || "Error updating subscription status" };
     }
 };
