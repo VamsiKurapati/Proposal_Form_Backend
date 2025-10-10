@@ -825,3 +825,46 @@ exports.getEnterprisePaymentFailedEmail = (fullName) => {
     return getBaseTemplate(content, 'Enterprise Plan Payment Failed');
 };
 
+// Contact Form Email Template (for Support Team)
+exports.getContactFormEmail = (name, email, company, description) => {
+    const content = `
+        <div class="greeting">New Contact Request 📬</div>
+        <p class="message">
+            A new contact request has been submitted through the website contact form.
+        </p>
+        <div class="highlight-box">
+            <p style="margin: 0 0 16px 0; color: #1e40af; font-weight: 600; font-size: 18px;">📋 Contact Details</p>
+            <div class="info-item">
+                <div class="info-label">Name</div>
+                <div class="info-value">${name}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Email Address</div>
+                <div class="info-value">
+                    <a href="mailto:${email}" style="color: #2563eb; text-decoration: none;">${email}</a>
+                </div>
+            </div>
+            ${company ? `
+            <div class="info-item">
+                <div class="info-label">Company</div>
+                <div class="info-value">${company}</div>
+            </div>
+            ` : ''}
+        </div>
+        <div class="success-box">
+            <p style="margin: 0 0 8px 0; color: #166534; font-weight: 600;">📝 Message:</p>
+            <p style="margin: 0; color: #166534; white-space: pre-wrap; word-break: break-word;">${description}</p>
+        </div>
+        <div class="divider"></div>
+        <p class="message" style="text-align: center; color: #64748b; font-size: 14px;">
+            💡 <strong>Quick Action:</strong> Reply directly to <a href="mailto:${email}" style="color: #2563eb; text-decoration: none;">${email}</a> to respond to this inquiry
+        </p>
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="mailto:${email}" class="btn">
+                Reply to ${name} →
+            </a>
+        </div>
+    `;
+
+    return getBaseTemplate(content, `New Contact Request from ${name}`);
+};

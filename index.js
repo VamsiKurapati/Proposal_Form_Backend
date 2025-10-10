@@ -19,6 +19,7 @@ const nodemailer = require('nodemailer');
 const Contact = require('./models/Contact.js');
 const superAdminController = require('./controllers/superAdminController');
 const { validateEmail } = require('./utils/validation');
+const { getContactFormEmail } = require('./utils/emailTemplates');
 
 const dbConnect = require('./utils/dbConnect.js');
 require('./utils/cronJob.js');
@@ -111,17 +112,12 @@ const sendEmail = async (req, res) => {
       to: process.env.SUPPORT_EMAIL,
       replyTo: sanitizedEmail,
       subject: `New Contact Request from ${sanitizedName}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
-          <h2 style="color: #2563EB;">New Contact Request</h2>
-          <p><strong>Name:</strong> ${sanitizedName}</p>
-          <p><strong>Email:</strong> ${sanitizedEmail}</p>
-          <p><strong>Company:</strong> ${sanitizedCompany || 'Not provided'}</p>
-          <p><strong>Description:</strong> ${sanitizedDescription}</p>
-          <hr />
-          <p style="font-size: 12px; color: #666;">This email was generated from the Contact Us form on your website.</p>
-        </div>
-      `,
+      html: getContactFormEmail(
+        sanitizedName,
+        sanitizedEmail,
+        sanitizedCompany,
+        sanitizedDescription
+      ),
     };
 
     const info = await transporter.sendMail(mailOptions);
