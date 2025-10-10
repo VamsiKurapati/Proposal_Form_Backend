@@ -684,8 +684,6 @@ exports.sendDataForProposalGeneration = async (req, res) => {
 
 exports.sendDataForRFPDiscovery = async (req, res) => {
   try {
-    console.log("Request received for RFP discovery at:", new Date().toISOString());
-    const startTime = new Date();
     let userEmail = req.user.email;
     let companyProfile_1 = "";
     if (req.user.role === "employee") {
@@ -702,6 +700,26 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
     // Check if company profile exists
     if (!companyProfile_1) {
       return res.status(404).json({ error: 'Company profile not found. Please complete your company profile first.' });
+    }
+
+    // Check if company has fetched matching RFPs and they have not updated their company profile since the last 4:00 AM
+    // Calculate the most recent 4:00 AM timestamp
+    const now = new Date();
+    const lastFourAM = new Date();
+
+    if (now.getHours() < 4) {
+      // If current time is before 4 AM today, use yesterday's 4 AM
+      lastFourAM.setDate(lastFourAM.getDate() - 1);
+    }
+    lastFourAM.setHours(4, 0, 0, 0);
+
+    const profileUpdatedAt = new Date(companyProfile_1.updatedAt);
+
+    // If RFPs already fetched AND profile not updated since last 4 AM, prevent re-fetching
+    if (companyProfile_1.fetchedMatchingRFPs && profileUpdatedAt < lastFourAM) {
+      return res.status(200).json({
+        message: 'RFP discovery already completed for today. Please update your company profile or try again after 4:00 AM.'
+      });
     }
 
     //Check if company has active subscription
@@ -772,40 +790,8 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
       }
     };
 
-    console.log("User data:", userData);
+    const res_1 = await axios.post(`${process.env.PIPELINE_URL}/run-rfp-discovery`, userData);
 
-    console.log("Time taken for Assembling the user data:", new Date().getTime() - startTime.getTime(), "ms");
-    console.log("Assembled the user data. Sending request to RFP discovery at:", new Date().toISOString());
-
-    const startTime_1 = new Date();
-
-    // const res_1 = await axios.post(`${process.env.PIPELINE_URL}/run-rfp-discovery`, userData);
-
-    req.setTimeout(15 * 60 * 1000); // Allow request to run for up to 15 mins in Express
-
-    // Log the status of the request every minute
-    const intervalId = setInterval(() => {
-      console.log("One minute has passed. Request still in progress at:", new Date().toISOString());
-    }, 60000);
-
-    let res_1;
-    try {
-      res_1 = await axios.post(
-        `${process.env.PIPELINE_URL}/run-rfp-discovery`,
-        userData,
-        { timeout: 15 * 60 * 1000 } // 15 mins timeout for Axios
-      );
-    } catch (error) {
-      console.error('Error in RFP discovery:', error);
-      return res.status(400).json({ error: 'Failed to send data for RFP discovery' });
-    } finally {
-      // Clear the interval when the request completes
-      clearInterval(intervalId);
-    }
-
-    const endTime_1 = new Date();
-    console.log("Received response from RFP discovery at:", new Date().toISOString());
-    console.log("Response:", res_1.data);
     const matches = res_1.data.matches;
 
     const transformedData = [];
@@ -896,10 +882,7 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
     // Filter out any null results from failed operations
     const successfulResults = result.filter(rfp => rfp !== null);
 
-    const endTime = new Date();
-    console.log("Time taken  for Processing RFPs received:", endTime.getTime() - endTime_1.getTime(), "ms");
-    console.log("Time taken for RFP discovery:", endTime_1.getTime() - startTime_1.getTime(), "ms");
-    console.log("Total time taken:", endTime.getTime() - startTime.getTime(), "ms");
+    await CompanyProfile.findOneAndUpdate({ userId: companyProfile_1.userId }, { fetchedMatchingRFPs: true });
     res.status(200).json({
       message: 'RFP discovery completed successfully',
       totalProcessed: transformedData.length,

@@ -1,5 +1,5 @@
 const cron = require('node-cron');
-const { deleteExpiredProposals, fetchGrants, priorityCronJob, fetchRFPs, deleteExpiredGrantProposals, fetchRefundPayments, updateSubscriptionStatus } = require('../controllers/cronJobControllers');
+const { deleteExpiredProposals, fetchGrants, priorityCronJob, fetchRFPs, deleteExpiredGrantProposals, fetchRefundPayments, updateSubscriptionStatus, resetFetchedMatchingRFPs } = require('../controllers/cronJobControllers');
 
 // Run the cron job only in instance 0
 if (process.env.NODE_APP_INSTANCE === '0') {
@@ -15,6 +15,15 @@ if (process.env.NODE_APP_INSTANCE === '0') {
       await deleteExpiredGrantProposals();
     } catch (error) {
       console.error('Error deleting expired grant proposals:', error);
+    }
+  });
+
+  // Cron job to reset fetched matching RFPs every day at 04:00 AM server time
+  cron.schedule('0 4 * * *', async () => {
+    try {
+      await resetFetchedMatchingRFPs();
+    } catch (error) {
+      console.error('Error resetting fetched matching RFPs:', error);
     }
   });
 

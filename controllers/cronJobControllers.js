@@ -342,3 +342,14 @@ exports.updateSubscriptionStatus = async () => {
         return { message: error.message || "Error updating subscription status" };
     }
 };
+
+exports.resetFetchedMatchingRFPs = async () => {
+    try {
+        await CompanyProfile.updateMany({ fetchedMatchingRFPs: true }, { fetchedMatchingRFPs: false });
+        console.log('Fetched matching RFPs reset successfully');
+        return { message: "Fetched matching RFPs reset successfully" };
+    } catch (error) {
+        console.error('Error in resetFetchedMatchingRFPs service:', error);
+        return { message: error.message || "Error resetting fetched matching RFPs" };
+    }
+};
