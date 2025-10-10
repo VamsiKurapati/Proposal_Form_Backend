@@ -320,7 +320,7 @@ exports.fetchRefundPayments = async () => {
 //Update the users subscription status to Inactive if the subscriptions end date is less than today. Parallelly update the company profile's status to inactive
 exports.updateSubscriptionStatus = async () => {
     try {
-        const subscriptions = await Subscription.find({ subscription_status: 'Active' });
+        const subscriptions = await Subscription.find();
         console.log(`Found ${subscriptions.length} subscriptions to update to inactive`);
         await Promise.all(subscriptions.map(async (subscription) => {
             if (subscription.end_date < new Date()) {
