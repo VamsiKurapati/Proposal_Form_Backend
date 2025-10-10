@@ -783,22 +783,25 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
 
     req.setTimeout(15 * 60 * 1000); // Allow request to run for up to 15 mins in Express
 
-    const res_1 = await axios.post(
-      `${process.env.PIPELINE_URL}/run-rfp-discovery`,
-      userData,
-      { timeout: 15 * 60 * 1000 } // 15 mins timeout for Axios
-    );
-
     // Log the status of the request every minute
     const intervalId = setInterval(() => {
-      console.log("One minute has passed. Checking the status of the request at:", new Date().toISOString());
-      console.log(`Request status: ${res_1.status}`);
+      console.log("One minute has passed. Request still in progress at:", new Date().toISOString());
     }, 60000);
 
-    // Clear the interval when the request completes
-    res_1.finally(() => {
+    let res_1;
+    try {
+      res_1 = await axios.post(
+        `${process.env.PIPELINE_URL}/run-rfp-discovery`,
+        userData,
+        { timeout: 15 * 60 * 1000 } // 15 mins timeout for Axios
+      );
+    } catch (error) {
+      console.error('Error in RFP discovery:', error);
+      return res.status(400).json({ error: 'Failed to send data for RFP discovery' });
+    } finally {
+      // Clear the interval when the request completes
       clearInterval(intervalId);
-    });
+    }
 
     const endTime_1 = new Date();
     console.log("Received response from RFP discovery at:", new Date().toISOString());
