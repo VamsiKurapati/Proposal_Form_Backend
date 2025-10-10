@@ -325,12 +325,12 @@ exports.updateSubscriptionStatus = async () => {
         await Promise.all(subscriptions.map(async (subscription) => {
             if (subscription.end_date < new Date()) {
                 //Also update the user's subscription status to inactive
-                await User.findByIdAndUpdate(subscription.user_id, { subscription_status: 'Inactive' });
+                await User.findByIdAndUpdate(subscription.user_id, { subscription_status: 'inactive' });
                 //Also update the company profile's status to inactive
                 await CompanyProfile.findOneAndUpdate({ userId: subscription.user_id }, { status: 'Inactive' });
             } else {
                 //Also update the user's subscription status to active
-                await User.findByIdAndUpdate(subscription.user_id, { subscription_status: 'Active' });
+                await User.findByIdAndUpdate(subscription.user_id, { subscription_status: 'active' });
                 //Also update the company profile's status to active
                 await CompanyProfile.findOneAndUpdate({ userId: subscription.user_id }, { status: 'Active' });
             }
