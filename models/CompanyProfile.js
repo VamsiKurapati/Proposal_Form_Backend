@@ -96,6 +96,7 @@ const companyProfileSchema = new mongoose.Schema({
   status: { type: String, default: "Inactive" },
   blocked: { type: Boolean, default: false },
   fetchedMatchingRFPs: { type: Boolean, default: false },
+  fetchedMatchingRFPsAt: { type: Date, default: null },
 }, { timestamps: true });
 
 // Database indexes for performance optimization
