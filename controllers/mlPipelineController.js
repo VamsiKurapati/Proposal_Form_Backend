@@ -918,13 +918,21 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
     // Filter out any null results from failed operations
     const successfulResults = result.filter(rfp => rfp !== null);
 
-    await CompanyProfile.findOneAndUpdate({ userId: companyProfile_1.userId }, { fetchedMatchingRFPs: true, fetchedMatchingRFPsAt: new Date() });
+    // await CompanyProfile.findOneAndUpdate({ userId: companyProfile_1.userId }, { fetchedMatchingRFPs: true, fetchedMatchingRFPsAt: new Date() });
+    const updatedProfile = await CompanyProfile.findOneAndUpdate(
+      { userId: companyProfile_1.userId },
+      {
+        fetchedMatchingRFPs: true,
+        fetchedMatchingRFPsAt: new Date(),
+      },
+      { new: true, timestamps: false }
+    );
+
     res.status(200).json({
       message: 'RFP discovery completed successfully',
       totalProcessed: transformedData.length,
       successful: successfulResults.length,
-      failed: transformedData.length - successfulResults.length,
-      data: successfulResults
+      failed: transformedData.length - successfulResults.length
     });
   } catch (err) {
     console.error('Error in /sendDataForRFPDiscovery:', err.message);
