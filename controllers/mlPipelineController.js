@@ -702,23 +702,59 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
       return res.status(404).json({ error: 'Company profile not found. Please complete your company profile first.' });
     }
 
-    // Check if company has fetched matching RFPs and they have not updated their company profile since the last 4:00 AM
-    // Calculate the most recent 4:00 AM timestamp
-    const now = new Date();
-    const lastFourAM = new Date();
+    // // Check if company has fetched matching RFPs and they have not updated their company profile since the last 4:00 AM
+    // // Calculate the most recent 4:00 AM timestamp
+    // const now = new Date();
+    // const lastFourAM = new Date();
 
-    if (now.getHours() < 4) {
-      // If current time is before 4 AM today, use yesterday's 4 AM
+    // if (now.getHours() < 4) {
+    //   // If current time is before 4 AM today, use yesterday's 4 AM
+    //   lastFourAM.setDate(lastFourAM.getDate() - 1);
+    // }
+    // lastFourAM.setHours(4, 0, 0, 0);
+
+    // const fetchedMatchingRFPsAt = new Date(companyProfile_1.fetchedMatchingRFPsAt);
+    // const profileUpdatedAt = new Date(companyProfile_1.updatedAt);
+
+    // // If RFPs already fetched AND profile not updated since last 4 AM, prevent re-fetching
+    // if (companyProfile_1.fetchedMatchingRFPs && fetchedMatchingRFPsAt < lastFourAM && profileUpdatedAt < lastFourAM) {
+    //   return res.status(200).json({
+    //     message: 'RFP discovery already completed for today. Please update your company profile or try again after 4:00 AM.'
+    //   });
+    // }
+
+    const now = new Date();
+    const currentHour = now.getHours();
+
+    // ---- Block fetching between 12:00 AM and 4:00 AM ----
+    if (currentHour >= 0 && currentHour < 4) {
+      return res.status(200).json({
+        message: 'RFP discovery is temporarily disabled between 12:00 AM and 4:00 AM while new data is being updated. Please try again after 4:00 AM.'
+      });
+    }
+
+    // ---- Calculate today's 4:00 AM timestamp ----
+    const lastFourAM = new Date();
+    if (currentHour < 4) {
       lastFourAM.setDate(lastFourAM.getDate() - 1);
     }
     lastFourAM.setHours(4, 0, 0, 0);
 
+    const fetchedMatchingRFPsAt = companyProfile_1.fetchedMatchingRFPsAt
+      ? new Date(companyProfile_1.fetchedMatchingRFPsAt)
+      : null;
     const profileUpdatedAt = new Date(companyProfile_1.updatedAt);
 
-    // If RFPs already fetched AND profile not updated since last 4 AM, prevent re-fetching
-    if (companyProfile_1.fetchedMatchingRFPs && profileUpdatedAt < lastFourAM) {
+    // ---- Check if already fetched after 4 AM and not updated since ----
+    const hasFetchedAfterFourAM =
+      fetchedMatchingRFPsAt && fetchedMatchingRFPsAt >= lastFourAM;
+    const hasProfileUpdatedAfterFetch =
+      !fetchedMatchingRFPsAt || profileUpdatedAt > fetchedMatchingRFPsAt;
+
+    if (companyProfile_1.fetchedMatchingRFPs && hasFetchedAfterFourAM && !hasProfileUpdatedAfterFetch) {
       return res.status(200).json({
-        message: 'RFP discovery already completed for today. Please update your company profile or try again after 4:00 AM.'
+        message:
+          'RFP discovery already completed for today. Please update your company profile or try again after 4:00 AM tomorrow.'
       });
     }
 
@@ -882,7 +918,7 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
     // Filter out any null results from failed operations
     const successfulResults = result.filter(rfp => rfp !== null);
 
-    await CompanyProfile.findOneAndUpdate({ userId: companyProfile_1.userId }, { fetchedMatchingRFPs: true });
+    await CompanyProfile.findOneAndUpdate({ userId: companyProfile_1.userId }, { fetchedMatchingRFPs: true, fetchedMatchingRFPsAt: new Date() });
     res.status(200).json({
       message: 'RFP discovery completed successfully',
       totalProcessed: transformedData.length,
