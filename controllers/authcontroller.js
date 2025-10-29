@@ -215,7 +215,7 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: "Invalid email format" });
     }
 
-    const user = await User.findOne({ email: sanitizedEmail }).lean();
+    const user = await User.findOne({ email: sanitizedEmail });
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
@@ -223,7 +223,8 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-    const { password: _, ...userWithoutPassword } = user; // excluded password
+    const userObj = user.toObject();
+    const { password: _, ...userWithoutPassword } = userObj; // excluded password
 
     const token = jwt.sign(
       { user: userWithoutPassword },
