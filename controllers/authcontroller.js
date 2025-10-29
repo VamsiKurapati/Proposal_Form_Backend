@@ -255,6 +255,9 @@ exports.login = async (req, res) => {
         // Don't fail login if email fails
       }
 
+      user.onboarding_status = true;
+      await user.save();
+
       return res.status(200).json({ token, user: userWithoutPassword, subscription: subscriptionData });
     } else if (user.role === "employee") {
       const employeeProfile = await EmployeeProfile.findOne({ userId: user._id });
@@ -295,6 +298,9 @@ exports.login = async (req, res) => {
         console.error('Email sending failed:', emailError);
         // Don't fail login if email fails
       }
+
+      user.onboarding_status = true;
+      await user.save();
 
       return res.status(200).json({ token, user: data, subscription: subscriptionData });
     } else {
@@ -425,11 +431,23 @@ exports.resetPassword = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(newPassword, 12);
 
-    user.password = hashedPassword;
+    // Use transaction for data consistency
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-    await user.save();
+    try {
+      user.password = hashedPassword;
+      await user.save({ session });
 
-    await OTP.deleteOne({ email: sanitizedEmail, otp });
+      await OTP.deleteOne({ email: sanitizedEmail, otp }, { session });
+
+      await session.commitTransaction();
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
 
     const subject = "Password Reset Successfully";
     const body = emailTemplates.getPasswordResetSuccessEmail(user.fullName);

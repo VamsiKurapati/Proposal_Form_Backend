@@ -4,6 +4,7 @@ const userSchema = new mongoose.Schema({
   fullName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  onboarding_status: { type: Boolean, default: false },
   mobile: { type: String, required: true },
   role: { type: String, enum: ["SuperAdmin", "company", "employee",], required: true },
   subscription_status: { type: String, enum: ["active", "inactive", "expired"], default: "inactive" },
