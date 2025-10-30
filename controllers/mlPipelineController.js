@@ -702,27 +702,6 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
       return res.status(404).json({ error: 'Company profile not found. Please complete your company profile first.' });
     }
 
-    // // Check if company has fetched matching RFPs and they have not updated their company profile since the last 4:00 AM
-    // // Calculate the most recent 4:00 AM timestamp
-    // const now = new Date();
-    // const lastFourAM = new Date();
-
-    // if (now.getHours() < 4) {
-    //   // If current time is before 4 AM today, use yesterday's 4 AM
-    //   lastFourAM.setDate(lastFourAM.getDate() - 1);
-    // }
-    // lastFourAM.setHours(4, 0, 0, 0);
-
-    // const fetchedMatchingRFPsAt = new Date(companyProfile_1.fetchedMatchingRFPsAt);
-    // const profileUpdatedAt = new Date(companyProfile_1.updatedAt);
-
-    // // If RFPs already fetched AND profile not updated since last 4 AM, prevent re-fetching
-    // if (companyProfile_1.fetchedMatchingRFPs && fetchedMatchingRFPsAt < lastFourAM && profileUpdatedAt < lastFourAM) {
-    //   return res.status(200).json({
-    //     message: 'RFP discovery already completed for today. Please update your company profile or try again after 4:00 AM.'
-    //   });
-    // }
-
     const now = new Date();
     const currentHour = now.getHours();
 
@@ -760,8 +739,13 @@ exports.sendDataForRFPDiscovery = async (req, res) => {
 
     //Check if company has active subscription
     const subscription = await Subscription.findOne({ user_id: companyProfile_1.userId });
+
+    if (subscription && subscription.plan_name === "Free") {
+      return res.status(200).json({ message: 'You are using the free plan. Please upgrade to a paid plan to continue using RFP discovery.' });
+    }
+
     if (!subscription || subscription.end_date < new Date()) {
-      return res.status(400).json({ error: 'Subscription not found or expired' });
+      return res.status(200).json({ message: 'Subscription not found or expired. Please upgrade to a paid plan to continue using RFP discovery.' });
     }
 
     const companyDocuments_1 = (companyProfile_1.documentSummaries || []).map((doc) => {

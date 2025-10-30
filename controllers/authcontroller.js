@@ -166,6 +166,23 @@ exports.signupWithProfile = [
         });
         await notification.save({ session });
 
+        //Create a free subscription for the user with the free plan of 1 proposal generation and 1 grant proposal generation
+        const freeSubscription = new Subscription({
+          user_id: user._id,
+          plan_name: "Free",
+          plan_price: 0,
+          start_date: new Date(),
+          end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+          max_rfp_proposal_generations: 1,
+          max_grant_proposal_generations: 1,
+          auto_renewal: false,
+        });
+        await freeSubscription.save({ session });
+
+        //Update the user with the free subscription
+        user.subscription_id = freeSubscription._id;
+        await user.save({ session });
+
         await session.commitTransaction();
       } catch (error) {
         await session.abortTransaction();

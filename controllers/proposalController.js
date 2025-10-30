@@ -133,6 +133,10 @@ exports.basicComplianceCheckPdf = [
         return res.status(404).json({ message: "Subscription not found or expired" });
       }
 
+      if (subscription && subscription.plan_name === "Free") {
+        return res.status(200).json({ message: 'You are using the free plan. Please upgrade to a paid plan to continue using basic compliance check.' });
+      }
+
       if (!file) {
         return res.status(400).json({ message: "No file uploaded" });
       }
@@ -315,6 +319,10 @@ exports.advancedComplianceCheckPdf = [
       const subscription = await Subscription.findOne({ user_id: userId });
       if (!subscription || subscription.end_date < new Date()) {
         return res.status(404).json({ message: "Subscription not found or expired" });
+      }
+
+      if (subscription && subscription.plan_name === "Free") {
+        return res.status(200).json({ message: 'You are using the free plan. Please upgrade to a paid plan to continue using advanced compliance check.' });
       }
 
       //check if subscription is pro or enterprise or custom
@@ -518,33 +526,49 @@ exports.autoSaveProposal = async (req, res) => {
       userEmail = employeeProfile.companyMail;
     }
 
-    const new_grant_proposal = await GrantProposal.findOne({ _id: proposalId, companyMail: userEmail });
-    if (new_grant_proposal) {
-      new_grant_proposal.generatedProposal = decompressedProject;
-      await new_grant_proposal.save();
+    // Use transaction for data consistency
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-      const new_draft_grant = await DraftGrant.findOne({ proposalId: proposalId, userEmail: userEmail });
-      if (new_draft_grant) {
-        new_draft_grant.generatedProposal = decompressedProject;
-        await new_draft_grant.save();
+    try {
+      const new_grant_proposal = await GrantProposal.findOne({ _id: proposalId, companyMail: userEmail });
+      if (new_grant_proposal) {
+        new_grant_proposal.generatedProposal = decompressedProject;
+        await new_grant_proposal.save({ session });
+
+        const new_draft_grant = await DraftGrant.findOne({ proposalId: proposalId, userEmail: userEmail });
+        if (new_draft_grant) {
+          new_draft_grant.generatedProposal = decompressedProject;
+          await new_draft_grant.save({ session });
+        }
+
+        await session.commitTransaction();
+        return res.status(200).json({ message: 'Grant proposal saved successfully' });
       }
-      return res.status(200).json({ message: 'Grant proposal saved successfully' });
-    }
 
-    const new_proposal_1 = await Proposal.findOne({ _id: proposalId, companyMail: userEmail });
-    if (new_proposal_1) {
-      new_proposal_1.generatedProposal = decompressedProject;
-      await new_proposal_1.save();
+      const new_proposal_1 = await Proposal.findOne({ _id: proposalId, companyMail: userEmail });
+      if (new_proposal_1) {
+        new_proposal_1.generatedProposal = decompressedProject;
+        await new_proposal_1.save({ session });
 
-      const new_draft_proposal = await DraftRFP.findOne({ proposalId: proposalId, userEmail: userEmail });
-      if (new_draft_proposal) {
-        new_draft_proposal.generatedProposal = decompressedProject;
-        await new_draft_proposal.save();
+        const new_draft_proposal = await DraftRFP.findOne({ proposalId: proposalId, userEmail: userEmail });
+        if (new_draft_proposal) {
+          new_draft_proposal.generatedProposal = decompressedProject;
+          await new_draft_proposal.save({ session });
+        }
+
+        await session.commitTransaction();
+        return res.status(200).json({ message: 'RFP proposal saved successfully' });
       }
-      return res.status(200).json({ message: 'RFP proposal saved successfully' });
-    }
 
-    res.status(404).json({ message: 'Proposal not found' });
+      await session.abortTransaction();
+      res.status(404).json({ message: 'Proposal not found' });
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
 
   } catch (error) {
     res.status(500).json({ message: error.message });

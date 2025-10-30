@@ -145,6 +145,14 @@ exports.getWelcomeEmail = (fullName) => {
             You're now part of a powerful platform designed to streamline your RFP and grant proposal process. Get started by logging in and exploring all the features we have to offer.
         </p>
 
+        <p style="${styles.message}">
+            A free subscription has been created for you with access to 1 RFP and 1 Grant proposal generation.
+        </p>
+
+        <p style="${styles.message}">
+            You can upgrade to a paid plan at any time to get more RFP and Grant proposal generations and access to all features.
+        </p>
+
         <div style="text-align:center;">
             <a href="${process.env.FRONTEND_URL || '#'}\/login" style="${styles.btnPrimary}">Login to Your Account →</a>
         </div>
